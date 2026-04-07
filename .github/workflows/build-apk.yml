@@ -1,0 +1,67 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'frontend/pwa/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: frontend/pwa/package-lock.json
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      
+    - name: Install dependencies
+      working-directory: frontend/pwa
+      run: npm ci
+      
+    - name: Build web assets
+      working-directory: frontend/pwa
+      run: |
+        mkdir -p www
+        cp index.html www/
+        cp -r *.js *.css images manifest.json sw.js www/ 2>/dev/null || true
+        
+    - name: Sync Capacitor
+      working-directory: frontend/pwa
+      run: npx cap sync android
+      
+    - name: Build Debug APK
+      working-directory: frontend/pwa/android
+      run: ./gradlew assembleDebug
+      
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: soho-menu-debug-apk
+        path: frontend/pwa/android/app/build/outputs/apk/debug/app-debug.apk
+        
+    - name: Build Release APK
+      working-directory: frontend/pwa/android
+      run: ./gradlew assembleRelease
+      
+    - name: Upload Release APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: soho-menu-release-apk
+        path: frontend/pwa/android/app/build/outputs/apk/release/app-release-unsigned.apk
