@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заказы - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .orders-page {
+            padding: 80px 16px 195px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .orders-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .orders-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .go-home-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .go-profile-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .footer-links-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            z-index: 90;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        .footer-links-bar a {
+            pointer-events: auto;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .order-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .order-number {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .order-status {
+            font-size: 12px;
+            padding: 4px 12px;
+            border-radius: 12px;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        .order-info {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        .order-total {
+            font-weight: 700;
+        }
+        .auth-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .auth-prompt .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .auth-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="orders-page">
+        <div class="orders-header">
+            <h1 class="orders-title">Мои заказы</h1>
+        </div>
+        <div id="ordersContent"></div>
+    </div>
+
+    <button class="go-home-btn" onclick="window.location.href='/'">🏠 В главное меню</button>
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+
+    <div class="footer-links-bar">
+        <a href="/about.html">О нас</a>
+        <a href="/delivery.html">Доставка</a>
+        <a href="/promotions.html">Акции</a>
+        <a href="/offer.html">Оферта</a>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('soho_user') || '{}');
+        const container = document.getElementById('ordersContent');
+        
+        if (!user.name) {
+            // Not logged in
+            container.innerHTML = `
+                <div class="auth-prompt">
+                    <div class="icon">🔒</div>
+                    <h2>Войдите в аккаунт</h2>
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Чтобы видеть историю заказов, необходимо авторизоваться</p>
+                    <a href="/login.html" class="auth-btn">Войти или зарегистрироваться</a>
+                </div>
+            `;
+        } else {
+            // Logged in - show orders
+            const orders = JSON.parse(localStorage.getItem('soho_orders') || '[]');
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="auth-prompt">
+                        <div class="icon">📋</div>
+                        <h2>У вас пока нет заказов</h2>
+                        <p style="color: var(--text-secondary); margin: 16px 0;">Сделайте первый заказ и он появится здесь</p>
+                        <a href="/" class="auth-btn">Перейти в меню</a>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = orders.map(order => `
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">Заказ №${order.id || '1001'}</span>
+                            <span class="order-status">${order.status || 'Доставлен'}</span>
+                        </div>
+                        <div class="order-info">${order.date || '20.03.2026'} · ${order.items || '3'} товара</div>
+                        <div class="order-total">${order.total || '45.50'} BYN</div>
+                    </div>
+                `).join('');
+            }
+        }
+    </script>
+</body>
+</html>

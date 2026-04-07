@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Клиенты - SOHO Cafe CRM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .header {
+            background: #1a1a2e;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2a2a40;
+        }
+        .header h1 { font-size: 24px; color: #e94560; }
+        .back-btn {
+            padding: 10px 20px;
+            background: #2a2a40;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .filters {
+            background: #1a1a2e;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .filters-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .filters-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .filter-btn.primary { background: #4caf50; color: #fff; }
+        .filter-btn.secondary { background: #2a2a40; color: #fff; }
+        .filter-btn.danger { background: #e94560; color: #fff; }
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .filter-group label {
+            color: #888;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+        .filter-group input,
+        .filter-group select {
+            padding: 10px;
+            background: #252538;
+            border: 1px solid #2a2a40;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .filter-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .filter-row input {
+            flex: 1;
+        }
+        .filter-row span {
+            color: #666;
+            font-size: 12px;
+        }
+        .filter-section {
+            background: #252538;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+        }
+        .filter-section-title {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .radio-label input[type="radio"] {
+            width: auto;
+        }
+        .customers-grid {
+            display: grid;
+            grid-template-columns: 1fr 450px;
+            gap: 24px;
+        }
+        .customers-list {
+            background: #1a1a2e;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .list-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 100px;
+            padding: 16px;
+            background: #252538;
+            font-weight: 600;
+            color: #888;
+            font-size: 14px;
+        }
+        .customer-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 100px;
+            padding: 16px;
+            border-bottom: 1px solid #252538;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .customer-row:hover { background: #252538; }
+        .customer-row.active { background: #e9456020; }
+        .customer-name { font-weight: 600; color: #fff; }
+        .customer-phone { color: #888; font-size: 14px; }
+        .customer-stats { text-align: right; }
+        .stat-value { font-weight: 600; color: #e94560; }
+        .stat-label { font-size: 12px; color: #666; }
+        .customer-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px;
+            position: sticky;
+            top: 24px;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+        }
+        .card-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #252538;
+        }
+        .customer-avatar {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 12px;
+        }
+        .card-name { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+        .card-phone { color: #888; font-size: 14px; margin-bottom: 12px; }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+        .card-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .card-btn.primary { background: #4caf50; color: #fff; }
+        .card-btn.secondary { background: #2a2a40; color: #fff; }
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .card-stat {
+            background: #252538;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .card-stat-value { font-size: 20px; font-weight: 700; color: #e94560; }
+        .card-stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+        .section { margin-top: 20px; }
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .popular-items {
+            background: #252538;
+            border-radius: 8px;
+            padding: 12px;
+        }
+        .popular-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a40;
+        }
+        .popular-item:last-child { border-bottom: none; }
+        .orders-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .order-item {
+            background: #252538;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        .order-item:hover { background: #2a2a40; }
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .order-number { font-weight: 600; }
+        .order-total { color: #e94560; font-weight: 600; }
+        .order-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #888;
+        }
+        .order-status {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .chart-container {
+            height: 120px;
+            background: #252538;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        .chart-bar {
+            flex: 1;
+            background: #e94560;
+            border-radius: 4px 4px 0 0;
+            min-height: 4px;
+            position: relative;
+        }
+        .chart-bar:hover { background: #ff6b6b; }
+        .chart-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #000;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            white-space: nowrap;
+            display: none;
+        }
+        .chart-bar:hover .chart-tooltip { display: block; }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #888;
+            font-size: 13px;
+        }
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            background: #252538;
+            border: 1px solid #2a2a40;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        @media (max-width: 1024px) {
+            .customers-grid { grid-template-columns: 1fr; }
+            .customer-card { position: static; max-height: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="back-btn" onclick="location.href='crm-operator-workplace.html'">← Назад</button>
+        <h1>👥 Клиенты</h1>
+        <div></div>
+    </div>
+
+    <div class="container">
+        <div class="filters">
+            <div class="filters-header">
+                <div class="filters-title">🔍 Фильтры клиентов</div>
+                <div class="filters-actions">
+                    <button class="filter-btn primary" onclick="applyFilters()">Применить</button>
+                    <button class="filter-btn secondary" onclick="resetFilters()">Сбросить</button>
+                    <button class="filter-btn danger" onclick="exportFiltered()">📥 Скачать</button>
+                </div>
+            </div>
+            
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Поиск (имя, телефон, email)</label>
+                    <input type="text" id="searchInput" placeholder="Введите для поиска...">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Период последнего заказа</label>
+                    <div class="filter-row">
+                        <input type="date" id="lastOrderFrom" placeholder="с">
+                        <span>—</span>
+                        <input type="date" id="lastOrderTo" placeholder="по">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Клиент создан</label>
+                    <div class="filter-row">
+                        <input type="date" id="createdFrom" placeholder="с">
+                        <span>—</span>
+                        <input type="date" id="createdTo" placeholder="по">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Количество заказов</label>
+                    <div class="filter-row">
+                        <input type="number" id="ordersFrom" placeholder="от" min="0">
+                        <span>—</span>
+                        <input type="number" id="ordersTo" placeholder="до" min="0">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Сумма заказов (Br)</label>
+                    <div class="filter-row">
+                        <input type="number" id="totalFrom" placeholder="от" min="0">
+                        <span>—</span>
+                        <input type="number" id="totalTo" placeholder="до" min="0">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Средний чек (Br)</label>
+                    <div class="filter-row">
+                        <input type="number" id="avgFrom" placeholder="от" min="0">
+                        <span>—</span>
+                        <input type="number" id="avgTo" placeholder="до" min="0">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Скидка клиента (%)</label>
+                    <div class="filter-row">
+                        <input type="number" id="discountFrom" placeholder="от" min="0" max="100">
+                        <span>—</span>
+                        <input type="number" id="discountTo" placeholder="до" min="0" max="100">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Месяц рождения</label>
+                    <select id="birthMonth">
+                        <option value="">Все месяцы</option>
+                        <option value="1">Январь</option>
+                        <option value="2">Февраль</option>
+                        <option value="3">Март</option>
+                        <option value="4">Апрель</option>
+                        <option value="5">Май</option>
+                        <option value="6">Июнь</option>
+                        <option value="7">Июль</option>
+                        <option value="8">Август</option>
+                        <option value="9">Сентябрь</option>
+                        <option value="10">Октябрь</option>
+                        <option value="11">Ноябрь</option>
+                        <option value="12">Декабрь</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Сортировка</label>
+                    <select id="sortSelect">
+                        <option value="orders_desc">Заказов (убыв)</option>
+                        <option value="orders_asc">Заказов (возр)</option>
+                        <option value="total_desc">Сумма (убыв)</option>
+                        <option value="total_asc">Сумма (возр)</option>
+                        <option value="avg_desc">Средний чек (убыв)</option>
+                        <option value="avg_asc">Средний чек (возр)</option>
+                        <option value="last_desc">Последний заказ (убыв)</option>
+                        <option value="last_asc">Последний заказ (возр)</option>
+                        <option value="name">Имя А-Я</option>
+                        <option value="name_desc">Имя Я-А</option>
+                        <option value="created_desc">Создан (новые)</option>
+                        <option value="created_asc">Создан (старые)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <div class="filter-section-title">Активность клиентов</div>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="activityFilter" value="all" checked>
+                        Все клиенты
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="activityFilter" value="ordered_period">
+                        Заказывали за период (указать выше)
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="activityFilter" value="not_ordered_period">
+                        Не заказывали за период
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="activityFilter" value="no_orders">
+                        Без заказов
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="customers-grid">
+            <div class="customers-list">
+                <div class="list-header">
+                    <div>Клиент</div>
+                    <div>Заказов</div>
+                    <div>Сумма</div>
+                    <div></div>
+                </div>
+                <div id="customersList"></div>
+            </div>
+
+            <div class="customer-card" id="customerCard" style="display: none;">
+                <div class="card-header">
+                    <div class="customer-avatar" id="cardAvatar">👤</div>
+                    <div class="card-name" id="cardName">-</div>
+                    <div class="card-phone" id="cardPhone">-</div>
+                    <div class="card-actions">
+                        <button class="card-btn primary" onclick="createOrder()">+ Заказ</button>
+                        <button class="card-btn secondary" onclick="editCustomer()">✏️ Редактировать</button>
+                    </div>
+                </div>
+
+                <div class="card-stats">
+                    <div class="card-stat">
+                        <div class="card-stat-value" id="statOrders">0</div>
+                        <div class="card-stat-label">Всего заказов</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-value" id="statTotal">0</div>
+                        <div class="card-stat-label">Общая сумма</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-value" id="statAvg">0</div>
+                        <div class="card-stat-label">Средний чек</div>
+                    </div>
+                    <div class="card-stat">
+                        <div class="card-stat-value" id="statBonus">0</div>
+                        <div class="card-stat-label">Бонусы</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Заказы по месяцам</div>
+                    <div class="chart-container" id="ordersChart"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Популярные товары</div>
+                    <div class="popular-items" id="popularItems"></div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">История заказов</div>
+                    <div class="orders-list" id="ordersList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Customer Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-title">Редактировать клиента</div>
+            <div class="form-group">
+                <label>Имя</label>
+                <input type="text" id="editName">
+            </div>
+            <div class="form-group">
+                <label>Телефон</label>
+                <input type="text" id="editPhone">
+            </div>
+            <div class="form-group">
+                <label>Адрес по умолчанию</label>
+                <input type="text" id="editAddress">
+            </div>
+            <div class="form-group">
+                <label>Скидка (%)</label>
+                <input type="number" id="editDiscount" min="0" max="100">
+            </div>
+            <div class="form-group">
+                <label>День рождения</label>
+                <input type="date" id="editBirthday">
+            </div>
+            <div class="form-group">
+                <label>Комментарий</label>
+                <input type="text" id="editComment">
+            </div>
+            <div class="modal-actions">
+                <button class="card-btn secondary" onclick="closeEditModal()">Отмена</button>
+                <button class="card-btn primary" onclick="saveCustomer()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allCustomers = [];
+        let filteredCustomers = [];
+        let selectedCustomer = null;
+
+        async function loadCustomers() {
+            try {
+                // Load both registered customers and orders
+                const [customersResp, ordersResp] = await Promise.all([
+                    fetch('/api/customers'),
+                    fetch('/api/orders/list?limit=2000')
+                ]);
+                
+                if (!customersResp.ok || !ordersResp.ok) throw new Error('Failed to load');
+                
+                const registeredCustomers = await customersResp.json();
+                const orders = await ordersResp.json();
+
+                // Group orders by customer phone
+                const customerMap = {};
+                
+                // First, add registered customers from database
+                registeredCustomers.forEach(c => {
+                    const phone = normalizePhone(c.phone);
+                    customerMap[phone] = {
+                        id: c.id,
+                        name: c.name || 'Без имени',
+                        phone: phone,
+                        originalPhone: c.phone,
+                        address: c.address,
+                        discount: c.discount_percent || 0,
+                        birthday: c.birthday,
+                        comment: c.comment,
+                        bonus: c.bonus_points || 0,
+                        createdAt: c.created_at,
+                        orders: [],
+                        total: 0,
+                        bonusEarned: 0,
+                        addresses: c.address ? [c.address] : [],
+                        lastOrder: null
+                    };
+                });
+                
+                // Then add orders data
+                orders.forEach(order => {
+                    const phone = normalizePhone(order.delivery_phone || order.customer_phone);
+                    const name = order.customer_name || 'Гость';
+                    
+                    if (!customerMap[phone]) {
+                        customerMap[phone] = {
+                            name: name,
+                            phone: phone,
+                            originalPhone: order.delivery_phone || order.customer_phone,
+                            orders: [],
+                            total: 0,
+                            bonusEarned: 0,
+                            addresses: [],
+                            lastOrder: null
+                        };
+                    }
+                    
+                    customerMap[phone].orders.push(order);
+                    customerMap[phone].total += parseFloat(order.total_amount || 0);
+                    customerMap[phone].bonusEarned += parseInt(order.bonus_earned || 0);
+                    if (order.delivery_address) customerMap[phone].addresses.push(order.delivery_address);
+                    
+                    const orderDate = new Date(order.created_at);
+                    if (!customerMap[phone].lastOrder || orderDate > customerMap[phone].lastOrder) {
+                        customerMap[phone].lastOrder = orderDate;
+                    }
+                });
+
+                allCustomers = Object.values(customerMap).map(c => ({
+                    ...c,
+                    orderCount: c.orders.length,
+                    avgCheck: c.orderCount > 0 ? c.total / c.orderCount : 0,
+                    favoriteAddress: c.address || getMostFrequent(c.addresses)
+                }));
+
+                applyFilters();
+            } catch (err) {
+                console.error('Error loading customers:', err);
+                document.getElementById('customersList').innerHTML = 
+                    '<div style="padding: 48px; text-align: center; color: #666;">Ошибка загрузки</div>';
+            }
+        }
+
+        function normalizePhone(phone) {
+            if (!phone) return 'unknown';
+            return phone.replace(/\D/g, '');
+        }
+
+        function getMostFrequent(arr) {
+            if (!arr.length) return '';
+            const counts = {};
+            arr.forEach(x => counts[x] = (counts[x] || 0) + 1);
+            return Object.entries(counts).sort((a,b) => b[1]-a[1])[0][0];
+        }
+
+        function getFilterValues() {
+            return {
+                search: document.getElementById('searchInput').value.toLowerCase(),
+                sort: document.getElementById('sortSelect').value,
+                lastOrderFrom: document.getElementById('lastOrderFrom').value,
+                lastOrderTo: document.getElementById('lastOrderTo').value,
+                createdFrom: document.getElementById('createdFrom').value,
+                createdTo: document.getElementById('createdTo').value,
+                ordersFrom: parseInt(document.getElementById('ordersFrom').value) || null,
+                ordersTo: parseInt(document.getElementById('ordersTo').value) || null,
+                totalFrom: parseFloat(document.getElementById('totalFrom').value) || null,
+                totalTo: parseFloat(document.getElementById('totalTo').value) || null,
+                avgFrom: parseFloat(document.getElementById('avgFrom').value) || null,
+                avgTo: parseFloat(document.getElementById('avgTo').value) || null,
+                discountFrom: parseInt(document.getElementById('discountFrom').value) || null,
+                discountTo: parseInt(document.getElementById('discountTo').value) || null,
+                birthMonth: document.getElementById('birthMonth').value,
+                activityFilter: document.querySelector('input[name="activityFilter"]:checked').value
+            };
+        }
+
+        function applyFilters() {
+            const f = getFilterValues();
+
+            filteredCustomers = allCustomers.filter(c => {
+                // Search filter
+                const matchesSearch = !f.search || 
+                    c.name.toLowerCase().includes(f.search) || 
+                    c.phone.includes(f.search.replace(/\D/g, ''));
+
+                // Orders count filter
+                const matchesOrders = (!f.ordersFrom || c.orderCount >= f.ordersFrom) &&
+                                     (!f.ordersTo || c.orderCount <= f.ordersTo);
+
+                // Total amount filter
+                const matchesTotal = (!f.totalFrom || c.total >= f.totalFrom) &&
+                                    (!f.totalTo || c.total <= f.totalTo);
+
+                // Average check filter
+                const matchesAvg = (!f.avgFrom || c.avgCheck >= f.avgFrom) &&
+                                  (!f.avgTo || c.avgCheck <= f.avgTo);
+
+                // Last order date filter
+                let matchesLastOrder = true;
+                if (f.lastOrderFrom || f.lastOrderTo) {
+                    if (!c.lastOrder) {
+                        matchesLastOrder = false;
+                    } else {
+                        const lastDate = new Date(c.lastOrder);
+                        if (f.lastOrderFrom && lastDate < new Date(f.lastOrderFrom)) matchesLastOrder = false;
+                        if (f.lastOrderTo && lastDate > new Date(f.lastOrderTo + 'T23:59:59')) matchesLastOrder = false;
+                    }
+                }
+
+                // Activity filter
+                let matchesActivity = true;
+                if (f.activityFilter === 'no_orders') {
+                    matchesActivity = c.orderCount === 0;
+                } else if (f.activityFilter === 'ordered_period' && (f.lastOrderFrom || f.lastOrderTo)) {
+                    matchesActivity = c.lastOrder && 
+                        (!f.lastOrderFrom || new Date(c.lastOrder) >= new Date(f.lastOrderFrom)) &&
+                        (!f.lastOrderTo || new Date(c.lastOrder) <= new Date(f.lastOrderTo + 'T23:59:59'));
+                } else if (f.activityFilter === 'not_ordered_period' && (f.lastOrderFrom || f.lastOrderTo)) {
+                    if (!c.lastOrder) {
+                        matchesActivity = true;
+                    } else {
+                        const lastDate = new Date(c.lastOrder);
+                        const fromDate = f.lastOrderFrom ? new Date(f.lastOrderFrom) : null;
+                        const toDate = f.lastOrderTo ? new Date(f.lastOrderTo + 'T23:59:59') : null;
+                        matchesActivity = (fromDate && lastDate < fromDate) || (toDate && lastDate > toDate);
+                    }
+                }
+
+                return matchesSearch && matchesOrders && matchesTotal && matchesAvg && 
+                       matchesLastOrder && matchesActivity;
+            });
+
+            // Sort
+            filteredCustomers.sort((a, b) => {
+                switch(f.sort) {
+                    case 'orders_desc': return b.orderCount - a.orderCount;
+                    case 'orders_asc': return a.orderCount - b.orderCount;
+                    case 'total_desc': return b.total - a.total;
+                    case 'total_asc': return a.total - b.total;
+                    case 'avg_desc': return b.avgCheck - a.avgCheck;
+                    case 'avg_asc': return a.avgCheck - b.avgCheck;
+                    case 'last_desc': return (b.lastOrder || 0) - (a.lastOrder || 0);
+                    case 'last_asc': return (a.lastOrder || 0) - (b.lastOrder || 0);
+                    case 'name': return a.name.localeCompare(b.name);
+                    case 'name_desc': return b.name.localeCompare(a.name);
+                    case 'created_desc': return (b.createdAt || 0) - (a.createdAt || 0);
+                    case 'created_asc': return (a.createdAt || 0) - (b.createdAt || 0);
+                    default: return 0;
+                }
+            });
+
+            renderCustomersList();
+            updateCustomerCount();
+        }
+
+        function filterCustomers() {
+            // Legacy function - now calls applyFilters
+            applyFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('lastOrderFrom').value = '';
+            document.getElementById('lastOrderTo').value = '';
+            document.getElementById('createdFrom').value = '';
+            document.getElementById('createdTo').value = '';
+            document.getElementById('ordersFrom').value = '';
+            document.getElementById('ordersTo').value = '';
+            document.getElementById('totalFrom').value = '';
+            document.getElementById('totalTo').value = '';
+            document.getElementById('avgFrom').value = '';
+            document.getElementById('avgTo').value = '';
+            document.getElementById('discountFrom').value = '';
+            document.getElementById('discountTo').value = '';
+            document.getElementById('birthMonth').value = '';
+            document.getElementById('sortSelect').value = 'orders_desc';
+            document.querySelector('input[name="activityFilter"][value="all"]').checked = true;
+            applyFilters();
+        }
+
+        function updateCustomerCount() {
+            const countEl = document.querySelector('.filters-title');
+            if (countEl) {
+                countEl.innerHTML = `🔍 Фильтры клиентов <span style="color: #888; font-size: 14px;">(${filteredCustomers.length} из ${allCustomers.length})</span>`;
+            }
+        }
+
+        function exportFiltered() {
+            const csv = [
+                ['Имя', 'Телефон', 'Заказов', 'Сумма', 'Средний чек', 'Последний заказ'].join(','),
+                ...filteredCustomers.map(c => [
+                    c.name,
+                    c.phone,
+                    c.orderCount,
+                    c.total.toFixed(2),
+                    c.avgCheck.toFixed(2),
+                    c.lastOrder ? new Date(c.lastOrder).toLocaleDateString('ru-RU') : ''
+                ].join(','))
+            ].join('\n');
+
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `customers_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function renderCustomersList() {
+            const container = document.getElementById('customersList');
+            
+            if (filteredCustomers.length === 0) {
+                container.innerHTML = '<div style="padding: 48px; text-align: center; color: #666;">Клиенты не найдены</div>';
+                return;
+            }
+
+            container.innerHTML = filteredCustomers.map((c, idx) => `
+                <div class="customer-row ${selectedCustomer?.phone === c.phone ? 'active' : ''}" 
+                     onclick="selectCustomer(${idx})">
+                    <div>
+                        <div class="customer-name">${escapeHtml(c.name)}</div>
+                        <div class="customer-phone">${formatPhone(c.phone)}</div>
+                    </div>
+                    <div class="customer-stats">
+                        <div class="stat-value">${c.orderCount}</div>
+                        <div class="stat-label">заказов</div>
+                    </div>
+                    <div class="customer-stats">
+                        <div class="stat-value">${c.total.toFixed(2)}</div>
+                        <div class="stat-label">Br</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button class="card-btn primary" style="padding: 6px 12px; font-size: 12px;"
+                                onclick="event.stopPropagation(); quickOrder('${c.phone}')">Заказ</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCustomer(index) {
+            selectedCustomer = filteredCustomers[index];
+            renderCustomersList();
+            renderCustomerCard();
+        }
+
+        function renderCustomerCard() {
+            if (!selectedCustomer) {
+                document.getElementById('customerCard').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('customerCard').style.display = 'block';
+            document.getElementById('cardName').textContent = selectedCustomer.name;
+            document.getElementById('cardPhone').textContent = formatPhone(selectedCustomer.phone);
+            document.getElementById('cardAvatar').textContent = selectedCustomer.name.charAt(0).toUpperCase();
+            
+            // Add extra info if available
+            const extraInfo = [];
+            if (selectedCustomer.discount > 0) extraInfo.push(`🎁 Скидка ${selectedCustomer.discount}%`);
+            if (selectedCustomer.birthday) extraInfo.push(`🎂 ${new Date(selectedCustomer.birthday).toLocaleDateString('ru-RU')}`);
+            if (selectedCustomer.favoriteAddress) extraInfo.push(`📍 ${selectedCustomer.favoriteAddress.substring(0, 30)}${selectedCustomer.favoriteAddress.length > 30 ? '...' : ''}`);
+            
+            const phoneEl = document.getElementById('cardPhone');
+            phoneEl.innerHTML = formatPhone(selectedCustomer.phone) + 
+                (extraInfo.length ? '<br><span style="font-size: 12px; color: #00d9a5;">' + extraInfo.join(' | ') + '</span>' : '');
+            
+            document.getElementById('statOrders').textContent = selectedCustomer.orderCount;
+            document.getElementById('statTotal').textContent = selectedCustomer.total.toFixed(0);
+            document.getElementById('statAvg').textContent = selectedCustomer.avgCheck.toFixed(0);
+            document.getElementById('statBonus').textContent = selectedCustomer.bonus || selectedCustomer.bonusEarned || 0;
+
+            renderChart();
+            renderPopularItems();
+            renderOrdersList();
+        }
+
+        function renderChart() {
+            // Group orders by month
+            const months = {};
+            selectedCustomer.orders.forEach(o => {
+                const d = new Date(o.created_at);
+                const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                months[key] = (months[key] || 0) + 1;
+            });
+
+            const sortedMonths = Object.entries(months).sort().slice(-12);
+            const maxVal = Math.max(...sortedMonths.map(x => x[1]), 1);
+
+            document.getElementById('ordersChart').innerHTML = sortedMonths.map(([month, count]) => `
+                <div class="chart-bar" style="height: ${(count/maxVal*100)}%">
+                    <div class="chart-tooltip">${month}: ${count} заказов</div>
+                </div>
+            `).join('') || '<div style="color: #666; text-align: center; width: 100%;">Нет данных</div>';
+        }
+
+        function renderPopularItems() {
+            const items = {};
+            selectedCustomer.orders.forEach(o => {
+                (o.items || []).forEach(i => {
+                    const name = i.name || `Товар #${i.product_id}`;
+                    items[name] = (items[name] || 0) + (i.quantity || 1);
+                });
+            });
+
+            const sorted = Object.entries(items).sort((a,b) => b[1]-a[1]).slice(0, 5);
+
+            document.getElementById('popularItems').innerHTML = sorted.length ? sorted.map(([name, count]) => `
+                <div class="popular-item">
+                    <span>${escapeHtml(name)}</span>
+                    <span style="color: #e94560; font-weight: 600;">${count} раз</span>
+                </div>
+            `).join('') : '<div style="color: #666; padding: 12px;">Нет данных</div>';
+        }
+
+        function renderOrdersList() {
+            const orders = selectedCustomer.orders
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+            document.getElementById('ordersList').innerHTML = orders.map(o => `
+                <div class="order-item" onclick="viewOrder(${o.id})">
+                    <div class="order-header">
+                        <span class="order-number">#${o.order_number}</span>
+                        <span class="order-total">${parseFloat(o.total_amount).toFixed(2)} Br</span>
+                    </div>
+                    <div class="order-footer">
+                        <span>${formatDate(o.created_at)}</span>
+                        <span class="order-status" style="background: ${getStatusColor(o.status)}">${getStatusName(o.status)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function createOrder() {
+            if (!selectedCustomer) return;
+            window.location.href = `crm-new-order.html?phone=${encodeURIComponent(selectedCustomer.originalPhone)}&name=${encodeURIComponent(selectedCustomer.name)}&address=${encodeURIComponent(selectedCustomer.favoriteAddress || '')}`;
+        }
+
+        function quickOrder(phone) {
+            const customer = allCustomers.find(c => c.phone === phone);
+            if (customer) {
+                window.location.href = `crm-new-order.html?phone=${encodeURIComponent(customer.originalPhone)}&name=${encodeURIComponent(customer.name)}`;
+            }
+        }
+
+        function viewOrder(orderId) {
+            window.open(`crm-new-order.html?order=${orderId}`, '_blank');
+        }
+
+        function editCustomer() {
+            if (!selectedCustomer) return;
+            document.getElementById('editName').value = selectedCustomer.name;
+            document.getElementById('editPhone').value = selectedCustomer.originalPhone;
+            document.getElementById('editAddress').value = selectedCustomer.favoriteAddress || '';
+            document.getElementById('editDiscount').value = selectedCustomer.discount || 0;
+            document.getElementById('editBirthday').value = selectedCustomer.birthday ? selectedCustomer.birthday.split('T')[0] : '';
+            document.getElementById('editComment').value = selectedCustomer.comment || '';
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+
+        async function saveCustomer() {
+            if (!selectedCustomer) return;
+            
+            const data = {
+                name: document.getElementById('editName').value,
+                address: document.getElementById('editAddress').value,
+                discount_percent: parseInt(document.getElementById('editDiscount').value) || 0,
+                birthday: document.getElementById('editBirthday').value,
+                comment: document.getElementById('editComment').value
+            };
+            
+            try {
+                const response = await fetch(`/api/customers/${selectedCustomer.phone}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // Update local data
+                    selectedCustomer.name = data.name;
+                    selectedCustomer.favoriteAddress = data.address;
+                    closeEditModal();
+                    renderCustomersList();
+                    renderCustomerCard();
+                    showNotification('✅ Клиент сохранен', 'success');
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (err) {
+                console.error('Error saving customer:', err);
+                showNotification('❌ Ошибка сохранения', 'error');
+            }
+        }
+        
+        function showNotification(message, type) {
+            const div = document.createElement('div');
+            div.style.cssText = `position: fixed; top: 20px; right: 20px; padding: 16px 24px; 
+                border-radius: 8px; color: white; z-index: 10000; font-weight: 500;
+                background: ${type === 'success' ? '#4caf50' : '#f44336'};`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        function formatPhone(phone) {
+            if (!phone || phone === 'unknown') return '-';
+            if (phone.length === 12 && phone.startsWith('375')) {
+                return `+375 (${phone.slice(3, 5)}) ${phone.slice(5, 8)}-${phone.slice(8, 10)}-${phone.slice(10, 12)}`;
+            }
+            return phone;
+        }
+
+        function formatDate(dateStr) {
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('ru-RU') + ' ' + d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+        }
+
+        function getStatusColor(status) {
+            const colors = {
+                'new': '#4caf5020', 'cooking': '#ff980020', 'ready': '#2196f320',
+                'on_way': '#9c27b020', 'delivered': '#4caf5020', 'cancelled': '#f4433620'
+            };
+            return colors[status] || '#66666620';
+        }
+
+        function getStatusName(status) {
+            const names = {
+                'new': 'Новый', 'cooking': 'Готовится', 'ready': 'Готов',
+                'on_way': 'В пути', 'delivered': 'Доставлен', 'cancelled': 'Отменён'
+            };
+            return names[status] || status;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        loadCustomers();
+    </script>
+</body>
+</html>

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>SOHO Cafe - Доставка еды в Жодино</title>
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <!-- Icons -->
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/css/style.css" as="style">
+    <link rel="preload" href="/js/app.js" as="script">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/customer-auth.js"></script>
+    <style>
+        /* Promo Slider */
+        .promo-slider {
+            position: relative;
+            margin: 200px 16px 20px;
+            border-radius: 16px;
+            overflow: hidden;
+            height: 180px;
+        }
+        
+        /* Active Category Highlight */
+        .category-chip {
+            transition: all 0.3s ease;
+        }
+        
+        .category-chip.active {
+            background: #e94560 !important;
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(233, 69, 96, 0.4);
+        }
+        
+        .promo-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            padding: 24px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            opacity: 0;
+            transition: opacity 0.5s;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .promo-slide-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.6));
+            z-index: 1;
+        }
+        
+        .promo-slide.active {
+            opacity: 1;
+        }
+        
+        .promo-slide-content {
+            flex: 1;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .promo-slide-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .promo-slide-desc {
+            font-size: 14px;
+            opacity: 0.95;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .promo-slide-icon {
+            font-size: 64px;
+            margin-left: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .promo-dots {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+        }
+        
+        .promo-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.4);
+            cursor: pointer;
+        }
+        
+        .promo-dot.active {
+            background: white;
+        }
+        
+        .promo-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+        
+        .promo-arrow:hover {
+            background: rgba(0,0,0,0.5);
+        }
+        
+        .promo-arrow.prev {
+            left: 12px;
+        }
+        
+        .promo-arrow.next {
+            right: 12px;
+        }
+        
+        /* Phone Button */
+        .phone-btn {
+            position: fixed;
+            bottom: 90px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+            z-index: 90;
+            text-decoration: none;
+            transition: transform 0.2s;
+        }
+        
+        .phone-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Favorite Button */
+        .favorite-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .favorite-btn:hover {
+            background: rgba(0,0,0,0.7);
+            transform: scale(1.1);
+        }
+        
+        .favorite-btn.active {
+            background: rgba(233, 69, 96, 0.8);
+        }
+        
+        /* Product Card */
+        .product-card {
+            position: relative;
+        }
+        
+        /* Free Delivery Banner */
+        .free-delivery-banner {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 1px solid rgba(233, 69, 96, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .free-delivery-icon {
+            font-size: 32px;
+        }
+        
+        .free-delivery-text {
+            flex: 1;
+        }
+        
+        .free-delivery-title {
+            font-weight: 600;
+            font-size: 15px;
+        }
+        
+        .free-delivery-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="menuBtn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <div class="logo">
+            <span class="logo-red">SOHO</span>
+            <span class="logo-white">CAFE</span>
+        </div>
+        <button class="theme-toggle" id="themeToggle">
+            <span class="theme-icon">☀️</span>
+        </button>
+    </header>
+
+    <!-- Search -->
+    <div class="search-container">
+        <input type="text" class="search-input" id="searchInput" placeholder="Поиск по меню...">
+        <button class="search-btn">🔍</button>
+    </div>
+
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <span class="logo-red">SOHO</span>
+            <span class="logo-white">MENU</span>
+        </div>
+        <ul class="sidebar-menu" id="sidebarMenu">
+            <!-- Categories loaded dynamically -->
+        </ul>
+    </nav>
+    <div class="overlay" id="overlay"></div>
+
+    <!-- Promo Slider -->
+    <div style="position: relative;">
+        <div class="promo-slider" id="promoSlider">
+            <div class="promo-slide active">
+                <div class="promo-slide-content">
+                    <div class="promo-slide-title">Загрузка...</div>
+                    <div class="promo-slide-desc">Загружаем акции</div>
+                </div>
+                <div class="promo-slide-icon">⏳</div>
+            </div>
+        </div>
+        <div class="promo-dots" id="promoDots"></div>
+    </div>
+
+    <!-- Categories Scroll -->
+    <div class="categories-scroll" id="categoriesScroll">
+        <!-- Categories loaded dynamically -->
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Products loaded dynamically -->
+    </main>
+
+    <!-- Search Results -->
+    <div class="search-results" id="searchResults" style="display: none;">
+        <div class="search-header">
+            <h2>Результаты поиска</h2>
+            <button class="close-search" id="closeSearch">✕</button>
+        </div>
+        <div class="products-grid" id="searchResultsGrid"></div>
+    </div>
+
+    <!-- Cart -->
+    <div class="cart-container" id="cartContainer">
+        <div class="cart-header">
+            <h2>Корзина</h2>
+            <button class="close-cart" id="closeCart">✕</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p class="empty-cart">Корзина пуста</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Итого:</span>
+                <span class="total-price" id="cartTotal">0.00 BYN</span>
+            </div>
+            <a href="/checkout.html" class="checkout-btn" id="checkoutBtn">Оформить заказ</a>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">✕</button>
+            <div class="modal-image">
+                <img id="modalImg" src="" alt="">
+            </div>
+            <div class="modal-info">
+                <h2 id="modalTitle"></h2>
+                <p class="modal-composition" id="modalComposition"></p>
+                <div class="modal-variants" id="modalVariants"></div>
+                <div class="modal-footer">
+                    <div class="quantity-control">
+                        <button class="qty-btn minus" id="qtyMinus">−</button>
+                        <span class="qty-value" id="qtyValue">1</span>
+                        <button class="qty-btn plus" id="qtyPlus">+</button>
+                    </div>
+                    <button class="add-to-cart" id="addToCartBtn">Добавить</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Phone Button -->
+    <a href="tel:+375291167755" class="phone-btn" title="Позвонить оператору">📞</a>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="/" class="nav-item active" data-page="menu">
+            <span class="nav-icon">🍽️</span>
+            <span class="nav-label">Меню</span>
+        </a>
+        <a href="/promotions.html" class="nav-item" data-page="promotions">
+            <span class="nav-icon">🎁</span>
+            <span class="nav-label">Акции</span>
+        </a>
+        <a href="/profile.html" class="nav-item" data-page="profile">
+            <span class="nav-icon">👤</span>
+            <span class="nav-label">Профиль</span>
+        </a>
+        <a href="#cart" class="nav-item" data-page="cart" id="cartNavItem">
+            <span class="nav-icon">🛒</span>
+            <span class="nav-label">Корзина</span>
+            <span class="cart-badge" id="cartBadge">0</span>
+        </a>
+    </nav>
+
+    <!-- Loading Spinner -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Загрузка меню...</p>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <span class="logo-red">SOHO</span>
+                <span class="logo-white">CAFE</span>
+            </div>
+            <div class="footer-links">
+                <a href="/about.html">О нас</a>
+                <a href="/delivery.html">Доставка</a>
+                <a href="/promotions.html">Акции</a>
+                <a href="/offer.html">Оферта</a>
+            </div>
+            <div class="footer-legal">
+                <p>ООО «Фрэш-Ит»</p>
+                <p>УНП: 693230403</p>
+                <p>Внесён в торговый реестр Республики Беларусь</p>
+                <p>Свидетельство о регистрации №XXXXXXX от XX.XX.XXXX</p>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2026 SOHO Cafe. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/app.js" defer></script>
+    <script>
+        // Promo Slider - Dynamic loading from API
+        let currentSlide = 0;
+        let slides = [];
+        
+        // Load featured promotions from API
+        async function loadPromoSlider() {
+            console.log('Loading promo slider...');
+            try {
+                const res = await fetch('/api/marketing/promotions/featured/main');
+                console.log('API response:', res.status);
+                if (!res.ok) throw new Error('Failed to load promotions: ' + res.status);
+                
+                const promos = await res.json();
+                console.log('Loaded promos:', promos.length);
+                if (promos.length === 0) {
+                    console.log('No promos, using static');
+                    initStaticSlider();
+                    return;
+                }
+                
+                // Build slider HTML
+                const slider = document.getElementById('promoSlider');
+                const dotsContainer = document.getElementById('promoDots');
+                
+                // Clear existing (only slides, keep structure)
+                slider.innerHTML = '';
+                if (dotsContainer) dotsContainer.innerHTML = '';
+                
+                // Add slides
+                promos.forEach((p, i) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'promo-slide' + (i === 0 ? ' active' : '');
+                    
+                    // Фоновое изображение на весь слайд
+                    const hasImage = p.banner_mobile || p.image_mobile;
+                    const bgStyle = hasImage 
+                        ? `background-image: url('${p.banner_mobile || p.image_mobile}'); background-size: cover; background-position: center;` 
+                        : 'background: linear-gradient(135deg, #e94560, #ff6b6b);';
+                    
+                    slide.style.cssText = bgStyle;
+                    
+                    slide.innerHTML = `
+                        <div class="promo-slide-overlay"></div>
+                        <div class="promo-slide-content">
+                            <div class="promo-slide-title">${p.name}</div>
+                            <div class="promo-slide-desc">${p.short_description || ''}</div>
+                        </div>
+                        <div class="promo-slide-icon">🎁</div>
+                    `;
+                    slider.appendChild(slide);
+                    
+                    // Add dot
+                    if (dotsContainer) {
+                        const dot = document.createElement('div');
+                        dot.className = 'promo-dot' + (i === 0 ? ' active' : '');
+                        dot.onclick = () => goToSlide(i);
+                        dotsContainer.appendChild(dot);
+                    }
+                });
+                
+                // Add arrows
+                const prevBtn = document.createElement('button');
+                prevBtn.className = 'promo-arrow prev';
+                prevBtn.innerHTML = '‹';
+                prevBtn.id = 'promoPrevBtn';
+                slider.appendChild(prevBtn);
+                
+                const nextBtn = document.createElement('button');
+                nextBtn.className = 'promo-arrow next';
+                nextBtn.innerHTML = '›';
+                nextBtn.id = 'promoNextBtn';
+                slider.appendChild(nextBtn);
+                
+                slides = document.querySelectorAll('.promo-slide');
+                initSliderEvents();
+                
+            } catch (err) {
+                console.error('Error loading promotions:', err);
+                // Показываем ошибку в слайдере
+                const slider = document.getElementById('promoSlider');
+                if (slider) {
+                    slider.innerHTML = `
+                        <div class="promo-slide active">
+                            <div class="promo-slide-content">
+                                <div class="promo-slide-title">Акции</div>
+                                <div class="promo-slide-desc">Загрузите страницу повторно</div>
+                            </div>
+                            <div class="promo-slide-icon">🎁</div>
+                        </div>
+                    `;
+                }
+                initStaticSlider();
+            }
+        }
+        
+        function initStaticSlider() {
+            slides = document.querySelectorAll('.promo-slide');
+            const dotsContainer = document.getElementById('promoDots');
+            
+            slides.forEach((_, i) => {
+                const dot = document.createElement('div');
+                dot.className = 'promo-dot' + (i === 0 ? ' active' : '');
+                dot.onclick = () => goToSlide(i);
+                dotsContainer.appendChild(dot);
+            });
+            
+            initSliderEvents();
+        }
+        
+        function goToSlide(n) {
+            // Обновляем slides на случай если DOM изменился
+            slides = document.querySelectorAll('.promo-slide');
+            const dots = document.querySelectorAll('.promo-dot');
+            
+            if (slides.length === 0 || dots.length === 0) return;
+            if (currentSlide >= slides.length) currentSlide = 0;
+            
+            slides[currentSlide].classList.remove('active');
+            dots[currentSlide].classList.remove('active');
+            
+            currentSlide = (n + slides.length) % slides.length;
+            
+            slides[currentSlide].classList.add('active');
+            dots[currentSlide].classList.add('active');
+        }
+        
+        function initSliderEvents() {
+            // Проверяем что есть слайды
+            slides = document.querySelectorAll('.promo-slide');
+            if (slides.length === 0) return;
+            
+            // Auto-advance
+            if (window.slideInterval) clearInterval(window.slideInterval);
+            window.slideInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+            
+            // Button clicks
+            const prevBtn = document.getElementById('promoPrevBtn');
+            const nextBtn = document.getElementById('promoNextBtn');
+            if (prevBtn) prevBtn.onclick = () => goToSlide(currentSlide - 1);
+            if (nextBtn) nextBtn.onclick = () => goToSlide(currentSlide + 1);
+            
+            // Touch swipe
+            const slider = document.getElementById('promoSlider');
+            let touchStartX = 0;
+            
+            slider.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                clearInterval(window.slideInterval);
+            }, {passive: true});
+            
+            slider.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
+                
+                if (Math.abs(diff) > 50) {
+                    if (diff > 0) goToSlide(currentSlide + 1);
+                    else goToSlide(currentSlide - 1);
+                }
+                
+                window.slideInterval = setInterval(() => goToSlide(currentSlide + 1), 5000);
+            }, {passive: true});
+        }
+        
+        // Load promotions on page load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadPromoSlider);
+        } else {
+            loadPromoSlider();
+        }
+        
+        // Active category highlight on scroll
+        function setupCategoryObserver() {
+            const categorySections = document.querySelectorAll('[id^="cat-"]');
+            const categoryChips = document.querySelectorAll('.category-chip');
+            
+            if (!categorySections.length || !categoryChips.length) return;
+            
+            const observerOptions = {
+                root: null,
+                rootMargin: '-30% 0px -70% 0px',
+                threshold: 0
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const categoryId = entry.target.id.replace('cat-', '');
+                        
+                        // Remove active from all chips
+                        categoryChips.forEach(chip => chip.classList.remove('active'));
+                        
+                        // Add active to current chip
+                        const activeChip = document.querySelector(`.category-chip[data-category="${categoryId}"]`);
+                        if (activeChip) {
+                            activeChip.classList.add('active');
+                            
+                            // Scroll chip into view
+                            activeChip.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+                        }
+                    }
+                });
+            }, observerOptions);
+            
+            categorySections.forEach(section => observer.observe(section));
+        }
+        
+        // Setup observer after menu loads
+        setTimeout(setupCategoryObserver, 1000);
+    </script>
+</body>
+</html>

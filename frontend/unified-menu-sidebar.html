@@ -1,0 +1,86 @@
+<!-- Unified Sidebar for Menu Pages -->
+<aside class="unified-sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <h1><span>SOHO</span> Menu</h1>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <!-- Заказы -->
+        <div class="nav-section" data-section="orders">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">📝</span>
+                    <span>Заказы</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-orders.html" class="nav-item">📋 Все заказы</a>
+                <a href="crm-new-order.html" class="nav-item">➕ Новый заказ</a>
+                <a href="crm-kds.html" class="nav-item">👨‍🍳 KDS</a>
+            </div>
+        </div>
+        
+        <!-- Меню -->
+        <div class="nav-section expanded" data-section="menu">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">🍽️</span>
+                    <span>Меню</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-menu-products.html" class="nav-item active">🍕 Товары</a>
+                <a href="crm-menu-categories.html" class="nav-item">📁 Категории</a>
+                <a href="crm-menu-ingredients.html" class="nav-item">🥬 Ингредиенты</a>
+                <a href="crm-recipes.html" class="nav-item">📖 Рецепты</a>
+            </div>
+        </div>
+        
+        <!-- Склад -->
+        <div class="nav-section" data-section="warehouse">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">📦</span>
+                    <span>Склад</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-inventory.html" class="nav-item">📋 Остатки</a>
+                <a href="crm-warehouse-invoices.html" class="nav-item">📄 Накладные</a>
+                <a href="crm-warehouse-suppliers.html" class="nav-item">🏢 Поставщики</a>
+            </div>
+        </div>
+        
+        <!-- Админ -->
+        <div class="nav-section" data-section="admin">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">⚙️</span>
+                    <span>Админ</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="admin-panel.html" class="nav-item">📊 Панель</a>
+                <a href="crm-customers.html" class="nav-item">👥 Клиенты</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar">АД</div>
+            <div class="user-info">
+                <div class="user-name">Админ</div>
+                <div class="user-role">SOHO Cafe</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Mobile Toggle -->
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>

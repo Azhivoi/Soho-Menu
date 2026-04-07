@@ -1,0 +1,101 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: soho_db
+    environment:
+      POSTGRES_DB: soho
+      POSTGRES_USER: soho
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-soho_secret_2024}
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U soho -d soho"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - soho_network
+
+  backend:
+    build: ./backend
+    container_name: soho_backend
+    environment:
+      DATABASE_URL: postgresql://soho:${DB_PASSWORD:-soho_secret_2024}@db:5432/soho
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-change-in-production}
+    volumes:
+      - ./backend:/app
+      - /opt/soho/memory:/app/memory:ro
+      - /opt/soho/uploads:/opt/soho/uploads
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - soho_network
+
+  bot:
+    build: ./bot
+    container_name: soho_bot
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      API_URL: http://backend:8000
+      DATABASE_URL: postgresql://soho:${DB_PASSWORD:-soho_secret_2024}@db:5432/soho
+      ADMIN_CHAT_ID: ${ADMIN_CHAT_ID:-}
+      ADMIN_IDS: ${ADMIN_IDS:-}
+    volumes:
+      - /opt/soho/memory:/app/memory:ro
+    ports:
+      - "127.0.0.1:8081:8080"
+    depends_on:
+      - backend
+      - db
+    restart: unless-stopped
+    networks:
+      - soho_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: soho_nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - /opt/soho/uploads:/opt/soho/uploads:ro
+      - /opt/soho/tools:/opt/soho/tools:ro
+      - ./frontend:/var/www/soho.by/frontend:ro
+      - ./frontend:/opt/soho/frontend:ro
+      - ./crm:/var/www/soho.by/crm:ro
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - soho_network
+
+  certbot:
+    image: certbot/certbot
+    container_name: soho_certbot
+    volumes:
+      - certbot_data:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    networks:
+      - soho_network
+
+volumes:
+  postgres_data:
+  certbot_data:
+  certbot_www:
+
+networks:
+  soho_network:
+    driver: bridge

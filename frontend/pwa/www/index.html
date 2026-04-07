@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#0f0f1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SOHO Menu | Кафе SOHO.by</title>
+    
+    <!-- Auth Check -->
+    <script>
+        (function() {
+            const token = localStorage.getItem('pwa_auth_token');
+            if (!token) {
+                window.location.href = '/pwa-login.html';
+                return;
+            }
+            // Validate token in background
+            fetch('/api/auth/pwa/validate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({token: token})
+            }).then(r => r.json()).then(data => {
+                if (!data.valid) {
+                    localStorage.removeItem('pwa_auth_token');
+                    window.location.href = '/pwa-login.html';
+                }
+            }).catch(() => {
+                // Offline mode - allow access
+            });
+        })();
+    </script>
+    
+    <!-- Force PWA Update -->
+    <script>
+        // Clear cache and reload on version change
+        (function() {
+            const CURRENT_VERSION = '1.1'; // Increment to force update
+            const storedVersion = localStorage.getItem('pwa_version');
+            
+            if (storedVersion !== CURRENT_VERSION) {
+                // Clear all caches
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                // Unregister service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(reg => reg.unregister());
+                    });
+                }
+                // Save new version and reload
+                localStorage.setItem('pwa_version', CURRENT_VERSION);
+                location.reload(true);
+            }
+        })();
+    </script>
+    <link rel="manifest" href="/pwa/manifest.json">
+    <link rel="apple-touch-icon" href="/pwa/icon-192x192.png">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="192x192" href="/pwa/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/pwa/icon-512x512.png">
+    <meta name="msapplication-TileImage" content="/pwa/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#0f0f1a">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* CSS Variables for theming */
+        :root {
+            --bg-color: #0f0f1a;
+            --accent-color: #e94560;
+            --card-bg-color: #1a1a2e;
+            --text-color: #ffffff;
+            --text-secondary-color: #a0a0b8;
+            --border-color: #333333;
+            --bottom-bar-color: #1a1a2e;
+            --product-active-text-color: #ffffff;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 20px 10px rgba(233, 69, 96, 0); }
+        }
+        
+        /* Main Container */
+        .tablet-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Top Navigation - Main Categories */
+        .top-nav {
+            height: 60px;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            border-bottom: 1px solid var(--accent-color);
+        }
+        
+        .main-categories {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 10px;
+        }
+        
+        .main-cat {
+            color: var(--accent-color);
+            font-size: 17px;
+            text-transform: uppercase;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 8px 6px;
+            border-bottom: 2px solid transparent;
+            font-weight: 600;
+            white-space: nowrap;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .main-cat:hover,
+        .main-cat.active {
+            color: var(--text-color);
+            border-bottom-color: var(--accent-color);
+        }
+        
+        .cart-btn-top {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 21px;
+            cursor: pointer;
+            position: relative;
+            color: var(--accent-color);
+            flex-shrink: 0;
+            margin-left: 10px;
+        }
+        
+        .cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 22px;
+            height: 22px;
+            background: var(--accent-color);
+            color: var(--text-color);
+            border-radius: 50%;
+            font-size: 15px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Main Content Area */
+        .main-area {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        /* Left Sidebar - Subcategories */
+        .left-sidebar {
+            width: 160px;
+            background: var(--bg-color);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 15px 0;
+            overflow-y: auto;
+        }
+        
+        .subcategory {
+            padding: 12px 15px;
+            color: var(--accent-color);
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1.3;
+            border-left: 3px solid transparent;
+        }
+        
+        .subcategory:hover,
+        .subcategory.active {
+            color: var(--text-color);
+            border-left-color: var(--accent-color);
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        /* Center - Products List */
+        .products-area {
+            width: 420px;
+            background: var(--card-bg-color);
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .category-header {
+            padding: 15px;
+            background: #252538;
+            color: var(--accent-color);
+            font-size: 19px;
+            font-weight: 600;
+            text-align: center;
+            text-transform: uppercase;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .product-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 12px;
+        }
+        
+        .product-item:hover,
+        .product-item.active {
+            background: var(--accent-color);
+        }
+        
+        .product-thumb {
+            width: 60px;
+            height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .product-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .product-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+        
+        .product-item:hover .product-name,
+        .product-item.active .product-name {
+            color: var(--product-active-text-color);
+        }
+        
+        .product-desc {
+            font-size: 17px;
+            color: #888;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .product-item:hover .product-desc,
+        .product-item.active .product-desc {
+            color: rgba(255,255,255,0.8);
+        }
+        
+        .product-price-action {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 5px;
+        }
+        
+        .product-price {
+            font-size: 17px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+        
+        .add-btn {
+            width: 32px;
+            height: 32px;
+            background: transparent;
+            border: 2px solid var(--text-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-size: 21px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .product-item:hover .add-btn,
+        .product-item.active .add-btn {
+            border-color: var(--text-color);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Right Panel - Large Image */
+        .right-panel {
+            flex: 1;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            position: relative;
+        }
+        
+        .large-image-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .large-product-image {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .product-details-overlay {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e94560;
+        }
+        
+        .product-details-name {
+            font-size: 20px;
+            color: var(--accent-color);
+            margin-bottom: 10px;
+        }
+        
+        .product-details-desc {
+            font-size: 14px;
+            color: #ccc;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+        
+        /* Welcome Screen */
+        .welcome-screen {
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            bottom: 40px;
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), var(--hero-image, url('/pwa/images/hero-bg.jpg'));
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .welcome-text {
+            font-size: 35px;
+            color: var(--accent-color);
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        
+        /* Bottom Status Bar */
+        .bottom-bar {
+            height: 40px;
+            background: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .bottom-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 19px;
+            color: #888;
+        }
+        
+        .bottom-center {
+            font-size: 15px;
+            color: #666;
+        }
+        
+        .bottom-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .lang-flag {
+            width: 24px;
+            height: 16px;
+            border-radius: 2px;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        
+        .lang-flag:hover,
+        .lang-flag.active {
+            opacity: 1;
+            border-color: var(--accent-color);
+        }
+        
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-logo {
+            font-size: 51px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .loading-logo span {
+            color: var(--accent-color);
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #252538;
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--card-bg-color);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+        
+        /* Variants Modal */
+        .variants-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .variants-modal-content {
+            background: var(--card-bg-color);
+            border-radius: 16px;
+            width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+        }
+        
+        .variants-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, #1a1a2e, #252538);
+        }
+        
+        .variants-modal-header h3 {
+            margin: 0;
+            color: var(--accent-color);
+            font-size: 21px;
+        }
+        
+        .variants-modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 31px;
+            cursor: pointer;
+            line-height: 1;
+        }
+        
+        .variants-modal-close:hover {
+            color: var(--accent-color);
+        }
+        
+        .variants-list {
+            padding: 20px;
+        }
+        
+        .variant-option {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #252538;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .variant-option:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        .variant-info {
+            flex: 1;
+        }
+        
+        .variant-name {
+            font-size: 19px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 4px;
+        }
+        
+        .variant-option:hover .variant-name {
+            color: var(--text-color);
+        }
+        
+        .variant-sku {
+            font-size: 15px;
+            color: #888;
+        }
+        
+        .variant-option:hover .variant-sku {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* Cart Modal */
+        .cart-modal, .checkout-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .cart-modal-content, .checkout-modal-content {
+            background: var(--card-bg-color);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid var(--accent-color);
+        }
+        
+        .cart-modal-header, .checkout-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .cart-modal-header h3, .checkout-modal-header h3 {
+            font-size: 23px;
+            color: var(--text-color);
+        }
+        
+        .cart-modal-close, .checkout-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary-color);
+            font-size: 31px;
+            cursor: pointer;
+        }
+        
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .cart-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            gap: 12px;
+        }
+        
+        .cart-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        
+        .cart-item-info {
+            flex: 1;
+        }
+        
+        .cart-item-name {
+            font-weight: 600;
+            font-size: 17px;
+        }
+        
+        .cart-item-price {
+            color: var(--accent-color);
+            font-size: 17px;
+        }
+        
+        .cart-item-remove {
+            background: #dc3545;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 19px;
+        }
+        
+        .cart-footer, .checkout-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .cart-total {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .checkout-btn, .checkout-submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 19px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .checkout-btn:hover, .checkout-submit-btn:hover {
+            opacity: 0.9;
+        }
+        
+        /* Checkout Form */
+        .checkout-form {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(80vh - 80px);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 17px;
+            color: var(--text-secondary-color);
+            margin-bottom: 5px;
+        }
+        
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-size: 19px;
+        }
+        
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        .variant-price {
+            font-size: 21px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        .variant-option:hover .variant-price {
+            color: var(--text-color);
+        }
+        
+        .variant-add-btn {
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            border-radius: 8px;
+            color: var(--accent-color);
+            font-size: 23px;
+            cursor: pointer;
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .variant-option:hover .variant-add-btn {
+            border-color: var(--text-color);
+            color: var(--text-color);
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .product-image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-logo">SOHO<span>.</span></div>
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="tablet-container">
+        <!-- Top Navigation - Main Categories -->
+        <nav class="top-nav">
+            <div class="main-categories" id="mainCategories">
+                <!-- Main categories loaded dynamically -->
+            </div>
+            <div class="cart-btn-top" onclick="showCart()">
+                🛒
+                <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+            </div>
+        </nav>
+
+        <!-- Main Content Area -->
+        <div class="main-area">
+            <!-- Welcome Screen (shown initially) -->
+            <div class="welcome-screen" id="welcomeScreen">
+                <div class="welcome-text">Добро пожаловать в Кафе SOHO.by</div>
+                <button id="installBtn" onclick="installPWA()" style="
+                    display: block;
+                    margin-top: 30px;
+                    padding: 15px 30px;
+                    background: var(--accent-color, #e94560);
+                    color: white;
+                    border: 2px solid white;
+                    border-radius: 30px;
+                    font-size: 19px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    animation: pulse 2s infinite;
+                ">
+                    📲 Добавить на главный экран
+                </button>
+                <div id="installHint" style="
+                    margin-top: 15px;
+                    font-size: 19px;
+                    color: rgba(255,255,255,0.7);
+                    text-align: center;
+                    max-width: 350px;
+                    line-height: 1.5;
+                ">
+                    <b>Как установить:</b><br>
+                    <span id="installInstructions">
+                        🤖 Android Chrome:<br>
+                        1. Нажмите Меню (⋮)<br>
+                        2. "Добавить на главный экран"<br>
+                        или "Установить приложение"<br><br>
+                        🍎 iOS Safari: Поделиться → "На экран Домой"<br><br>
+                        💻 Windows/Mac: Меню → "Установить приложение"
+                    </span>
+                </div>
+                <button onclick="showInstallHelp()" style="
+                    margin-top: 10px;
+                    padding: 8px 16px;
+                    background: transparent;
+                    color: #e94560;
+                    border: 1px solid #e94560;
+                    border-radius: 20px;
+                    font-size: 15px;
+                    cursor: pointer;
+                    margin-right: 10px;
+                ">Подробнее</button>
+                <button onclick="checkPWAStatus()" style="
+                    margin-top: 10px;
+                    padding: 8px 16px;
+                    background: transparent;
+                    color: #e94560;
+                    border: 1px solid #e94560;
+                    border-radius: 20px;
+                    font-size: 15px;
+                    cursor: pointer;
+                ">Проверить статус</button>
+            </div>
+
+            <!-- Left Sidebar - Subcategories -->
+            <aside class="left-sidebar" id="leftSidebar" style="display: none;">
+                <!-- Subcategories loaded dynamically -->
+            </aside>
+
+            <!-- Center - Products List -->
+            <div class="products-area" id="productsArea" style="display: none;">
+                <div class="category-header" id="categoryHeader">Категория</div>
+                <div id="productsList">
+                    <!-- Products loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- Right Panel - Large Image -->
+            <div class="right-panel" id="rightPanel" style="display: none;">
+                <div class="large-image-container">
+                    <img src="/pwa/images/placeholder.svg" alt="Product" class="large-product-image" id="largeImage">
+                </div>
+                <div class="product-details-overlay" id="productDetails" style="display: none;">
+                    <div class="product-details-name" id="detailName">Название</div>
+                    <div class="product-details-desc" id="detailDesc">Описание</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Status Bar -->
+        <footer class="bottom-bar">
+            <div class="bottom-left">
+                <span id="batteryLevel">🔋 --%</span>
+                <span onclick="openSettings()" style="cursor: pointer;">⚙️</span>
+                <span onclick="forceUpdatePWA()" style="cursor: pointer;" title="Обновить приложение">🔄</span>
+                <span onclick="editTableNumber()" style="cursor: pointer;">№ <span id="tableNumDisplay">6</span></span>
+                <span onclick="resetTableAndGuests()" style="cursor: pointer;" title="Сбросить столик и гостей">↻</span>
+                <span onclick="editGuestCount()" style="cursor: pointer;">Человек <span id="guestCountDisplay">1</span></span>
+                <span onclick="logoutPWA()" style="cursor: pointer; margin-left: 10px;" title="Выйти">🚪</span>
+            </div>
+            <div class="bottom-center" id="clockDisplay">12:00</div>
+            <div class="bottom-right">
+                <div class="lang-flag active" data-lang="ru" onclick="setLanguage('ru')" style="background: linear-gradient(180deg, #fff 33%, #0039a6 33%, #0039a6 66%, #d52b1e 66%); cursor: pointer;"></div>
+                <div class="lang-flag" data-lang="en" onclick="setLanguage('en')" style="background: linear-gradient(90deg, #012169 50%, #fff 50%); cursor: pointer;"></div>
+                <div class="lang-flag" data-lang="de" onclick="setLanguage('de')" style="background: linear-gradient(180deg, #000 33%, #dd0000 33%, #dd0000 66%, #ffce00 66%); cursor: pointer;"></div>
+                <div class="lang-flag" data-lang="pl" onclick="setLanguage('pl')" style="background: linear-gradient(180deg, #fff 50%, #dc143c 50%); cursor: pointer;"></div>
+                <div class="lang-flag" data-lang="lt" onclick="setLanguage('lt')" style="background: linear-gradient(180deg, #fdb913 33%, #006a44 33%, #006a44 66%, #c1272d 66%); cursor: pointer;"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Variants Modal -->
+    <div class="variants-modal" id="variantsModal">
+        <div class="variants-modal-content">
+            <div class="variants-modal-header">
+                <h3 id="variantsModalTitle">Выберите вариант</h3>
+                <button class="variants-modal-close" onclick="closeVariantsModal()">&times;</button>
+            </div>
+            <div class="variants-list" id="variantsList">
+                <!-- Variants loaded dynamically -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Cart Modal -->
+    <div class="cart-modal" id="cartModal">
+        <div class="cart-modal-content">
+            <div class="cart-modal-header">
+                <h3>🛒 Корзина</h3>
+                <button class="cart-modal-close" onclick="closeCartModal()">&times;</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <!-- Cart items loaded dynamically -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total" id="cartTotal">Итого: 0 р</div>
+                <button class="checkout-btn" onclick="showCheckoutModal()">Оформить заказ</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Checkout Modal -->
+    <div class="checkout-modal" id="checkoutModal">
+        <div class="checkout-modal-content">
+            <div class="checkout-modal-header">
+                <h3>📝 Оформление заказа</h3>
+                <button class="checkout-modal-close" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div class="checkout-form">
+                <div class="form-group">
+                    <label>Номер столика</label>
+                    <input type="number" id="tableNumber" value="6" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Количество гостей</label>
+                    <input type="number" id="guestCount" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Имя (необязательно)</label>
+                    <input type="text" id="customerName" placeholder="Гость">
+                </div>
+                <div class="form-group">
+                    <label>Комментарий</label>
+                    <textarea id="orderComment" rows="2" placeholder="Особые пожелания..."></textarea>
+                </div>
+            </div>
+            <div class="checkout-footer">
+                <button class="checkout-submit-btn" onclick="submitOrderFromModal()">✓ Подтвердить заказ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global data
+        let menuData = [];
+        let currentMainCat = null;
+        let currentSubCat = null;
+        let currentProduct = null;
+        let cart = [];
+        
+        // Load theme colors from server or localStorage
+        async function loadTheme() {
+            // Try server first
+            try {
+                const res = await fetch('/api/menu/pwa/settings');
+                if (res.ok) {
+                    const colors = await res.json();
+                    const root = document.documentElement;
+                    
+                    // Apply colors
+                    if (colors.bgColor) root.style.setProperty('--bg-color', colors.bgColor);
+                    if (colors.accentColor) root.style.setProperty('--accent-color', colors.accentColor);
+                    if (colors.cardBgColor) root.style.setProperty('--card-bg-color', colors.cardBgColor);
+                    if (colors.textColor) root.style.setProperty('--text-color', colors.textColor);
+                    if (colors.textSecondaryColor) root.style.setProperty('--text-secondary-color', colors.textSecondaryColor);
+                    if (colors.borderColor) root.style.setProperty('--border-color', colors.borderColor);
+                    if (colors.bottomBarColor) root.style.setProperty('--bottom-bar-color', colors.bottomBarColor);
+                    if (colors.productActiveTextColor) root.style.setProperty('--product-active-text-color', colors.productActiveTextColor);
+                    
+                    // Apply images
+                    if (colors.heroImage) {
+                        root.style.setProperty('--hero-image', `url(${colors.heroImage})`);
+                    }
+                    if (colors.placeholderImage) {
+                        window.pwaPlaceholderImage = colors.placeholderImage;
+                    }
+                    
+                    // Cache for offline use
+                    localStorage.setItem('pwaMenuColors', JSON.stringify(colors));
+                    if (colors.heroImage) localStorage.setItem('pwaHeroImage', colors.heroImage);
+                    if (colors.placeholderImage) localStorage.setItem('pwaPlaceholderImage', colors.placeholderImage);
+                    
+                    console.log('Theme loaded from server');
+                    return;
+                }
+            } catch (err) {
+                console.log('Server not available, using cached theme');
+            }
+            
+            // Fallback to localStorage
+            const saved = localStorage.getItem('pwaMenuColors');
+            if (saved) {
+                try {
+                    const colors = JSON.parse(saved);
+                    const root = document.documentElement;
+                    
+                    if (colors.bgColor) root.style.setProperty('--bg-color', colors.bgColor);
+                    if (colors.accentColor) root.style.setProperty('--accent-color', colors.accentColor);
+                    if (colors.cardBgColor) root.style.setProperty('--card-bg-color', colors.cardBgColor);
+                    if (colors.textColor) root.style.setProperty('--text-color', colors.textColor);
+                    if (colors.textSecondaryColor) root.style.setProperty('--text-secondary-color', colors.textSecondaryColor);
+                    if (colors.borderColor) root.style.setProperty('--border-color', colors.borderColor);
+                    if (colors.bottomBarColor) root.style.setProperty('--bottom-bar-color', colors.bottomBarColor);
+                    if (colors.productActiveTextColor) root.style.setProperty('--product-active-text-color', colors.productActiveTextColor);
+                    
+                    console.log('Theme loaded from localStorage');
+                } catch (e) {
+                    console.error('Error loading theme:', e);
+                }
+            }
+            
+            // Load images from localStorage
+            const heroImage = localStorage.getItem('pwaHeroImage');
+            if (heroImage) {
+                document.documentElement.style.setProperty('--hero-image', `url(${heroImage})`);
+            }
+            
+            const placeholderImage = localStorage.getItem('pwaPlaceholderImage');
+            if (placeholderImage) {
+                window.pwaPlaceholderImage = placeholderImage;
+            }
+        }
+        
+        // Load theme on startup (async)
+        loadTheme().then(() => {
+            // Ensure placeholder is loaded after theme
+            if (!window.pwaPlaceholderImage) {
+                window.pwaPlaceholderImage = localStorage.getItem('pwaPlaceholderImage');
+            }
+        });
+        
+        // Force fullscreen on Android
+        function forceFullscreen() {
+            // Check if running as installed PWA
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                                window.navigator.standalone === true;
+            
+            if (isStandalone) {
+                console.log('Running in standalone mode');
+                
+                // Try to hide address bar
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(e => console.log('Fullscreen error:', e));
+                }
+                
+                // Scroll to hide address bar
+                setTimeout(() => {
+                    window.scrollTo(0, 1);
+                }, 100);
+            }
+        }
+        
+        // Run on load
+        window.addEventListener('load', forceFullscreen);
+        
+        // Also run when display mode changes
+        window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) => {
+            if (e.matches) forceFullscreen();
+        });
+        
+        // Hide loading screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 1500);
+        });
+        
+        // Load menu from API
+        async function loadMenu() {
+            try {
+                const response = await fetch('/api/menu/pwa/menu');
+                menuData = await response.json();
+                
+                // Render main categories in top nav
+                renderMainCategories();
+            } catch (err) {
+                console.error('Error loading menu:', err);
+            }
+        }
+        
+        function renderMainCategories() {
+            const nav = document.getElementById('mainCategories');
+            nav.innerHTML = menuData.map(cat => `
+                <div class="main-cat" data-main="${cat.id}" onclick="selectMainCategory(${cat.id})">
+                    ${cat.name}
+                </div>
+            `).join('');
+        }
+        
+        function selectMainCategory(mainId) {
+            currentMainCat = menuData.find(c => c.id === mainId);
+            if (!currentMainCat) return;
+            
+            // Hide welcome screen
+            document.getElementById('welcomeScreen').style.display = 'none';
+            document.getElementById('leftSidebar').style.display = 'flex';
+            document.getElementById('productsArea').style.display = 'block';
+            document.getElementById('rightPanel').style.display = 'flex';
+            
+            // Update active state in top nav
+            document.querySelectorAll('.main-cat').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.main) === mainId);
+            });
+            
+            // Render subcategories in left sidebar
+            renderSubcategories();
+            
+            // Select first subcategory
+            if (currentMainCat.children && currentMainCat.children.length > 0) {
+                selectSubcategory(currentMainCat.children[0].id);
+            } else if (currentMainCat.products) {
+                renderProducts(currentMainCat.products);
+            }
+        }
+        
+        function renderSubcategories() {
+            const sidebar = document.getElementById('leftSidebar');
+            
+            if (!currentMainCat || !currentMainCat.children || currentMainCat.children.length === 0) {
+                sidebar.innerHTML = '<div style="padding: 15px; color: #666; font-size: 15px;">Нет подкатегорий</div>';
+                return;
+            }
+            
+            sidebar.innerHTML = currentMainCat.children.map(child => `
+                <div class="subcategory" data-sub="${child.id}" onclick="selectSubcategory(${child.id})">
+                    ${child.name}
+                </div>
+            `).join('');
+        }
+        
+        function selectSubcategory(subId) {
+            if (!currentMainCat || !currentMainCat.children) return;
+            
+            currentSubCat = currentMainCat.children.find(c => c.id === subId);
+            if (!currentSubCat) return;
+            
+            // Update active state in sidebar
+            document.querySelectorAll('.subcategory').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.sub) === subId);
+            });
+            
+            // Update category header
+            document.getElementById('categoryHeader').textContent = currentSubCat.name;
+            
+            // Render products
+            renderProducts(currentSubCat.products || []);
+        }
+        
+        function renderProducts(products) {
+            const list = document.getElementById('productsList');
+            
+            if (!products || products.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Нет товаров</div>';
+                return;
+            }
+            
+            list.innerHTML = products.map((p, idx) => {
+                // Calculate price display for variable products
+                let priceDisplay = `${p.price} р`;
+                if (p.is_variable && p.variations && p.variations.length > 0) {
+                    const prices = p.variations.map(v => parseFloat(v.price) || 0);
+                    const minPrice = Math.min(...prices);
+                    const maxPrice = Math.max(...prices);
+                    if (minPrice === maxPrice) {
+                        priceDisplay = `${minPrice} р`;
+                    } else {
+                        priceDisplay = `от ${minPrice} р`;
+                    }
+                }
+                
+                return `
+                <div class="product-item ${idx === 0 ? 'active' : ''}" data-product="${p.id}" onclick="selectProduct(${p.id})">
+                    <img src="${p.image_url || window.pwaPlaceholderImage || '/pwa/images/placeholder.svg'}" alt="${p.name}" class="product-thumb">
+                    <div class="product-info">
+                        <div class="product-name">${p.name}</div>
+                        <div class="product-desc">${(p.description || p.composition || '').replace(/<[^>]*>/g, '').replace(/\\n/g, ' ').substring(0, 60)}${(p.description || p.composition || '').length > 60 ? '...' : ''}</div>
+                    </div>
+                    <div class="product-price-action">
+                        <span class="product-price">${priceDisplay}</span>
+                        <button class="add-btn" onclick="event.stopPropagation(); handleAddClick(${p.id})">+</button>
+                    </div>
+                </div>
+            `}).join('');
+            
+            // Select first product
+            if (products.length > 0) {
+                selectProduct(products[0].id);
+            }
+        }
+        
+        function selectProduct(productId) {
+            let product = null;
+            
+            // Find product in current subcategory
+            if (currentSubCat && currentSubCat.products) {
+                product = currentSubCat.products.find(p => p.id === productId);
+            }
+            
+            // Or in main category products
+            if (!product && currentMainCat && currentMainCat.products) {
+                product = currentMainCat.products.find(p => p.id === productId);
+            }
+            
+            if (!product) return;
+            
+            currentProduct = product;
+            
+            // Update active state
+            document.querySelectorAll('.product-item').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.product) === productId);
+            });
+            
+            // Update large image
+            document.getElementById('largeImage').src = product.image_url || window.pwaPlaceholderImage || '/pwa/images/placeholder.svg';
+            
+            // Update details overlay
+            document.getElementById('detailName').textContent = product.name;
+            const cleanDesc = (product.description || product.composition || '')
+                .replace(/<[^>]*>/g, '')
+                .replace(/\\n/g, '\n')
+                .trim();
+            document.getElementById('detailDesc').textContent = cleanDesc;
+            document.getElementById('productDetails').style.display = 'block';
+        }
+        
+        // Cart functions
+        function updateCartBadge() {
+            const badge = document.getElementById('cartBadge');
+            if (cart.length > 0) {
+                badge.textContent = cart.length;
+                badge.style.display = 'flex';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        
+        function addToCart(productId) {
+            cart.push(productId);
+            updateCartBadge();
+        }
+        
+        // Handle add button click - show variants if product has variations
+        function handleAddClick(productId) {
+            let product = null;
+            
+            // Find product
+            if (currentSubCat && currentSubCat.products) {
+                product = currentSubCat.products.find(p => p.id === productId);
+            }
+            if (!product && currentMainCat && currentMainCat.products) {
+                product = currentMainCat.products.find(p => p.id === productId);
+            }
+            
+            if (!product) return;
+            
+            // Check if product has variations
+            if (product.is_variable && product.variations && product.variations.length > 0) {
+                showVariantsModal(product);
+            } else {
+                // Simple product - add directly
+                addToCart(productId);
+            }
+        }
+        
+        // Variants Modal functions
+        function showVariantsModal(product) {
+            const modal = document.getElementById('variantsModal');
+            const title = document.getElementById('variantsModalTitle');
+            const list = document.getElementById('variantsList');
+            
+            title.textContent = product.name;
+            
+            // Build variants list with product image
+            let html = '';
+            
+            // Add product image at top
+            if (product.image_url) {
+                html += `<img src="${product.image_url}" alt="${product.name}" class="product-image-preview">`;
+            }
+            
+            // Add variations only (no base product)
+            product.variations.forEach(variant => {
+                html += `
+                    <div class="variant-option" onclick="addVariantToCart(${variant.id})">
+                        <div class="variant-info">
+                            <div class="variant-name">${variant.name}</div>
+                            <div class="variant-sku">${variant.sku || 'Арт. ' + variant.id}</div>
+                        </div>
+                        <div style="display: flex; align-items: center;">
+                            <span class="variant-price">${variant.price} р</span>
+                            <button class="variant-add-btn">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            list.innerHTML = html;
+            modal.style.display = 'flex';
+        }
+        
+        function closeVariantsModal() {
+            document.getElementById('variantsModal').style.display = 'none';
+        }
+        
+        function addVariantToCart(variantId) {
+            addToCart(variantId);
+            closeVariantsModal();
+        }
+        
+        // Close modals on outside click
+        document.getElementById('variantsModal').addEventListener('click', function(e) {
+            if (e.target === this) closeVariantsModal();
+        });
+        document.getElementById('cartModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCartModal();
+        });
+        document.getElementById('checkoutModal').addEventListener('click', function(e) {
+            if (e.target === this) closeCheckoutModal();
+        });
+        
+        // Cart with product details
+        let cartItems = []; // Array of {productId, name, price, image_url}
+        
+        function showCart() {
+            if (cart.length === 0) {
+                alert('Корзина пуста');
+                return;
+            }
+            
+            renderCartItems();
+            document.getElementById('cartModal').style.display = 'flex';
+        }
+        
+        function closeCartModal() {
+            document.getElementById('cartModal').style.display = 'none';
+        }
+        
+        function renderCartItems() {
+            const container = document.getElementById('cartItems');
+            let total = 0;
+            
+            // Get product details for each cart item
+            const itemsWithDetails = cart.map(productId => {
+                let product = findProductById(productId);
+                return product || { id: productId, name: 'Товар #' + productId, price: 0, image_url: null };
+            });
+            
+            container.innerHTML = itemsWithDetails.map((item, index) => {
+                total += parseFloat(item.price) || 0;
+                return `
+                    <div class="cart-item">
+                        <img src="${item.image_url || window.pwaPlaceholderImage || '/pwa/images/placeholder.svg'}" alt="${item.name}">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${item.price} р</div>
+                        </div>
+                        <button class="cart-item-remove" onclick="removeFromCart(${index})">×</button>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('cartTotal').textContent = `Итого: ${total.toFixed(2)} р`;
+        }
+        
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartBadge();
+            renderCartItems();
+            if (cart.length === 0) {
+                closeCartModal();
+            }
+        }
+        
+        function findProductById(productId) {
+            // Search in all categories
+            for (let mainCat of menuData) {
+                if (mainCat.products) {
+                    // Check parent products
+                    for (let product of mainCat.products) {
+                        if (product.id === productId) return product;
+                        // Check variations (child products)
+                        if (product.variations) {
+                            let variation = product.variations.find(v => v.id === productId);
+                            if (variation) {
+                                // Return variation with parent product info
+                                return {
+                                    ...variation,
+                                    name: `${product.name} - ${variation.name}`,
+                                    image_url: variation.image_url || product.image_url,
+                                    parent_id: product.id
+                                };
+                            }
+                        }
+                    }
+                }
+                if (mainCat.children) {
+                    for (let childCat of mainCat.children) {
+                        if (childCat.products) {
+                            for (let product of childCat.products) {
+                                if (product.id === productId) return product;
+                                // Check variations
+                                if (product.variations) {
+                                    let variation = product.variations.find(v => v.id === productId);
+                                    if (variation) {
+                                        return {
+                                            ...variation,
+                                            name: `${product.name} - ${variation.name}`,
+                                            image_url: variation.image_url || product.image_url,
+                                            parent_id: product.id
+                                        };
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        
+        function showCheckoutModal() {
+            closeCartModal();
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
+        
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').style.display = 'none';
+        }
+        
+        async function submitOrderFromModal() {
+            const tableNumber = document.getElementById('tableNumber').value;
+            const guestCount = document.getElementById('guestCount').value;
+            const customerName = document.getElementById('customerName').value;
+            const comment = document.getElementById('orderComment').value;
+            
+            if (!tableNumber || !guestCount) {
+                alert('Укажите номер столика и количество гостей');
+                return;
+            }
+            
+            await submitOrder(tableNumber, guestCount, customerName, comment);
+            closeCheckoutModal();
+        }
+        
+        async function submitOrder(tableNumber, guestCount, customerName = '', comment = '') {
+            // Build items with correct prices
+            let subtotal = 0;
+            const items = cart.map(productId => {
+                const product = findProductById(productId);
+                const price = product ? parseFloat(product.price) : 0;
+                subtotal += price;
+                // For variations, product_id is parent ID, variant_id is the variation ID
+                // For simple products, both are the same
+                return {
+                    product_id: product ? (product.parent_id || product.id) : productId,
+                    variant_id: productId,
+                    quantity: 1,
+                    price: price
+                };
+            });
+            
+            const orderData = {
+                customer_name: customerName || `Столик ${tableNumber}`,
+                customer_phone: '',
+                customer_email: '',
+                delivery_type: 'inside',
+                delivery_zone: 'city',
+                delivery_time_type: 'asap',
+                scheduled_time: null,
+                address: `Столик ${tableNumber}, ${guestCount} чел.`,
+                payment_type: 'cash',
+                comment: comment,
+                promo_code: '',
+                items: items,
+                subtotal_amount: subtotal,
+                delivery_fee: 0,
+                total_amount: subtotal,
+                zone_id: null
+            };
+            
+            try {
+                const response = await fetch('/api/orders/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    alert(`✅ Заказ #${result.order_number} отправлен!`);
+                    cart = [];
+                    updateCartBadge();
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    console.error('Order error:', errorData);
+                    alert('❌ Ошибка: ' + (errorData.detail || JSON.stringify(errorData) || 'Неизвестная ошибка'));
+                }
+            } catch (err) {
+                console.error('Error submitting order:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        // Language switcher
+        document.querySelectorAll('.lang-flag').forEach(flag => {
+            flag.addEventListener('click', function() {
+                document.querySelectorAll('.lang-flag').forEach(f => f.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+        
+        // Initialize
+        loadMenu();
+        
+        // Debug info
+        console.log('=== PWA Debug Info ===');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Service Worker supported:', 'serviceWorker' in navigator);
+        console.log('Protocol:', window.location.protocol);
+        console.log('Origin:', window.location.origin);
+        console.log('Is HTTPS:', window.location.protocol === 'https:');
+        console.log('Is localhost:', window.location.hostname === 'localhost');
+        
+        // Check if running as installed PWA
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        console.log('Is standalone (installed):', isStandalone);
+        
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            console.log('Registering Service Worker...');
+            navigator.serviceWorker.register('/pwa/sw.js')
+                .then(reg => {
+                    console.log('✓ Service Worker registered:', reg.scope);
+                    console.log('✓ SW state:', reg.active ? 'active' : (reg.installing ? 'installing' : 'waiting'));
+                    // Check if PWA is installable
+                    checkInstallability();
+                })
+                .catch(err => {
+                    console.error('✗ Service Worker registration failed:', err);
+                    console.error('Error details:', err.message);
+                });
+        } else {
+            console.error('✗ Service Worker not supported in this browser');
+        }
+        
+        // Check PWA installability
+        function checkInstallability() {
+            // Check manifest
+            fetch('/pwa/manifest.json')
+                .then(r => r.json())
+                .then(manifest => {
+                    console.log('Manifest loaded:', manifest.name);
+                    // Check required fields
+                    const required = ['name', 'short_name', 'start_url', 'display', 'icons'];
+                    const missing = required.filter(f => !manifest[f]);
+                    if (missing.length > 0) {
+                        console.error('Manifest missing fields:', missing);
+                    } else {
+                        console.log('✓ Manifest valid');
+                    }
+                    // Check icons
+                    if (manifest.icons) {
+                        manifest.icons.forEach(icon => {
+                            fetch(icon.src)
+                                .then(r => console.log(`✓ Icon ${icon.sizes}: ${r.status}`))
+                                .catch(e => console.error(`✗ Icon ${icon.sizes} not found`));
+                        });
+                    }
+                })
+                .catch(err => console.error('Manifest error:', err));
+        }
+        
+        // PWA Install Prompt
+        let deferredPrompt;
+        let installAvailable = false;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            console.log('beforeinstallprompt fired');
+            installAvailable = true;
+            // Prevent the mini-infobar from appearing on mobile
+            e.preventDefault();
+            // Stash the event so it can be triggered later
+            deferredPrompt = e;
+            // Show the install banner
+            showInstallBanner();
+            // Update button text
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.textContent = '📲 Установить приложение';
+            // Hide hint
+            const hint = document.getElementById('installHint');
+            if (hint) hint.style.display = 'none';
+        });
+        
+        // Check if already installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA was installed');
+            installAvailable = false;
+            dismissInstallBanner();
+            deferredPrompt = null;
+            // Hide install button
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.style.display = 'none';
+            const hint = document.getElementById('installHint');
+            if (hint) hint.style.display = 'none';
+        });
+        
+        // Check if running as installed PWA
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Running as installed PWA');
+            installAvailable = false;
+            // Hide install elements
+            const installBtn = document.getElementById('installBtn');
+            if (installBtn) installBtn.style.display = 'none';
+            const hint = document.getElementById('installHint');
+            if (hint) hint.style.display = 'none';
+        }
+        
+        function showInstallBanner() {
+            // Check if already installed or dismissed
+            if (localStorage.getItem('pwaInstallDismissed') === 'true') return;
+            if (!installAvailable) return;
+            
+            const banner = document.createElement('div');
+            banner.id = 'pwa-install-banner';
+            banner.innerHTML = `
+                <div style="
+                    position: fixed;
+                    bottom: 60px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: var(--card-bg-color, #1a1a2e);
+                    border: 2px solid var(--accent-color, #e94560);
+                    border-radius: 12px;
+                    padding: 16px 20px;
+                    display: flex;
+                    align-items: center;
+                    gap: 15px;
+                    z-index: 9999;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+                    max-width: 90vw;
+                ">
+                    <div style="font-size: 27px;">📱</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; margin-bottom: 4px;">Установить приложение</div>
+                        <div style="font-size: 19px; color: var(--text-secondary-color, #a0a0b8);">Добавьте на главный экран для быстрого доступа</div>
+                    </div>
+                    <button onclick="installPWA()" style="
+                        background: var(--accent-color, #e94560);
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        cursor: pointer;
+                        white-space: nowrap;
+                    ">Установить</button>
+                    <button onclick="dismissInstallBanner()" style="
+                        background: transparent;
+                        color: var(--text-secondary-color, #a0a0b8);
+                        border: none;
+                        font-size: 23px;
+                        cursor: pointer;
+                        padding: 5px;
+                    ">×</button>
+                </div>
+            `;
+            document.body.appendChild(banner);
+        }
+        
+        function installPWA() {
+            if (deferredPrompt) {
+                // Browser supports native install prompt
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        console.log('User accepted the install prompt');
+                    } else {
+                        console.log('User dismissed the install prompt');
+                    }
+                    deferredPrompt = null;
+                    dismissInstallBanner();
+                });
+            } else {
+                // Fallback: show instructions
+                alert('Чтобы установить приложение:\n\n' +
+                      'Chrome/Edge (Android): Меню → "Добавить на главный экран"\n' +
+                      'Safari (iOS): Поделиться → "На экран Домой"\n' +
+                      'Chrome (Desktop): Меню → "Установить приложение"');
+            }
+        }
+        
+        function dismissInstallBanner() {
+            const banner = document.getElementById('pwa-install-banner');
+            if (banner) banner.remove();
+            localStorage.setItem('pwaInstallDismissed', 'true');
+        }
+        
+        function showInstallHelp() {
+            const ua = navigator.userAgent;
+            let instructions = '';
+            
+            if (/iPhone|iPad|iPod/.test(ua)) {
+                instructions = '📱 iPhone/iPad (Safari):\n\n' +
+                    '1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)\n' +
+                    '2. Прокрутите вниз\n' +
+                    '3. Нажмите "На экран Домой"\n' +
+                    '4. Нажмите "Добавить"';
+            } else if (/Android/.test(ua)) {
+                instructions = '🤖 Android (Chrome):\n\n' +
+                    'СПОСОБ 1:\n' +
+                    '1. Нажмите МЕНЮ (три точки ⋮)\n' +
+                    '2. "Добавить на главный экран"\n\n' +
+                    'СПОСОБ 2:\n' +
+                    '1. Откройте chrome://flags\n' +
+                    '2. Найдите "Add to Home screen"\n' +
+                    '3. Включите флаг\n\n' +
+                    'СПОСОБ 3 (если не работает):\n' +
+                    '1. Откройте сайт в Chrome\n' +
+                    '2. Нажмите ⋮ → "Закладки" → "Добавить"\n' +
+                    '3. Потом перетащите закладку на рабочий стол';
+            } else if (/Chrome/.test(ua)) {
+                instructions = '💻 Chrome (Windows/Mac):\n\n' +
+                    '1. Нажмите меню (три точки ⋮)\n' +
+                    '2. Выберите "Установить приложение SOHO Menu"\n' +
+                    '3. Нажмите "Установить"\n\n' +
+                    'Или нажмите на иконку 📥 в адресной строке';
+            } else if (/Edge/.test(ua)) {
+                instructions = '🌐 Edge:\n\n' +
+                    '1. Нажмите меню (⋯)\n' +
+                    '2. Приложения → "Установить этот сайт как приложение"';
+            } else {
+                instructions = '💡 Для вашего браузера:\n\n' +
+                    '1. Откройте меню браузера\n' +
+                    '2. Найдите "Добавить на главный экран" или "Установить приложение"\n' +
+                    '3. Или просто добавьте в закладки (Ctrl+D / ⌘+D)';
+            }
+            
+            alert(instructions);
+        }
+        
+        async function checkPWAStatus() {
+            let status = '=== Статус PWA ===\n\n';
+            
+            // Check HTTPS
+            const isHTTPS = window.location.protocol === 'https:';
+            const isLocalhost = window.location.hostname === 'localhost';
+            status += `✓ HTTPS: ${isHTTPS ? 'Да' : 'Нет'}\n`;
+            status += `✓ Localhost: ${isLocalhost ? 'Да' : 'Нет'}\n`;
+            if (!isHTTPS && !isLocalhost) {
+                status += '\n⚠️ ТРЕБУЕТСЯ HTTPS!\nPWA работает только по HTTPS\n\n';
+            }
+            
+            // Check Service Worker
+            if ('serviceWorker' in navigator) {
+                const reg = await navigator.serviceWorker.getRegistration();
+                status += `✓ Service Worker: ${reg ? 'Зарегистрирован' : 'Не зарегистрирован'}\n`;
+                if (reg) {
+                    status += `  Scope: ${reg.scope}\n`;
+                }
+            } else {
+                status += `✗ Service Worker: Не поддерживается\n`;
+            }
+            
+            // Check Manifest
+            try {
+                const res = await fetch('/pwa/manifest.json');
+                if (res.ok) {
+                    const manifest = await res.json();
+                    status += `✓ Manifest: Загружен\n`;
+                    status += `  Name: ${manifest.name}\n`;
+                    status += `  Icons: ${manifest.icons ? manifest.icons.length : 0} шт.\n`;
+                } else {
+                    status += `✗ Manifest: Ошибка ${res.status}\n`;
+                }
+            } catch (e) {
+                status += `✗ Manifest: ${e.message}\n`;
+            }
+            
+            // Check if installable
+            status += `\nInstallable: ${deferredPrompt ? 'Да (ожидается запрос)' : 'Нет'}\n`;
+            
+            alert(status);
+            console.log(status);
+        }
+        
+        // Battery status
+        async function updateBatteryStatus() {
+            if ('getBattery' in navigator) {
+                try {
+                    const battery = await navigator.getBattery();
+                    const level = Math.round(battery.level * 100);
+                    const charging = battery.charging ? '⚡' : '🔋';
+                    document.getElementById('batteryLevel').textContent = `${charging} ${level}%`;
+                    
+                    battery.addEventListener('levelchange', updateBatteryStatus);
+                    battery.addEventListener('chargingchange', updateBatteryStatus);
+                } catch (e) {
+                    document.getElementById('batteryLevel').textContent = '🔋 --%';
+                }
+            } else {
+                document.getElementById('batteryLevel').textContent = '🔋 --%';
+            }
+        }
+        
+        // Clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clockDisplay').textContent = `${hours}:${minutes}`;
+        }
+        
+        // Table and guests management
+        let currentTableNumber = localStorage.getItem('pwa_table_number') || '6';
+        let currentGuestCount = localStorage.getItem('pwa_guest_count') || '1';
+        
+        function updateTableDisplay() {
+            document.getElementById('tableNumDisplay').textContent = currentTableNumber;
+            document.getElementById('guestCountDisplay').textContent = currentGuestCount;
+            document.getElementById('tableNumber').value = currentTableNumber;
+            document.getElementById('guestCount').value = currentGuestCount;
+        }
+        
+        function editTableNumber() {
+            const newNum = prompt('Введите номер столика:', currentTableNumber);
+            if (newNum !== null && newNum.trim() !== '') {
+                currentTableNumber = newNum.trim();
+                localStorage.setItem('pwa_table_number', currentTableNumber);
+                updateTableDisplay();
+            }
+        }
+        
+        function editGuestCount() {
+            const newCount = prompt('Введите количество гостей:', currentGuestCount);
+            if (newCount !== null && newCount.trim() !== '' && !isNaN(newCount)) {
+                currentGuestCount = newCount.trim();
+                localStorage.setItem('pwa_guest_count', currentGuestCount);
+                updateTableDisplay();
+            }
+        }
+        
+        function resetTableAndGuests() {
+            if (confirm('Сбросить номер столика и количество гостей?')) {
+                currentTableNumber = '6';
+                currentGuestCount = '1';
+                localStorage.removeItem('pwa_table_number');
+                localStorage.removeItem('pwa_guest_count');
+                updateTableDisplay();
+            }
+        }
+        
+        // Language switching
+        let currentLang = localStorage.getItem('pwa_language') || 'ru';
+        
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('pwa_language', lang);
+            document.querySelectorAll('.lang-flag').forEach(flag => {
+                flag.classList.toggle('active', flag.dataset.lang === lang);
+            });
+            // Reload page to apply language
+            location.reload();
+        }
+        
+        function initLanguage() {
+            document.querySelectorAll('.lang-flag').forEach(flag => {
+                flag.classList.toggle('active', flag.dataset.lang === currentLang);
+            });
+        }
+        
+        // Settings
+        function openSettings() {
+            alert('Настройки:\n\nСтолик: №' + currentTableNumber + '\nГостей: ' + currentGuestCount + '\nЯзык: ' + currentLang.toUpperCase());
+        }
+        
+        // Logout
+        function logoutPWA() {
+            if (confirm('Выйти из системы?')) {
+                localStorage.removeItem('pwa_auth_token');
+                localStorage.removeItem('pwa_user');
+                window.location.href = '/pwa-login.html';
+            }
+        }
+        
+        // Force PWA update
+        function forceUpdatePWA() {
+            if (confirm('Обновить приложение?')) {
+                // Clear caches
+                if ('caches' in window) {
+                    caches.keys().then(names => {
+                        names.forEach(name => caches.delete(name));
+                    });
+                }
+                // Unregister service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.getRegistrations().then(regs => {
+                        regs.forEach(reg => reg.unregister());
+                    });
+                }
+                // Clear version to force reload
+                localStorage.removeItem('pwa_version');
+                // Hard reload
+                location.reload(true);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBatteryStatus();
+            updateClock();
+            setInterval(updateClock, 60000);
+            updateTableDisplay();
+            initLanguage();
+        });
+    </script>
+</body>
+</html>

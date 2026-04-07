@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Избранное - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .favorites-page {
+            padding: 80px 16px 195px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .favorites-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .favorites-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .favorites-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .product-image {
+            position: relative;
+            aspect-ratio: 1;
+        }
+        .product-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .remove-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .product-info {
+            padding: 12px;
+        }
+        .product-name {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        .product-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: 24px 24px 0 0;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .modal-image {
+            position: relative;
+            height: 250px;
+        }
+        .modal-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 24px 24px 0 0;
+        }
+        .modal-info {
+            padding: 20px;
+        }
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .modal-composition {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+        .variants-list {
+            margin-bottom: 20px;
+        }
+        .variant-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .variant-option.selected {
+            border-color: var(--accent-color);
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .variant-name {
+            font-weight: 500;
+        }
+        .variant-price {
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .qty-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .qty-value {
+            font-size: 20px;
+            font-weight: 700;
+            min-width: 40px;
+            text-align: center;
+        }
+        .add-to-cart-final {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .go-home-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        /* Footer Nav Links */
+        .footer-links-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            z-index: 90;
+            font-size: 12px;
+            pointer-events: none;
+        }
+        .footer-links-bar a {
+            pointer-events: auto;
+        }
+        .footer-links-bar a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .footer-links-bar a:hover {
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="favorites-page">
+        <div class="favorites-header">
+            <h1 class="favorites-title">Избранное</h1>
+        </div>
+        <div id="favoritesContent"></div>
+    </div>
+
+    <button class="go-home-btn" onclick="window.location.href='/'">
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+        🏠 В главное меню
+    </button>
+
+    <div class="footer-links-bar">
+        <a href="/about.html">О нас</a>
+        <a href="/delivery.html">Доставка</a>
+        <a href="/promotions.html">Акции</a>
+        <a href="/offer.html" target="_blank">Оферта</a>
+    </div>
+
+    <!-- Product Modal -->
+    <div class="modal" id="productModal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div class="modal-image">
+                <img id="modalImg" src="" alt="">
+            </div>
+            <div class="modal-info">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <p class="modal-composition" id="modalComposition"></p>
+                <div class="variants-list" id="modalVariants"></div>
+                <div class="quantity-control">
+                    <button class="qty-btn" onclick="changeQty(-1)">−</button>
+                    <span class="qty-value" id="qtyValue">1</span>
+                    <button class="qty-btn" onclick="changeQty(1)">+</button>
+                </div>
+                <button class="add-to-cart-final" onclick="addToCartWithVariant()">Добавить в корзину</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allProducts = [];
+        let favoriteProducts = [];
+        let currentProduct = null;
+        let selectedVariant = null;
+        let quantity = 1;
+
+        async function loadFavorites() {
+            const favoriteIds = JSON.parse(localStorage.getItem('soho_favorites') || '[]');
+            const container = document.getElementById('favoritesContent');
+            
+            if (favoriteIds.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 16px;">🤍</div>
+                        <h2>Нет избранных товаров</h2>
+                        <p style="color: var(--text-secondary);">Добавляйте товары в избранное</p>
+                        <a href="/" style="display: inline-block; padding: 14px 32px; background: var(--accent-color); color: white; border-radius: 12px; text-decoration: none; margin-top: 16px;">Перейти в меню</a>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/menu/categories');
+                const categories = await response.json();
+                
+                allProducts = [];
+                categories.forEach(cat => {
+                    cat.products.forEach(prod => {
+                        allProducts.push(prod);
+                        if (favoriteIds.includes(prod.id)) {
+                            favoriteProducts.push(prod);
+                        }
+                    });
+                });
+                
+                renderFavorites();
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function renderFavorites() {
+            const container = document.getElementById('favoritesContent');
+            
+            container.innerHTML = `
+                <div class="favorites-grid">
+                    ${favoriteProducts.map(product => {
+                        const minPrice = Math.min(...product.variants.map(v => v.price));
+                        return `
+                            <div class="product-card" data-id="${product.id}">
+                                <div class="product-image" onclick="openProductModal(${product.id})">
+                                    <img src="${product.image_url || '/images/placeholder.jpg'}" alt="${product.name_ru}">
+                                    <button class="remove-btn" onclick="event.stopPropagation(); removeFavorite(${product.id})">✕</button>
+                                </div>
+                                <div class="product-info" onclick="openProductModal(${product.id})">
+                                    <div class="product-name">${product.name_ru}</div>
+                                    <div class="product-price">от ${minPrice.toFixed(2)} BYN</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function openProductModal(productId) {
+            currentProduct = favoriteProducts.find(p => p.id === productId);
+            if (!currentProduct) return;
+            
+            selectedVariant = currentProduct.variants[0];
+            quantity = 1;
+            
+            document.getElementById('modalImg').src = currentProduct.image_url || '/images/placeholder.jpg';
+            document.getElementById('modalTitle').textContent = currentProduct.name_ru;
+            document.getElementById('modalComposition').textContent = currentProduct.composition_ru || '';
+            document.getElementById('qtyValue').textContent = quantity;
+            
+            // Render variants
+            const variantsHtml = currentProduct.variants.map((variant, index) => `
+                <div class="variant-option ${index === 0 ? 'selected' : ''}" onclick="selectVariant(${index})" data-index="${index}">
+                    <span class="variant-name">${variant.name_ru}</span>
+                    <span class="variant-price">${variant.price.toFixed(2)} BYN</span>
+                </div>
+            `).join('');
+            document.getElementById('modalVariants').innerHTML = variantsHtml;
+            
+            document.getElementById('productModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('productModal').classList.remove('active');
+        }
+
+        function selectVariant(index) {
+            selectedVariant = currentProduct.variants[index];
+            document.querySelectorAll('.variant-option').forEach((el, i) => {
+                el.classList.toggle('selected', i === index);
+            });
+        }
+
+        function changeQty(delta) {
+            quantity = Math.max(1, quantity + delta);
+            document.getElementById('qtyValue').textContent = quantity;
+        }
+
+        function addToCartWithVariant() {
+            if (!currentProduct || !selectedVariant) return;
+            
+            let cart = JSON.parse(localStorage.getItem('soho_cart') || '[]');
+            
+            const existing = cart.find(i => 
+                i.product_id === currentProduct.id && i.variant_id === selectedVariant.id
+            );
+            
+            if (existing) {
+                existing.quantity += quantity;
+            } else {
+                cart.push({
+                    product_id: currentProduct.id,
+                    variant_id: selectedVariant.id,
+                    name: currentProduct.name_ru,
+                    variant_name: selectedVariant.name_ru,
+                    image: currentProduct.image_url,
+                    price: selectedVariant.price,
+                    quantity: quantity
+                });
+            }
+            
+            localStorage.setItem('soho_cart', JSON.stringify(cart));
+            closeModal();
+            showToast(`Добавлено: ${currentProduct.name_ru} (${selectedVariant.name_ru}) x${quantity}`);
+        }
+
+        function removeFavorite(productId) {
+            let favorites = JSON.parse(localStorage.getItem('soho_favorites') || '[]');
+            favorites = favorites.filter(id => id !== productId);
+            localStorage.setItem('soho_favorites', JSON.stringify(favorites));
+            favoriteProducts = favoriteProducts.filter(p => p.id !== productId);
+            renderFavorites();
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 140px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #27ae60;
+                color: white;
+                padding: 12px 24px;
+                border-radius: 8px;
+                z-index: 1000;
+                font-size: 14px;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2000);
+        }
+
+        // Close modal on outside click
+        document.getElementById('productModal').addEventListener('click', (e) => {
+            if (e.target.id === 'productModal') closeModal();
+        });
+
+        loadFavorites();
+    </script>
+</body>
+</html>
+<style>
+.go-profile-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    padding: 10px 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    z-index: 101;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+}
+</style>

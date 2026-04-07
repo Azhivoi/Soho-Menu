@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Привязка товаров к цехам | SOHO Admin</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --accent-orange: #ff9500;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+        h1 { font-size: 24px; }
+        h1 span { color: var(--accent-red); }
+        
+        .main-grid { display: grid; grid-template-columns: 350px 1fr; gap: 30px; }
+        @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .card h3 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Departments Legend */
+        .dept-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .dept-badge {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+        }
+        .dept-badge input[type="checkbox"] { display: none; }
+        .dept-badge .color {
+            width: 12px; height: 12px; border-radius: 3px;
+        }
+        .dept-badge input:checked + .color { box-shadow: 0 0 0 2px white; }
+        
+        .dept-pizza { background: rgba(233, 69, 96, 0.2); border-color: var(--accent-red); }
+        .dept-pizza .color { background: var(--accent-red); }
+        
+        .dept-sushi { background: rgba(0, 217, 165, 0.2); border-color: var(--accent-green); }
+        .dept-sushi .color { background: var(--accent-green); }
+        
+        .dept-hot { background: rgba(255, 149, 0, 0.2); border-color: var(--accent-orange); }
+        .dept-hot .color { background: var(--accent-orange); }
+        
+        .dept-bar { background: rgba(74, 158, 255, 0.2); border-color: var(--accent-blue); }
+        .dept-bar .color { background: var(--accent-blue); }
+        
+        /* Filters */
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 12px 15px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: white; font-size: 14px;
+        }
+        
+        .btn {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-primary:hover { background: #ff5a73; }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-success { background: var(--accent-green); color: #000; }
+        
+        /* Products Grid */
+        .products-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px;
+        }
+        .products-count { color: var(--text-secondary); font-size: 14px; }
+        
+        .products-list { max-height: 600px; overflow-y: auto; }
+        
+        .product-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 15px;
+            padding: 15px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .product-item:hover { border-color: var(--border-color); }
+        
+        .product-info { display: flex; flex-direction: column; gap: 5px; }
+        .product-name { font-weight: 500; font-size: 15px; }
+        .product-category { font-size: 12px; color: var(--text-secondary); }
+        .product-price { font-size: 13px; color: var(--accent-green); }
+        
+        .product-depts {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            align-items: center;
+        }
+        
+        .dept-checkbox {
+            display: flex; align-items: center; gap: 5px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-card);
+            transition: all 0.2s;
+        }
+        .dept-checkbox:hover { border-color: var(--text-secondary); }
+        .dept-checkbox input { display: none; }
+        .dept-checkbox.checked { 
+            background: var(--accent-red); 
+            border-color: var(--accent-red);
+            color: white;
+        }
+        
+        .dept-checkbox.sushi.checked { background: var(--accent-green); border-color: var(--accent-green); }
+        .dept-checkbox.hot.checked { background: var(--accent-orange); border-color: var(--accent-orange); }
+        .dept-checkbox.bar.checked { background: var(--accent-blue); border-color: var(--accent-blue); }
+        
+        .dept-checkbox .primary-star { display: none; margin-left: 3px; }
+        .dept-checkbox.checked .primary-star { display: inline; }
+        
+        /* Bulk Actions */
+        .bulk-actions {
+            position: sticky; bottom: 0;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border-color);
+            padding: 15px 0;
+            margin-top: 20px;
+            display: flex; gap: 10px; align-items: center;
+        }
+        
+        .status {
+            padding: 8px 15px; border-radius: 6px;
+            font-size: 13px;
+        }
+        .status.success { background: var(--accent-green); color: #000; }
+        .status.error { background: var(--accent-red); color: white; }
+        .status.info { background: var(--accent-blue); color: white; }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center; padding: 60px 20px;
+            color: var(--text-secondary);
+        }
+        .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #44445a; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="crm-departments.html" class="back-link">← К цехам</a>
+            <h1><span>SOHO</span> Привязка товаров к цехам</h1>
+        </div>
+        
+        <div class="main-grid">
+            <!-- Sidebar: Filters -->
+            <div class="sidebar">
+                <div class="card">
+                    <h3>🏭 Цеха</h3>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 15px;">
+                        ★ — основной цех<br>
+                        Кликни, чтобы назначить товар
+                    </p>
+                    <div class="dept-legend" id="deptLegend">
+                        <div class="loading">Загрузка...</div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔍 Фильтры</h3>
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="categoryFilter">
+                            <option value="">Все категории</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Поиск</label>
+                        <input type="text" id="searchFilter" placeholder="Название товара...">
+                    </div>
+                    <div class="form-group">
+                        <label>Привязка</label>
+                        <select id="linkedFilter">
+                            <option value="">Все товары</option>
+                            <option value="linked">С привязкой</option>
+                            <option value="unlinked">Без привязки</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-secondary" onclick="resetFilters()" style="width: 100%;">Сбросить фильтры</button>
+                </div>
+                
+                <div class="card">
+                    <h3>📊 Статистика</h3>
+                    <div id="stats">
+                        <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
+                            <span style="color: var(--text-secondary);">Всего товаров:</span>
+                            <span id="totalProducts">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
+                            <span style="color: var(--text-secondary);">С привязкой:</span>
+                            <span id="linkedProducts">-</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin: 10px 0; font-size: 14px;">
+                            <span style="color: var(--text-secondary);">Без привязки:</span>
+                            <span id="unlinkedProducts" style="color: var(--accent-orange);">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main: Products -->
+            <div class="main-content">
+                <div class="card">
+                    <div class="products-header">
+                        <h3>🍽️ Товары</h3>
+                        <span class="products-count" id="productsCount">Загрузка...</span>
+                    </div>
+                    
+                    <div class="products-list" id="productsList">
+                        <div class="loading">Загрузка товаров...</div>
+                    </div>
+                    
+                    <div class="bulk-actions">
+                        <button class="btn btn-success" onclick="saveAllChanges()">💾 Сохранить все изменения</button>
+                        <div id="status"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let departments = [];
+        let products = [];
+        let categories = [];
+        let productDepts = {}; // {productId: [deptIds]}
+        let changedProducts = new Set();
+        
+        // Load data
+        async function loadData() {
+            try {
+                // Load departments
+                const deptsResponse = await fetch('/api/production/departments');
+                departments = await deptsResponse.json();
+                renderDepartmentsLegend();
+                
+                // Load products
+                const productsResponse = await fetch('/api/menu/products/list');
+                products = await productsResponse.json();
+                
+                // Load categories
+                const catsResponse = await fetch('/api/menu/categories/list');
+                categories = await catsResponse.json();
+                renderCategoryFilter();
+                
+                // Load product-department links
+                await loadAllProductDepts();
+                
+                renderProducts();
+                updateStats();
+            } catch (err) {
+                console.error('Error loading data:', err);
+                document.getElementById('productsList').innerHTML = '<p style="color: red; text-align: center;">Ошибка загрузки</p>';
+            }
+        }
+        
+        async function loadAllProductDepts() {
+            // Load links for each product
+            for (const product of products) {
+                try {
+                    const response = await fetch(`/api/production/products/${product.id}/departments`);
+                    const links = await response.json();
+                    productDepts[product.id] = links.map(l => l.department_id);
+                } catch (err) {
+                    productDepts[product.id] = [];
+                }
+            }
+        }
+        
+        function renderDepartmentsLegend() {
+            const colors = ['pizza', 'sushi', 'hot', 'bar'];
+            const container = document.getElementById('deptLegend');
+            container.innerHTML = departments.filter(d => d.is_active).map((dept, i) => `
+                <div class="dept-badge dept-${colors[i % colors.length]}">
+                    <span class="color"></span>
+                    <span>${dept.name}</span>
+                </div>
+            `).join('');
+        }
+        
+        function renderCategoryFilter() {
+            const select = document.getElementById('categoryFilter');
+            select.innerHTML = '<option value="">Все категории</option>' + 
+                categories.map(c => `<option value="${c.id}">${c.name_ru}</option>`).join('');
+        }
+        
+        function renderProducts() {
+            const container = document.getElementById('productsList');
+            const filtered = getFilteredProducts();
+            
+            document.getElementById('productsCount').textContent = `Показано ${filtered.length} из ${products.length}`;
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">🔍</div>
+                        <p>Товары не найдены</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const colors = ['', 'sushi', 'hot', 'bar'];
+            
+            container.innerHTML = filtered.map(product => {
+                const category = categories.find(c => c.id === product.category_id);
+                const linkedDepts = productDepts[product.id] || [];
+                const isChanged = changedProducts.has(product.id);
+                
+                return `
+                    <div class="product-item" data-product-id="${product.id}" style="${isChanged ? 'border-color: var(--accent-orange);' : ''}">
+                        <div class="product-info">
+                            <div class="product-name">${product.name_ru}</div>
+                            <div class="product-category">${category ? category.name_ru : 'Без категории'}</div>
+                            <div class="product-price">${product.price} BYN</div>
+                        </div>
+                        <div class="product-depts">
+                            ${departments.filter(d => d.is_active).map((dept, i) => {
+                                const isLinked = linkedDepts.includes(dept.id);
+                                const colorClass = colors[i % colors.length];
+                                return `
+                                    <label class="dept-checkbox ${colorClass} ${isLinked ? 'checked' : ''}" 
+                                           onclick="toggleProductDept(${product.id}, ${dept.id})">
+                                        <input type="checkbox" ${isLinked ? 'checked' : ''}>
+                                        <span>${dept.code}</span>
+                                        <span class="primary-star">★</span>
+                                    </label>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function getFilteredProducts() {
+            const categoryId = document.getElementById('categoryFilter').value;
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            const linked = document.getElementById('linkedFilter').value;
+            
+            return products.filter(p => {
+                if (categoryId && p.category_id != categoryId) return false;
+                if (search && !p.name_ru.toLowerCase().includes(search)) return false;
+                if (linked === 'linked' && (!productDepts[p.id] || productDepts[p.id].length === 0)) return false;
+                if (linked === 'unlinked' && productDepts[p.id] && productDepts[p.id].length > 0) return false;
+                return true;
+            });
+        }
+        
+        function toggleProductDept(productId, deptId) {
+            if (!productDepts[productId]) {
+                productDepts[productId] = [];
+            }
+            
+            const idx = productDepts[productId].indexOf(deptId);
+            if (idx >= 0) {
+                productDepts[productId].splice(idx, 1);
+            } else {
+                productDepts[productId].push(deptId);
+            }
+            
+            changedProducts.add(productId);
+            renderProducts();
+        }
+        
+        async function saveAllChanges() {
+            if (changedProducts.size === 0) {
+                showStatus('Нет изменений для сохранения', 'info');
+                return;
+            }
+            
+            showStatus('Сохранение...', 'info');
+            
+            let saved = 0;
+            let errors = 0;
+            
+            for (const productId of changedProducts) {
+                try {
+                    const deptIds = productDepts[productId] || [];
+                    const response = await fetch(`/api/production/products/${productId}/departments`, {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(deptIds)
+                    });
+                    
+                    if (response.ok) {
+                        saved++;
+                    } else {
+                        errors++;
+                    }
+                } catch (err) {
+                    errors++;
+                }
+            }
+            
+            if (errors === 0) {
+                changedProducts.clear();
+                showStatus(`✅ Сохранено ${saved} товаров`, 'success');
+                renderProducts();
+                updateStats();
+            } else {
+                showStatus(`⚠️ Сохранено ${saved}, ошибок ${errors}`, 'error');
+            }
+        }
+        
+        function updateStats() {
+            const total = products.length;
+            const linked = Object.values(productDepts).filter(d => d && d.length > 0).length;
+            const unlinked = total - linked;
+            
+            document.getElementById('totalProducts').textContent = total;
+            document.getElementById('linkedProducts').textContent = linked;
+            document.getElementById('unlinkedProducts').textContent = unlinked;
+        }
+        
+        function resetFilters() {
+            document.getElementById('categoryFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            document.getElementById('linkedFilter').value = '';
+            renderProducts();
+        }
+        
+        function showStatus(msg, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="status ${type}">${msg}</span>`;
+            if (type === 'success') {
+                setTimeout(() => status.innerHTML = '', 3000);
+            }
+        }
+        
+        // Event listeners
+        document.getElementById('categoryFilter').addEventListener('change', renderProducts);
+        document.getElementById('searchFilter').addEventListener('input', renderProducts);
+        document.getElementById('linkedFilter').addEventListener('change', renderProducts);
+        
+        // Load on start
+        loadData();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

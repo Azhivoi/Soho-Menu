@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Внесение накладной | SOHO Admin</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --accent-orange: #ff9500;
+            --accent-yellow: #ffc107;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+        h1 { font-size: 24px; }
+        h1 span { color: var(--accent-red); }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
+        @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .card h3 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        /* Invoice Header */
+        .invoice-header-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        @media (max-width: 900px) { .invoice-header-grid { grid-template-columns: 1fr; } }
+        
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 15px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: white; font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: var(--accent-red);
+        }
+        
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+        .file-upload-area:hover, .file-upload-area.dragover {
+            border-color: var(--accent-red);
+            background: var(--bg-hover);
+        }
+        .file-upload-area .icon { font-size: 48px; margin-bottom: 15px; }
+        .file-upload-area input { display: none; }
+        
+        /* Items Table */
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th {
+            text-align: left; padding: 12px;
+            background: var(--bg-secondary);
+            font-size: 13px; color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .items-table td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); }
+        .items-table tr:hover { background: var(--bg-hover); }
+        
+        .item-input {
+            background: transparent; border: 1px solid transparent;
+            padding: 8px; border-radius: 6px; color: white;
+            width: 100%;
+        }
+        .item-input:focus {
+            background: var(--bg-secondary);
+            border-color: var(--accent-red);
+            outline: none;
+        }
+        
+        /* Autocomplete */
+        .autocomplete-wrap { position: relative; }
+        .autocomplete-list {
+            position: absolute; top: 100%; left: 0; right: 0;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .autocomplete-list.active { display: block; }
+        .autocomplete-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .autocomplete-item:hover, .autocomplete-item.selected {
+            background: var(--accent-red);
+        }
+        
+        /* Status badges */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-new { background: var(--accent-orange); color: #000; }
+        .status-matched { background: var(--accent-green); color: #000; }
+        .status-manual { background: var(--accent-blue); color: white; }
+        
+        /* Confidence score */
+        .confidence {
+            width: 100%; height: 4px;
+            background: var(--bg-secondary);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        .confidence-bar {
+            height: 100%;
+            border-radius: 2px;
+        }
+        .confidence-high { background: var(--accent-green); }
+        .confidence-medium { background: var(--accent-yellow); }
+        .confidence-low { background: var(--accent-red); }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px; border-radius: 8px; border: none;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: all 0.2s; display: inline-flex;
+            align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-primary:hover { background: #ff5a73; }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-success { background: var(--accent-green); color: #000; }
+        .btn-sm { padding: 6px 12px; font-size: 13px; }
+        
+        /* Actions */
+        .actions { display: flex; gap: 10px; margin-top: 20px; }
+        
+        /* Stats Sidebar */
+        .stat-row {
+            display: flex; justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-label { color: var(--text-secondary); }
+        .stat-value { font-weight: 500; }
+        .stat-total { font-size: 18px; color: var(--accent-green); }
+        
+        /* AI Suggestions */
+        .suggestion-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+        .suggestion-card h4 { font-size: 14px; margin-bottom: 8px; }
+        .suggestion-card p { font-size: 13px; color: var(--text-secondary); }
+        .suggestion-card .btn { margin-top: 10px; }
+        
+        /* Quick actions */
+        .quick-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 15px; }
+        .quick-btn {
+            padding: 6px 12px; background: var(--bg-secondary);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-secondary); font-size: 12px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .quick-btn:hover { border-color: var(--accent-red); color: white; }
+        
+        /* Image preview */
+        .image-preview {
+            max-width: 100%; max-height: 300px;
+            border-radius: 8px; margin-top: 15px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* Empty state */
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+        .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
+        
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: var(--text-secondary); }
+        
+        .status-msg { padding: 12px 15px; border-radius: 8px; font-size: 14px; margin-top: 15px; }
+        .status-success { background: var(--accent-green); color: #000; }
+        .status-error { background: var(--accent-red); color: white; }
+        .status-info { background: var(--accent-blue); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="admin-panel.html" class="back-link">← Назад</a>
+            <h1><span>SOHO</span> Внесение накладной</h1>
+        </div>
+        
+        <div class="main-grid">
+            <div class="left-section">
+                <!-- Invoice Header -->
+                <div class="card">
+                    <h3>📄 Данные накладной</h3>
+                    <div class="invoice-header-grid">
+                        <div class="form-group">
+                            <label>Поставщик</label>
+                            <div class="autocomplete-wrap">
+                                <input type="text" id="supplierInput" placeholder="Начни вводить..." autocomplete="off">
+                                <div class="autocomplete-list" id="supplierList"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Номер накладной</label>
+                            <input type="text" id="invoiceNum" placeholder="№ 12345">
+                        </div>
+                        <div class="form-group">
+                            <label>Дата</label>
+                            <input type="date" id="invoiceDate">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Scan Upload -->
+                <div class="card">
+                    <h3>📷 Скан накладной</h3>
+                    <label class="file-upload-area" id="dropZone">
+                        <input type="file" id="scanFile" accept="image/*,.pdf">
+                        <div class="icon">📄</div>
+                        <div>Перетащи скан или нажми для загрузки</div>
+                        <small style="color: var(--text-secondary);">Поддерживается PDF, JPG, PNG</small>
+                    </label>
+                    <div id="fileInfo" style="display: none; margin-top: 10px;">
+                        <span id="fileName"></span>
+                        <button class="btn btn-sm btn-secondary" onclick="clearFile()">✕ Удалить</button>
+                    </div>
+                    <img id="imagePreview" class="image-preview" style="display: none;">
+                </div>
+                
+                <!-- Items -->
+                <div class="card">
+                    <h3>🛒 Позиции накладной</h3>
+                    <div class="quick-actions">
+                        <button class="quick-btn" onclick="addRow()">+ Добавить строку</button>
+                        <button class="quick-btn" onclick="autoMatchAll()">🤖 Авто-подбор</button>
+                        <button class="quick-btn" onclick="importFromClipboard()">📋 Вставить из Excel</button>
+                    </div>
+                    
+                    <table class="items-table">
+                        <thead>
+                            <tr>
+                                <th>№</th>
+                                <th>Название (из накладной)</th>
+                                <th>Ингредиент</th>
+                                <th>Кол-во</th>
+                                <th>Ед.</th>
+                                <th>Цена</th>
+                                <th>Сумма</th>
+                                <th>Статус</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itemsBody">
+                            <tr class="empty-row">
+                                <td colspan="9" style="text-align: center; color: var(--text-secondary);">
+                                    Добавь позиции вручную или загрузи скан
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="actions">
+                        <button class="btn btn-primary" onclick="saveInvoice()">💾 Сохранить накладную</button>
+                        <button class="btn btn-secondary" onclick="saveAsDraft()">📝 Сохранить черновик</button>
+                    </div>
+                    <div id="saveStatus"></div>
+                </div>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <div class="card">
+                    <h3>📊 Итоги</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">Позиций:</span>
+                        <span class="stat-value" id="totalItems">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Сопоставлено:</span>
+                        <span class="stat-value" id="matchedItems" style="color: var(--accent-green);">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Без совпадения:</span>
+                        <span class="stat-value" id="unmatchedItems" style="color: var(--accent-orange);">0</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Общая сумма:</span>
+                        <span class="stat-value stat-total" id="totalAmount">0.00 BYN</span>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🤖 Подсказки AI</h3>
+                    <div id="aiSuggestions">
+                        <div class="suggestion-card">
+                            <h4>💡 Авто-распознавание</h4>
+                            <p>Загрузи скан накладной — система попробует распознать текст и создать позиции автоматически.</p>
+                        </div>
+                        <div class="suggestion-card">
+                            <h4>🔗 Сопоставление</h4>
+                            <p>Система запоминает соответствия названий поставщика твоим ингредиентам.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📚 Быстрый доступ</h3>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <a href="crm-ingredients.html" class="btn btn-secondary">Ингредиенты</a>
+                        <a href="crm-suppliers.html" class="btn btn-secondary">Поставщики</a>
+                        <a href="crm-warehouse.html" class="btn btn-secondary">Склад</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let suppliers = [];
+        let ingredients = [];
+        let nameMappings = {}; // {originalName: ingredientId}
+        let items = []; // {originalName, ingredientId, quantity, unit, price, total, status, confidence}
+        let rowCounter = 0;
+        
+        // Load data
+        async function loadData() {
+            try {
+                // Load suppliers
+                const suppResponse = await fetch('/api/warehouse/suppliers');
+                if (suppResponse.ok) suppliers = await suppResponse.json();
+                
+                // Load ingredients
+                const ingResponse = await fetch('/api/warehouse/ingredients');
+                if (ingResponse.ok) ingredients = await ingResponse.json();
+                
+                // Load name mappings
+                const mapResponse = await fetch('/api/warehouse/name-mappings');
+                if (mapResponse.ok) {
+                    const mappings = await mapResponse.json();
+                    mappings.forEach(m => {
+                        nameMappings[m.original_name.toLowerCase()] = m.ingredient_id;
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading data:', err);
+            }
+            
+            // Set today's date
+            document.getElementById('invoiceDate').valueAsDate = new Date();
+        }
+        
+        // Supplier autocomplete
+        const supplierInput = document.getElementById('supplierInput');
+        const supplierList = document.getElementById('supplierList');
+        
+        supplierInput.addEventListener('input', function() {
+            const val = this.value.toLowerCase();
+            if (!val) {
+                supplierList.classList.remove('active');
+                return;
+            }
+            
+            const matches = suppliers.filter(s => 
+                s.name.toLowerCase().includes(val) || 
+                (s.full_name && s.full_name.toLowerCase().includes(val))
+            ).slice(0, 5);
+            
+            if (matches.length > 0) {
+                supplierList.innerHTML = matches.map(s => `
+                    <div class="autocomplete-item" onclick="selectSupplier(${s.id}, '${s.name}')">
+                        ${s.name}
+                    </div>
+                `).join('');
+                supplierList.classList.add('active');
+            } else {
+                supplierList.classList.remove('active');
+            }
+        });
+        
+        function selectSupplier(id, name) {
+            supplierInput.value = name;
+            supplierInput.dataset.supplierId = id;
+            supplierList.classList.remove('active');
+        }
+        
+        // File upload
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('scanFile');
+        
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) handleFile(files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+        
+        function handleFile(file) {
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileInfo').style.display = 'block';
+            
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    document.getElementById('imagePreview').src = e.target.result;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+            
+            // Auto-extract would happen here
+            showStatus('Файл загружен. Распознавание текста...', 'info');
+        }
+        
+        function clearFile() {
+            fileInput.value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('imagePreview').style.display = 'none';
+        }
+        
+        // Add item row
+        function addRow(data = {}) {
+            rowCounter++;
+            const tbody = document.getElementById('itemsBody');
+            
+            // Remove empty row
+            const emptyRow = tbody.querySelector('.empty-row');
+            if (emptyRow) emptyRow.remove();
+            
+            const row = document.createElement('tr');
+            row.dataset.rowId = rowCounter;
+            row.innerHTML = `
+                <td>${rowCounter}</td>
+                <td>
+                    <input type="text" class="item-input original-name" placeholder="Название из накладной" 
+                           value="${data.originalName || ''}" onblur="tryMatch(${rowCounter})">
+                </td>
+                <td>
+                    <div class="autocomplete-wrap">
+                        <input type="text" class="item-input ingredient-name" placeholder="Выбери ингредиент"
+                               value="${data.ingredientName || ''}" oninput="searchIngredient(${rowCounter}, this.value)">
+                        <div class="autocomplete-list" id="ingList-${rowCounter}"></div>
+                    </div>
+                </td>
+                <td><input type="number" class="item-input quantity" placeholder="0" value="${data.quantity || ''}" oninput="calcTotal(${rowCounter})"></td>
+                <td><input type="text" class="item-input unit" placeholder="кг" value="${data.unit || ''}"></td>
+                <td><input type="number" class="item-input price" placeholder="0.00" value="${data.price || ''}" oninput="calcTotal(${rowCounter})"></td>
+                <td class="total-cell">0.00</td>
+                <td><span class="status-badge status-new">Новый</span></td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="deleteRow(${rowCounter})">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+            
+            if (data.originalName) tryMatch(rowCounter);
+            updateStats();
+        }
+        
+        function deleteRow(rowId) {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            if (row) row.remove();
+            updateStats();
+        }
+        
+        // Try to match ingredient
+        function tryMatch(rowId) {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            if (!row) return;
+            
+            const originalName = row.querySelector('.original-name').value.toLowerCase().trim();
+            if (!originalName) return;
+            
+            // Check mappings first
+            let matchedId = nameMappings[originalName];
+            let matchedIng = null;
+            let confidence = 0;
+            
+            if (matchedId) {
+                matchedIng = ingredients.find(i => i.id == matchedId);
+                confidence = 100;
+            } else {
+                // Try fuzzy match
+                matchedIng = ingredients.find(i => 
+                    i.name_ru.toLowerCase().includes(originalName) ||
+                    originalName.includes(i.name_ru.toLowerCase())
+                );
+                if (matchedIng) confidence = 70;
+            }
+            
+            if (matchedIng) {
+                row.querySelector('.ingredient-name').value = matchedIng.name_ru;
+                row.querySelector('.unit').value = matchedIng.unit || 'кг';
+                
+                const statusBadge = row.querySelector('.status-badge');
+                statusBadge.className = 'status-badge ' + (confidence >= 90 ? 'status-matched' : 'status-manual');
+                statusBadge.textContent = confidence >= 90 ? 'Сопоставлен' : 'Вручную';
+            }
+            
+            calcTotal(rowId);
+        }
+        
+        // Ingredient search
+        function searchIngredient(rowId, query) {
+            const list = document.getElementById(`ingList-${rowId}`);
+            if (!query) {
+                list.classList.remove('active');
+                return;
+            }
+            
+            const matches = ingredients.filter(i => 
+                i.name_ru.toLowerCase().includes(query.toLowerCase())
+            ).slice(0, 5);
+            
+            if (matches.length) {
+                list.innerHTML = matches.map(i => `
+                    <div class="autocomplete-item" onclick="selectIngredient(${rowId}, ${i.id}, '${i.name_ru}')">
+                        ${i.name_ru} <small>(${i.unit || 'кг'})</small>
+                    </div>
+                `).join('');
+                list.classList.add('active');
+            } else {
+                list.classList.remove('active');
+            }
+        }
+        
+        function selectIngredient(rowId, ingId, ingName) {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            row.querySelector('.ingredient-name').value = ingName;
+            row.querySelector('.ingredient-name').dataset.ingredientId = ingId;
+            document.getElementById(`ingList-${rowId}`).classList.remove('active');
+            
+            const ing = ingredients.find(i => i.id == ingId);
+            if (ing) row.querySelector('.unit').value = ing.unit || 'кг';
+        }
+        
+        // Calculate total
+        function calcTotal(rowId) {
+            const row = document.querySelector(`tr[data-row-id="${rowId}"]`);
+            const qty = parseFloat(row.querySelector('.quantity').value) || 0;
+            const price = parseFloat(row.querySelector('.price').value) || 0;
+            const total = qty * price;
+            row.querySelector('.total-cell').textContent = total.toFixed(2);
+            updateStats();
+        }
+        
+        // Auto match all
+        function autoMatchAll() {
+            document.querySelectorAll('tr[data-row-id]').forEach(row => {
+                const rowId = row.dataset.rowId;
+                tryMatch(rowId);
+            });
+        }
+        
+        // Import from clipboard (Excel)
+        function importFromClipboard() {
+            navigator.clipboard.readText().then(text => {
+                const lines = text.split('\n').filter(l => l.trim());
+                lines.forEach(line => {
+                    const cols = line.split('\t');
+                    if (cols.length >= 2) {
+                        addRow({
+                            originalName: cols[0].trim(),
+                            quantity: cols[1].trim(),
+                            price: cols[2] ? cols[2].trim() : ''
+                        });
+                    }
+                });
+            }).catch(err => {
+                showStatus('Не удалось прочитать буфер обмена', 'error');
+            });
+        }
+        
+        // Update stats
+        function updateStats() {
+            const rows = document.querySelectorAll('tr[data-row-id]');
+            let total = 0;
+            let matched = 0;
+            
+            rows.forEach(row => {
+                const totalCell = row.querySelector('.total-cell');
+                if (totalCell) total += parseFloat(totalCell.textContent) || 0;
+                
+                const status = row.querySelector('.status-badge');
+                if (status && status.classList.contains('status-matched')) matched++;
+            });
+            
+            document.getElementById('totalItems').textContent = rows.length;
+            document.getElementById('matchedItems').textContent = matched;
+            document.getElementById('unmatchedItems').textContent = rows.length - matched;
+            document.getElementById('totalAmount').textContent = total.toFixed(2) + ' BYN';
+        }
+        
+        // Save invoice
+        async function saveInvoice() {
+            const supplierId = supplierInput.dataset.supplierId;
+            const invoiceNum = document.getElementById('invoiceNum').value;
+            const invoiceDate = document.getElementById('invoiceDate').value;
+            
+            if (!supplierId) {
+                showStatus('Выбери поставщика', 'error');
+                return;
+            }
+            if (!invoiceNum || !invoiceDate) {
+                showStatus('Заполни номер и дату накладной', 'error');
+                return;
+            }
+            
+            const rows = document.querySelectorAll('tr[data-row-id]');
+            if (rows.length === 0) {
+                showStatus('Добавь позиции', 'error');
+                return;
+            }
+            
+            const items = [];
+            for (const row of rows) {
+                const originalName = row.querySelector('.original-name').value;
+                const ingredientId = row.querySelector('.ingredient-name').dataset.ingredientId;
+                const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+                const unit = row.querySelector('.unit').value;
+                const price = parseFloat(row.querySelector('.price').value) || 0;
+                
+                if (!originalName || quantity <= 0) continue;
+                
+                items.push({
+                    original_name: originalName,
+                    ingredient_id: ingredientId,
+                    quantity: quantity,
+                    unit: unit,
+                    price_per_unit: price,
+                    total_price: quantity * price
+                });
+            }
+            
+            const data = {
+                invoice_number: invoiceNum,
+                supplier_id: parseInt(supplierId),
+                invoice_date: invoiceDate,
+                items: items,
+                status: 'confirmed'
+            };
+            
+            try {
+                const response = await fetch('/api/warehouse/invoices', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showStatus('✅ Накладная сохранена', 'success');
+                    setTimeout(() => location.href = 'crm-warehouse.html', 1500);
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (err) {
+                showStatus('❌ Ошибка сохранения', 'error');
+            }
+        }
+        
+        function saveAsDraft() {
+            showStatus('Черновик сохранён (заглушка)', 'info');
+        }
+        
+        function showStatus(msg, type) {
+            const status = document.getElementById('saveStatus');
+            status.className = 'status-msg status-' + type;
+            status.textContent = msg;
+        }
+        
+        // Close autocomplete on click outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.autocomplete-wrap')) {
+                document.querySelectorAll('.autocomplete-list').forEach(l => l.classList.remove('active'));
+            }
+        });
+        
+        // Load on start
+        loadData();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

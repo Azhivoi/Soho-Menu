@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .auth-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+        }
+        .auth-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .auth-logo .logo-red {
+            color: #e94560;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+        .auth-logo .logo-white {
+            color: white;
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+        .auth-logo p {
+            color: var(--text-secondary);
+            margin-top: 8px;
+        }
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 32px;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 16px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+        }
+        .auth-tab.active {
+            color: var(--accent-color);
+        }
+        .auth-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-color);
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        .form-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        .auth-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .auth-divider {
+            text-align: center;
+            margin: 24px 0;
+            color: var(--text-secondary);
+            font-size: 14px;
+            position: relative;
+        }
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .auth-divider::before {
+            left: 0;
+        }
+        .auth-divider::after {
+            right: 0;
+        }
+        .social-login {
+            display: flex;
+            gap: 12px;
+        }
+        .social-btn {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .guest-link {
+            text-align: center;
+            margin-top: 24px;
+        }
+        .guest-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-page">
+        <div class="auth-logo">
+            <span class="logo-red">SOHO</span><span class="logo-white">CAFE</span>
+            <p>Доставка вкусной еды в Жодино</p>
+        </div>
+        
+        <div class="auth-container">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab('login')">Вход</button>
+                <button class="auth-tab" onclick="switchTab('register')">Регистрация</button>
+            </div>
+            
+            <!-- Login Form -->
+            <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="tel" id="loginEmail" placeholder="+375 (XX) XXX-XX-XX" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="loginPassword" placeholder="Введите пароль" required>
+                </div>
+                <button type="submit" class="auth-btn">Войти</button>
+            </form>
+            
+            <!-- Register Form -->
+            <form class="auth-form" id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label>Имя</label>
+                    <input type="text" id="regName" placeholder="Ваше имя" required>
+                </div>
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input type="tel" id="regPhone" placeholder="+375 (XX) XXX-XX-XX" required>
+                </div>
+                <div class="form-group">
+                    <label>Пароль</label>
+                    <input type="password" id="regPassword" placeholder="Придумайте пароль" required>
+                </div>
+                <button type="submit" class="auth-btn">Зарегистрироваться</button>
+            </form>
+            
+            <div class="auth-divider">или</div>
+            
+            <div class="social-login">
+                <button class="social-btn" onclick="socialLogin('google')">Google</button>
+                <button class="social-btn" onclick="socialLogin('telegram')">Telegram</button>
+            </div>
+        </div>
+        
+        <div class="guest-link">
+            <a href="/terminal.html">🖥️ Вход для оператора (терминал) →</a>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            const login = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // Normalize phone - add + if missing
+            let normalizedLogin = login;
+            if (/^\d/.test(login) && !login.startsWith('+')) {
+                normalizedLogin = '+' + login;
+            }
+            
+            try {
+                let response;
+                // Check if it's phone (starts with + or digit) or email
+                if (/^[\+\d]/.test(login)) {
+                    // Customer login by phone
+                    response = await fetch('/api/auth/customer/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ phone: normalizedLogin, password })
+                    });
+                } else {
+                    // Company login by email
+                    response = await fetch('/api/auth/company/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: login, password })
+                    });
+                }
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Разделяем авторизацию: клиенты и сотрудники
+                    if (data.type === 'customer') {
+                        // Клиентская авторизация - отдельный модуль
+                        localStorage.setItem('soho_customer_auth', JSON.stringify({
+                            token: data.token,
+                            customer: data.user,
+                            type: 'customer'
+                        }));
+                        window.location.href = '/profile.html';
+                    } else if (data.type === 'employee') {
+                        // Авторизация сотрудника (admin/manager)
+                        localStorage.setItem('soho_auth', JSON.stringify({
+                            token: data.token,
+                            user_id: data.user_id,
+                            email: data.email,
+                            role: data.role,
+                            name: data.name,
+                            type: 'employee',
+                            employee: data.employee
+                        }));
+                        // Проверяем роль для редиректа
+                        if (data.role === 'Администратор' || data.role === 'Менеджер' || data.role === 'Владелец') {
+                            window.location.href = '/admin-panel.html';
+                        } else {
+                            window.location.href = '/crm-operator-workplace.html';
+                        }
+                    } else {
+                        // Авторизация владельца компании
+                        localStorage.setItem('soho_auth', JSON.stringify({
+                            token: data.token,
+                            company: data.company,
+                            role: data.role,
+                            type: data.type || 'company'
+                        }));
+                        window.location.href = '/admin-panel.html';
+                    }
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Ошибка входа');
+                }
+            } catch (err) {
+                console.error('Login error:', err);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+        
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const phone = document.getElementById('regPhone').value;
+            const password = document.getElementById('regPassword').value;
+            
+            // Normalize phone
+            let normalizedPhone = phone;
+            if (/^\d/.test(phone) && !phone.startsWith('+')) {
+                normalizedPhone = '+' + phone;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/customer/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, phone: normalizedPhone, password })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Auto-login after registration
+                    localStorage.setItem('soho_customer_auth', JSON.stringify({
+                        token: data.token,
+                        customer: data.user,
+                        type: 'customer'
+                    }));
+                    window.location.href = '/menu.html';
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Ошибка регистрации');
+                }
+            } catch (err) {
+                console.error('Register error:', err);
+                alert('Ошибка соединения с сервером');
+            }
+        }
+        
+        function socialLogin(provider) {
+            alert('Вход через ' + provider + ' - в разработке');
+        }
+        
+        // Check for #register in URL
+        if (window.location.hash === '#register') {
+            switchTab('register');
+        }
+    </script>
+</body>
+</html>

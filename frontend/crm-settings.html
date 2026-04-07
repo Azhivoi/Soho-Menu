@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки сайта | SOHO Admin</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --accent-orange: #ff9500;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+        h1 { font-size: 24px; }
+        h1 span { color: var(--accent-red); }
+        
+        .settings-grid { display: grid; grid-template-columns: 250px 1fr; gap: 30px; }
+        @media (max-width: 900px) { .settings-grid { grid-template-columns: 1fr; } }
+        
+        /* Sidebar */
+        .sidebar { display: flex; flex-direction: column; gap: 10px; }
+        .nav-btn {
+            padding: 12px 16px; background: transparent;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            color: var(--text-secondary); text-align: left;
+            cursor: pointer; font-size: 14px;
+            transition: all 0.2s;
+        }
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border-color: var(--accent-red);
+        }
+        .nav-btn .icon { margin-right: 10px; }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .card h3 { font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 15px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: white; font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--accent-red);
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-group small { display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px; }
+        
+        .checkbox-group {
+            display: flex; align-items: center; gap: 10px;
+            padding: 10px 0; cursor: pointer;
+        }
+        .checkbox-group input { width: 20px; height: 20px; accent-color: var(--accent-red); }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px; border-radius: 8px; border: none;
+            cursor: pointer; font-size: 14px; font-weight: 500;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-primary:hover { background: #ff5a73; }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { background: var(--bg-hover); }
+        .btn-success { background: var(--accent-green); color: #000; }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        
+        .actions { display: flex; gap: 10px; margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        
+        /* Status */
+        .status-msg { padding: 12px 15px; border-radius: 8px; font-size: 14px; margin-top: 15px; }
+        .status-success { background: var(--accent-green); color: #000; }
+        .status-error { background: var(--accent-red); color: white; }
+        
+        /* Tabs content */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* Delivery zones */
+        .zone-card {
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .zone-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .zone-title { font-weight: 500; }
+        .zone-actions { display: flex; gap: 8px; }
+        
+        /* Payment method */
+        .payment-method {
+            display: flex; align-items: center; gap: 15px;
+            padding: 15px; background: var(--bg-secondary);
+            border-radius: 8px; margin-bottom: 10px;
+        }
+        .payment-icon { font-size: 24px; }
+        .payment-info { flex: 1; }
+        .payment-name { font-weight: 500; }
+        .payment-desc { font-size: 13px; color: var(--text-secondary); }
+        
+        /* Color picker */
+        .color-picker { display: flex; gap: 10px; flex-wrap: wrap; }
+        .color-option {
+            width: 40px; height: 40px; border-radius: 8px;
+            cursor: pointer; border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option:hover { transform: scale(1.1); }
+        .color-option.selected { border-color: white; box-shadow: 0 0 0 2px var(--accent-red); }
+        
+        /* Schedule */
+        .schedule-row {
+            display: grid; grid-template-columns: 100px 1fr 1fr auto;
+            gap: 10px; align-items: center; padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .schedule-row:last-child { border-bottom: none; }
+        .schedule-day { font-weight: 500; }
+        .schedule-row input[type="time"] { padding: 8px; }
+        .schedule-closed { display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="admin-panel.html" class="back-link">← Назад</a>
+            <h1><span>SOHO</span> Настройки сайта</h1>
+        </div>
+        
+        <div class="settings-grid">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <button class="nav-btn active" onclick="showTab('general')">
+                    <span class="icon">🏪</span> Основные
+                </button>
+                <button class="nav-btn" onclick="showTab('contacts')">
+                    <span class="icon">📞</span> Контакты
+                </button>
+                <button class="nav-btn" onclick="showTab('delivery')">
+                    <span class="icon">🚚</span> Доставка
+                </button>
+                <button class="nav-btn" onclick="showTab('payment')">
+                    <span class="icon">💳</span> Оплата
+                </button>
+                <button class="nav-btn" onclick="showTab('schedule')">
+                    <span class="icon">🕐</span> Режим работы
+                </button>
+                <button class="nav-btn" onclick="showTab('seo')">
+                    <span class="icon">🔍</span> SEO
+                </button>
+                <button class="nav-btn" onclick="showTab('design')">
+                    <span class="icon">🎨</span> Оформление
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="content">
+                <!-- General -->
+                <div id="general" class="tab-content active">
+                    <div class="card">
+                        <h3>🏪 Основная информация</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Название сайта</label>
+                                <input type="text" id="siteName" value="SOHO.by">
+                            </div>
+                            <div class="form-group">
+                                <label>Слоган</label>
+                                <input type="text" id="siteSlogan" value="Итальянская пицца и суши">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Краткое описание (для подвала)</label>
+                            <textarea id="siteDescription">Доставка итальянской пиццы и японских роллов в Минске. Работаем с 2015 года.</textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Email для заявок</label>
+                                <input type="email" id="siteEmail" value="info@soho.by">
+                            </div>
+                            <div class="form-group">
+                                <label>Валюта</label>
+                                <select id="currency">
+                                    <option value="BYN" selected>BYN (бел. рубль)</option>
+                                    <option value="USD">USD (доллар)</option>
+                                    <option value="EUR">EUR (евро)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contacts -->
+                <div id="contacts" class="tab-content">
+                    <div class="card">
+                        <h3>📞 Контактная информация</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Телефон (основной)</label>
+                                <input type="tel" id="phoneMain" value="+375 (29) 116-77-55">
+                            </div>
+                            <div class="form-group">
+                                <label>Телефон (дополнительный)</label>
+                                <input type="tel" id="phoneAlt" value="+375 (33) 116-77-55">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Адрес ресторана</label>
+                            <input type="text" id="address" value="г. Минск, ул. Лявданского, 1, пав. 114">
+                        </div>
+                        <div class="form-group">
+                            <label>Координаты для карты (lat, lng)</label>
+                            <input type="text" id="coords" value="53.9045, 27.5615">
+                            <small>Используются для отображения метки на карте</small>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Instagram</label>
+                                <input type="text" id="socialInsta" value="@soho.pizza">
+                            </div>
+                            <div class="form-group">
+                                <label>Telegram</label>
+                                <input type="text" id="socialTg" value="@soho_pizza_bot">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Facebook</label>
+                                <input type="text" id="socialFb" placeholder="facebook.com/soho">
+                            </div>
+                            <div class="form-group">
+                                <label>ВКонтакте</label>
+                                <input type="text" id="socialVk" placeholder="vk.com/soho">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Delivery -->
+                <div id="delivery" class="tab-content">
+                    <div class="card">
+                        <h3>🚚 Настройки доставки</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Минимальная сумма заказа</label>
+                                <input type="number" id="minOrder" value="25">
+                            </div>
+                            <div class="form-group">
+                                <label>Бесплатная доставка от</label>
+                                <input type="number" id="freeDelivery" value="60">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Стоимость доставки (стандарт)</label>
+                                <input type="number" id="deliveryCost" value="5">
+                            </div>
+                            <div class="form-group">
+                                <label>Время доставки (минут)</label>
+                                <input type="text" id="deliveryTime" value="60-90">
+                            </div>
+                        </div>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="allowPickup" checked>
+                            <span>Разрешить самовывоз</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="allowDelivery" checked>
+                            <span>Разрешить доставку</span>
+                        </label>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>📍 Зоны доставки</h3>
+                        <div id="deliveryZones">
+                            <div class="zone-card">
+                                <div class="zone-header">
+                                    <span class="zone-title">🟢 Центр — бесплатно от 60 BYN</span>
+                                    <div class="zone-actions">
+                                        <button class="btn btn-sm btn-secondary">✏️</button>
+                                        <button class="btn btn-sm btn-secondary">🗑️</button>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: var(--text-secondary);">Ленинский, Партизанский, Центральный район</p>
+                            </div>
+                            <div class="zone-card">
+                                <div class="zone-header">
+                                    <span class="zone-title">🟡 Остальной Минск — 5 BYN</span>
+                                    <div class="zone-actions">
+                                        <button class="btn btn-sm btn-secondary">✏️</button>
+                                        <button class="btn btn-sm btn-secondary">🗑️</button>
+                                    </div>
+                                </div>
+                                <p style="font-size: 13px; color: var(--text-secondary);">Все районы в пределах МКАД</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" onclick="addZone()">+ Добавить зону</button>
+                    </div>
+                </div>
+                
+                <!-- Payment -->
+                <div id="payment" class="tab-content">
+                    <div class="card">
+                        <h3>💳 Способы оплаты</h3>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="payCash" checked>
+                            <span>Наличными при получении</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="payCard" checked>
+                            <span>Картой при получении</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="payOnline" checked>
+                            <span>Онлайн оплата (банковская карта)</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="payBonus" checked>
+                            <span>Бонусными баллами</span>
+                        </label>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>💰 Бонусная система</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Кешбэк (% от заказа)</label>
+                                <input type="number" id="bonusPercent" value="5">
+                                <small>Сколько процентов от суммы заказа начисляется баллами</small>
+                            </div>
+                            <div class="form-group">
+                                <label>Стоимость 1 бонуса (BYN)</label>
+                                <input type="number" id="bonusValue" value="0.1" step="0.01">
+                                <small>Сколько стоит 1 бонус при оплате</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Минимальная сумма для начисления</label>
+                            <input type="number" id="bonusMinOrder" value="20">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Schedule -->
+                <div id="schedule" class="tab-content">
+                    <div class="card">
+                        <h3>🕐 Режим работы</h3>
+                        <div id="scheduleContainer">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- SEO -->
+                <div id="seo" class="tab-content">
+                    <div class="card">
+                        <h3>🔍 SEO-настройки</h3>
+                        <div class="form-group">
+                            <label>Title (заголовок страницы)</label>
+                            <input type="text" id="seoTitle" value="SOHO.by — Доставка пиццы и суши в Минске | +375 29 116-77-55">
+                            <small>Рекомендуется до 70 символов</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Meta Description</label>
+                            <textarea id="seoDesc">Быстрая доставка итальянской пиццы и японских роллов в Минске. Работаем ежедневно с 10:00 до 23:00. Заказ онлайн или по телефону +375 29 116-77-55</textarea>
+                            <small>Рекомендуется до 160 символов</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Ключевые слова</label>
+                            <input type="text" id="seoKeywords" value="доставка пиццы минск, заказать суши, итальянская пицца, роллы, soho">
+                        </div>
+                        <div class="form-group">
+                            <label>Код для &lt;head&gt; (Google Analytics, Meta Pixel)</label>
+                            <textarea id="seoHeadCode" placeholder="<!-- Вставь код сюда -->"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Design -->
+                <div id="design" class="tab-content">
+                    <div class="card">
+                        <h3>🎨 Цветовая схема</h3>
+                        <div class="form-group">
+                            <label>Основной цвет</label>
+                            <div class="color-picker">
+                                <div class="color-option selected" style="background: #e94560;" onclick="selectColor(this, '#e94560')"></div>
+                                <div class="color-option" style="background: #ff6b6b;" onclick="selectColor(this, '#ff6b6b')"></div>
+                                <div class="color-option" style="background: #feca57;" onclick="selectColor(this, '#feca57')"></div>
+                                <div class="color-option" style="background: #48dbfb;" onclick="selectColor(this, '#48dbfb')"></div>
+                                <div class="color-option" style="background: #1dd1a1;" onclick="selectColor(this, '#1dd1a1')"></div>
+                                <div class="color-option" style="background: #5f27cd;" onclick="selectColor(this, '#5f27cd')"></div>
+                                <div class="color-option" style="background: #ff9f43;" onclick="selectColor(this, '#ff9f43')"></div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Тёмный режим по умолчанию</label>
+                            <label class="checkbox-group">
+                                <input type="checkbox" id="darkMode" checked>
+                                <span>Включить тёмную тему для всех пользователей</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>🖼️ Логотип и фавикон</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Логотип (рекомендуется 200x60)</label>
+                                <input type="file" id="logoUpload" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>Фавикон (32x32 или 64x64)</label>
+                                <input type="file" id="faviconUpload" accept="image/x-icon,image/png">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Save Button -->
+                <div class="actions">
+                    <button class="btn btn-success" onclick="saveAllSettings()">💾 Сохранить все изменения</button>
+                    <button class="btn btn-secondary" onclick="resetSettings()">↩️ Сбросить</button>
+                    <div id="saveStatus"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const weekDays = [
+            {id: 'mon', name: 'Понедельник'},
+            {id: 'tue', name: 'Вторник'},
+            {id: 'wed', name: 'Среда'},
+            {id: 'thu', name: 'Четверг'},
+            {id: 'fri', name: 'Пятница'},
+            {id: 'sat', name: 'Суббота'},
+            {id: 'sun', name: 'Воскресенье'}
+        ];
+        
+        // Initialize schedule
+        function initSchedule() {
+            const container = document.getElementById('scheduleContainer');
+            container.innerHTML = weekDays.map(day => `
+                <div class="schedule-row">
+                    <div class="schedule-day">${day.name}</div>
+                    <input type="time" id="${day.id}_open" value="10:00">
+                    <input type="time" id="${day.id}_close" value="23:00">
+                    <label class="schedule-closed">
+                        <input type="checkbox" id="${day.id}_closed" onchange="toggleDay('${day.id}')">
+                        <span>Выходной</span>
+                    </label>
+                </div>
+            `).join('');
+        }
+        
+        function toggleDay(dayId) {
+            const closed = document.getElementById(dayId + '_closed').checked;
+            document.getElementById(dayId + '_open').disabled = closed;
+            document.getElementById(dayId + '_close').disabled = closed;
+        }
+        
+        // Tab switching
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Color picker
+        function selectColor(el, color) {
+            document.querySelectorAll('.color-option').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+        
+        // Add zone
+        function addZone() {
+            const container = document.getElementById('deliveryZones');
+            const zone = document.createElement('div');
+            zone.className = 'zone-card';
+            zone.innerHTML = `
+                <div class="zone-header">
+                    <input type="text" placeholder="Название зоны" style="background: var(--bg-card); border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; color: white;">
+                    <div class="zone-actions">
+                        <button class="btn btn-sm btn-success" onclick="saveZone(this)">✓</button>
+                        <button class="btn btn-sm btn-secondary" onclick="this.closest('.zone-card').remove()">🗑️</button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(zone);
+        }
+        
+        function saveZone(btn) {
+            const card = btn.closest('.zone-card');
+            const name = card.querySelector('input').value;
+            if (!name) return;
+            
+            card.innerHTML = `
+                <div class="zone-header">
+                    <span class="zone-title">${name}</span>
+                    <div class="zone-actions">
+                        <button class="btn btn-sm btn-secondary">✏️</button>
+                        <button class="btn btn-sm btn-secondary">🗑️</button>
+                    </div>
+                </div>
+                <p style="font-size: 13px; color: var(--text-secondary);">Зона сохранена</p>
+            `;
+        }
+        
+        // Save all
+        async function saveAllSettings() {
+            const status = document.getElementById('saveStatus');
+            status.innerHTML = '<span class="status-msg status-success">💾 Сохранение...</span>';
+            
+            // Collect all settings
+            const settings = {
+                general: {
+                    site_name: document.getElementById('siteName').value,
+                    site_slogan: document.getElementById('siteSlogan').value,
+                    site_description: document.getElementById('siteDescription').value,
+                    site_email: document.getElementById('siteEmail').value,
+                    currency: document.getElementById('currency').value
+                },
+                contacts: {
+                    phone_main: document.getElementById('phoneMain').value,
+                    phone_alt: document.getElementById('phoneAlt').value,
+                    address: document.getElementById('address').value,
+                    coords: document.getElementById('coords').value,
+                    social: {
+                        instagram: document.getElementById('socialInsta').value,
+                        telegram: document.getElementById('socialTg').value,
+                        facebook: document.getElementById('socialFb').value,
+                        vk: document.getElementById('socialVk').value
+                    }
+                },
+                delivery: {
+                    min_order: parseFloat(document.getElementById('minOrder').value),
+                    free_delivery_from: parseFloat(document.getElementById('freeDelivery').value),
+                    delivery_cost: parseFloat(document.getElementById('deliveryCost').value),
+                    delivery_time: document.getElementById('deliveryTime').value,
+                    allow_pickup: document.getElementById('allowPickup').checked,
+                    allow_delivery: document.getElementById('allowDelivery').checked
+                },
+                payment: {
+                    cash: document.getElementById('payCash').checked,
+                    card: document.getElementById('payCard').checked,
+                    online: document.getElementById('payOnline').checked,
+                    bonus: document.getElementById('payBonus').checked
+                },
+                bonus: {
+                    percent: parseFloat(document.getElementById('bonusPercent').value),
+                    value: parseFloat(document.getElementById('bonusValue').value),
+                    min_order: parseFloat(document.getElementById('bonusMinOrder').value)
+                },
+                seo: {
+                    title: document.getElementById('seoTitle').value,
+                    description: document.getElementById('seoDesc').value,
+                    keywords: document.getElementById('seoKeywords').value,
+                    head_code: document.getElementById('seoHeadCode').value
+                },
+                design: {
+                    dark_mode: document.getElementById('darkMode').checked
+                }
+            };
+            
+            // Schedule
+            settings.schedule = {};
+            weekDays.forEach(day => {
+                settings.schedule[day.id] = {
+                    open: document.getElementById(day.id + '_open').value,
+                    close: document.getElementById(day.id + '_close').value,
+                    closed: document.getElementById(day.id + '_closed').checked
+                };
+            });
+            
+            try {
+                const response = await fetch('/api/config/settings', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(settings)
+                });
+                
+                if (response.ok) {
+                    status.innerHTML = '<span class="status-msg status-success">✅ Настройки сохранены</span>';
+                    setTimeout(() => status.innerHTML = '', 3000);
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (err) {
+                status.innerHTML = '<span class="status-msg status-error">❌ Ошибка сохранения</span>';
+            }
+        }
+        
+        function resetSettings() {
+            if (confirm('Сбросить все изменения?')) {
+                location.reload();
+            }
+        }
+        
+        // Load settings on start
+        async function loadSettings() {
+            try {
+                const response = await fetch('/api/config/settings');
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                // Apply loaded settings to form fields
+                // (simplified - would populate all fields)
+            } catch (err) {
+                console.error('Error loading settings:', err);
+            }
+        }
+        
+        initSchedule();
+        loadSettings();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

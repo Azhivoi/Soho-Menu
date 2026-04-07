@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Терминал оператора | SOHO</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .terminal-container {
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            max-height: 900px;
+            background: #1a1a2e;
+            border-radius: 0;
+            padding: 20px 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        @media (min-width: 601px) {
+            .terminal-container {
+                border-radius: 24px;
+                height: auto;
+                max-height: 95vh;
+            }
+        }
+        .logo {
+            text-align: center;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .logo span {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 4px;
+        }
+        .logo .red { color: #e94560; }
+        .logo .white { color: white; }
+        .location-select {
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+        .location-select label {
+            display: block;
+            color: #888;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .location-select select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #2a2a40;
+            border-radius: 10px;
+            background: #0f0f1a;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        .location-select select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .pin-display {
+            background: #0f0f1a;
+            border: 2px solid #2a2a40;
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 12px;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .pin-dots {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2a2a40;
+            transition: all 0.2s;
+        }
+        .pin-dot.filled {
+            background: #e94560;
+            box-shadow: 0 0 8px #e94560;
+        }
+        .pin-error {
+            color: #e94560;
+            font-size: 14px;
+        }
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+        .key {
+            border: none;
+            border-radius: 12px;
+            background: #252538;
+            color: white;
+            font-size: 22px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 45px;
+        }
+        .key:hover {
+            background: #e94560;
+        }
+        .key:active {
+            transform: scale(0.98);
+        }
+        .key.clear {
+            background: #ff9800;
+        }
+        .key.backspace {
+            background: #666;
+        }
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 12px;
+            flex-shrink: 0;
+        }
+        .btn-action {
+            width: 100%;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .btn-login {
+            background: #4caf50;
+            color: #fff;
+        }
+        .btn-login:hover {
+            background: #5cbf60;
+        }
+        .btn-close-shift {
+            background: #ff9800;
+            color: #000;
+        }
+        .btn-close-shift:hover {
+            background: #ffb74d;
+        }
+        .btn-close-shift:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .admin-link {
+            text-align: center;
+            margin-top: 12px;
+            flex-shrink: 0;
+        }
+        .admin-link a {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+        }
+        .admin-link a:hover {
+            color: #e94560;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #e94560;
+            padding: 20px;
+        }
+        .loading.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Company Auth Screen -->
+    <div class="terminal-container" id="companyAuthScreen">
+        <div class="logo">
+            <span class="red">SOHO</span><span class="white">CAFE</span>
+        </div>
+        
+        <div style="text-align: center; margin-bottom: 20px; color: #888;">
+            Доступ к терминалу
+        </div>
+        
+        <div class="location-select">
+            <label>📧 Логин</label>
+            <input type="text" id="companyLogin" placeholder="Введите логин" style="width: 100%; padding: 12px; border: 2px solid #2a2a40; border-radius: 10px; background: #0f0f1a; color: white; font-size: 15px;">
+        </div>
+        
+        <div class="location-select">
+            <label>🔒 Пароль</label>
+            <input type="password" id="companyPassword" placeholder="Введите пароль" style="width: 100%; padding: 12px; border: 2px solid #2a2a40; border-radius: 10px; background: #0f0f1a; color: white; font-size: 15px;">
+        </div>
+        
+        <div class="action-buttons">
+            <button class="btn-action btn-login" onclick="authCompany()">
+                ✓ Войти
+            </button>
+        </div>
+        
+        <div class="admin-link">
+            <a href="/login.html">Вход для администратора →</a>
+        </div>
+    </div>
+
+    <!-- PIN Screen (hidden initially) -->
+    <div class="terminal-container" id="pinScreen" style="display: none;">
+        <div class="logo">
+            <span class="red">SOHO</span><span class="white">CAFE</span>
+        </div>
+        
+        <div class="location-select" id="locationSelectContainer">
+            <label>📍 Торговая точка</label>
+            <select id="locationSelect">
+                <option value="">Выберите точку...</option>
+            </select>
+        </div>
+        <input type="hidden" id="locationIdHidden" value="">
+        
+        <div class="pin-display">
+            <div class="pin-dots" id="pinDots">
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+                <div class="pin-dot"></div>
+            </div>
+            <div class="pin-error" id="pinError" style="display: none;"></div>
+        </div>
+        
+        <div class="keypad">
+            <button class="key" onclick="addDigit('1')">1</button>
+            <button class="key" onclick="addDigit('2')">2</button>
+            <button class="key" onclick="addDigit('3')">3</button>
+            <button class="key" onclick="addDigit('4')">4</button>
+            <button class="key" onclick="addDigit('5')">5</button>
+            <button class="key" onclick="addDigit('6')">6</button>
+            <button class="key" onclick="addDigit('7')">7</button>
+            <button class="key" onclick="addDigit('8')">8</button>
+            <button class="key" onclick="addDigit('9')">9</button>
+            <button class="key clear" onclick="clearPin()">C</button>
+            <button class="key" onclick="addDigit('0')">0</button>
+            <button class="key backspace" onclick="backspace()">⌫</button>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-action btn-login" onclick="openShift()" id="openShiftBtn" style="background: linear-gradient(135deg, #00c853 0%, #00e676 100%);">
+                ▶ Открыть смену
+            </button>
+            <button class="btn-action btn-close-shift" onclick="closeShift()" id="closeShiftBtn" style="display: none;">
+                🔒 Закрыть смену
+            </button>
+        </div>
+
+        <div class="loading" id="loading">
+            Вход в систему...
+        </div>
+
+        <div class="admin-link">
+            <a href="/login.html">Вход для администратора →</a>
+        </div>
+    </div>
+
+    <script>
+        let pin = '';
+        const maxPinLength = 4;
+        let companyAuthenticated = false;
+        
+        // Check if already authenticated
+        if (sessionStorage.getItem('terminal_company_auth')) {
+            companyAuthenticated = true;
+            document.getElementById('companyAuthScreen').style.display = 'none';
+            document.getElementById('pinScreen').style.display = 'flex';
+            loadLocations();
+        }
+        
+        // Company authentication
+        async function authCompany() {
+            const login = document.getElementById('companyLogin').value;
+            const password = document.getElementById('companyPassword').value;
+            
+            if (!login || !password) {
+                alert('Введите логин и пароль');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/auth/company/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: login, password })
+                });
+                
+                if (response.ok) {
+                    // Mark as authenticated
+                    sessionStorage.setItem('terminal_company_auth', 'true');
+                    companyAuthenticated = true;
+                    
+                    // Show PIN screen
+                    document.getElementById('companyAuthScreen').style.display = 'none';
+                    document.getElementById('pinScreen').style.display = 'flex';
+                    
+                    // Load locations
+                    loadLocations();
+                } else {
+                    const error = await response.json();
+                    alert(error.detail || 'Неверный логин или пароль');
+                }
+            } catch (err) {
+                console.error('Auth error:', err);
+                alert('Ошибка соединения');
+            }
+        }
+        
+        // Load locations on startup
+        async function loadLocations() {
+            try {
+                const response = await fetch('/api/auth/terminal/locations');
+                if (response.ok) {
+                    const locations = await response.json();
+
+                    if (locations.length === 1) {
+                        // Only one location - hide select and use it by default
+                        document.getElementById('locationSelectContainer').style.display = 'none';
+                        document.getElementById('locationIdHidden').value = locations[0].id;
+                    } else if (locations.length > 1) {
+                        // Multiple locations - show select
+                        const select = document.getElementById('locationSelect');
+                        locations.forEach(loc => {
+                            const option = document.createElement('option');
+                            option.value = loc.id;
+                            option.textContent = loc.name;
+                            select.appendChild(option);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading locations:', err);
+            }
+        }
+        
+        function addDigit(digit) {
+            if (pin.length < maxPinLength) {
+                pin += digit;
+                updatePinDisplay();
+                hideError();
+            }
+        }
+        
+        function clearPin() {
+            pin = '';
+            updatePinDisplay();
+            hideError();
+        }
+        
+        function backspace() {
+            pin = pin.slice(0, -1);
+            updatePinDisplay();
+            hideError();
+        }
+        
+        function updatePinDisplay() {
+            const dots = document.querySelectorAll('.pin-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('filled', index < pin.length);
+            });
+        }
+        
+        function showError(message) {
+            const errorEl = document.getElementById('pinError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            document.querySelector('.pin-dots').style.display = 'none';
+        }
+        
+        function hideError() {
+            document.getElementById('pinError').style.display = 'none';
+            document.querySelector('.pin-dots').style.display = 'flex';
+        }
+
+        function showSuccess(message) {
+            const errorEl = document.getElementById('pinError');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            errorEl.style.color = '#00c853';
+            document.querySelector('.pin-dots').style.display = 'none';
+            setTimeout(() => {
+                errorEl.style.color = '';
+                hideError();
+            }, 3000);
+        }
+        
+        // Open shift - check access and redirect or show message
+        async function openShift() {
+            const locationId = document.getElementById('locationSelect').value || 
+                              document.getElementById('locationIdHidden').value;
+
+            if (!locationId) {
+                showError('Выберите торговую точку');
+                return;
+            }
+
+            if (pin.length !== maxPinLength) {
+                showError('Введите 4 цифры PIN');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                const response = await fetch('/api/auth/terminal/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location_id: parseInt(locationId),
+                        pin_code: pin
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Start session for all employees
+                    await fetch('/api/auth/employee/session/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            employee_id: data.employee.id,
+                            location_id: parseInt(locationId)
+                        })
+                    });
+
+                    // Save auth data
+                    localStorage.setItem('soho_auth', JSON.stringify({
+                        token: data.token,
+                        employee: data.employee,
+                        type: 'terminal',
+                        session_start: new Date().toISOString()
+                    }));
+
+                    // Check if employee has CRM access
+                    const canAccessCRM = data.can_access_crm || data.employee?.can_access_crm || 
+                                        ['Администратор', 'Менеджер', 'Официант', 'Кассир'].includes(data.employee?.role_name);
+
+                    if (canAccessCRM) {
+                        // Has access - redirect to CRM
+                        showSuccess('Смена открыта! Переход в рабочее место...');
+                        setTimeout(() => {
+                            window.location.href = '/crm-operator-workplace.html';
+                        }, 1500);
+                    } else {
+                        // No CRM access - show success message
+                        showSuccess('✅ Смена успешно открыта!');
+                        // Reset for next login
+                        pin = '';
+                        updatePinDisplay();
+                        // Show close shift button
+                        document.getElementById('openShiftBtn').style.display = 'none';
+                        document.getElementById('closeShiftBtn').style.display = 'block';
+                    }
+                } else {
+                    const error = await response.json();
+                    showError(error.detail || 'Неверный PIN');
+                    pin = '';
+                    updatePinDisplay();
+                }
+            } catch (err) {
+                showError('Ошибка соединения');
+                console.error('Open shift error:', err);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        // Legacy function - kept for compatibility
+        async function loginToWorkplace() {
+            const locationId = document.getElementById('locationSelect').value || 
+                              document.getElementById('locationIdHidden').value;
+
+            if (!locationId) {
+                showError('Выберите торговую точку');
+                return;
+            }
+
+            if (pin.length !== maxPinLength) {
+                showError('Введите 4 цифры PIN');
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                const response = await fetch('/api/auth/terminal/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location_id: parseInt(locationId),
+                        pin_code: pin
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Check if session already active for this employee
+                    const existingAuth = JSON.parse(localStorage.getItem('soho_auth') || '{}');
+                    if (existingAuth.employee && existingAuth.employee.id === data.employee.id) {
+                        // Same employee - just update token, don't start new session
+                        localStorage.setItem('soho_auth', JSON.stringify({
+                            token: data.token,
+                            employee: data.employee,
+                            type: 'terminal',
+                            session_start: existingAuth.session_start || new Date().toISOString()
+                        }));
+                    } else {
+                        // New employee or no session - start new session
+                        await fetch('/api/auth/employee/session/start', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                employee_id: data.employee.id,
+                                location_id: parseInt(locationId)
+                            })
+                        });
+
+                        localStorage.setItem('soho_auth', JSON.stringify({
+                            token: data.token,
+                            employee: data.employee,
+                            type: 'terminal',
+                            session_start: new Date().toISOString()
+                        }));
+                    }
+
+                    // Redirect to operator workplace
+                    window.location.href = '/crm-operator-workplace.html';
+                } else {
+                    const error = await response.json();
+                    showError(error.detail || 'Неверный PIN');
+                    pin = '';
+                    updatePinDisplay();
+                }
+            } catch (err) {
+                showError('Ошибка соединения');
+                console.error('Login error:', err);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        async function closeShift() {
+            const locationId = document.getElementById('locationSelect').value || 
+                              document.getElementById('locationIdHidden').value;
+
+            if (!locationId) {
+                showError('Выберите торговую точку');
+                return;
+            }
+
+            if (pin.length !== maxPinLength) {
+                showError('Введите 4 цифры PIN');
+                return;
+            }
+
+            if (!confirm('Закрыть смену? Отработанные часы будут сохранены.')) {
+                return;
+            }
+
+            document.getElementById('loading').classList.add('active');
+
+            try {
+                // First login to get employee ID
+                const loginResponse = await fetch('/api/auth/terminal/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        location_id: parseInt(locationId),
+                        pin_code: pin
+                    })
+                });
+
+                if (!loginResponse.ok) {
+                    const error = await loginResponse.json();
+                    showError(error.detail || 'Неверный PIN');
+                    pin = '';
+                    updatePinDisplay();
+                    return;
+                }
+
+                const data = await loginResponse.json();
+
+                // End work session (calculate and save hours)
+                const endSessionResponse = await fetch('/api/auth/employee/session/end', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        employee_id: data.employee.id
+                    })
+                });
+
+                if (endSessionResponse.ok) {
+                    const sessionData = await endSessionResponse.json();
+                    alert(`✅ Смена закрыта!\nОтработано: ${sessionData.total_hours} часов`);
+                    pin = '';
+                    updatePinDisplay();
+                } else {
+                    showError('Ошибка закрытия смены. Возможно, смена не была открыта.');
+                }
+            } catch (err) {
+                showError('Ошибка соединения');
+                console.error('Close shift error:', err);
+            } finally {
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                addDigit(e.key);
+            } else if (e.key === 'Backspace') {
+                backspace();
+            } else if (e.key === 'Enter') {
+                submitPin();
+            } else if (e.key === 'Escape') {
+                clearPin();
+            }
+        });
+        
+        // Load locations
+        loadLocations();
+    </script>
+</body>
+</html>

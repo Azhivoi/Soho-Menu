@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Полуфабрикаты - SOHO CRM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a2e;
+            border-right: 1px solid #333;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h1 { font-size: 24px; color: #e94560; margin-bottom: 5px; }
+        .sidebar-header span { font-size: 12px; color: #888; }
+        .nav-section { margin-bottom: 10px; }
+        .nav-section-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .nav-section-header:hover { background: #252538; color: #fff; }
+        .nav-section-header.active { background: #e94560; color: #fff; }
+        .nav-section-header .toggle-icon { font-size: 12px; transition: transform 0.2s; }
+        .nav-section-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .nav-section-items { display: block; }
+        .nav-section-items.collapsed { display: none; }
+        .nav-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: block;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: #252538; color: #fff; }
+        .nav-item.active { background: #252538; color: #e94560; border-left: 3px solid #e94560; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .page-header h2 { font-size: 28px; font-weight: 600; }
+        
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .search-box input:focus { outline: none; border-color: #e94560; }
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #e94560; color: #fff; }
+        .btn-primary:hover { background: #d63a54; }
+        .btn-secondary { background: #252538; color: #fff; border: 1px solid #444; }
+        .btn-secondary:hover { background: #333; }
+        .btn-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); }
+        .btn-danger:hover { background: rgba(244, 67, 54, 0.3); }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        
+        /* Cards Grid */
+        .semi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        .semi-card {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid #333;
+            transition: all 0.2s;
+        }
+        .semi-card:hover { border-color: #e94560; }
+        .semi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        .semi-name { font-size: 18px; font-weight: 600; }
+        .semi-desc {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+            min-height: 20px;
+        }
+        .semi-meta {
+            display: flex;
+            gap: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #333;
+            border-bottom: 1px solid #333;
+            margin-bottom: 15px;
+        }
+        .semi-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .semi-meta-label { font-size: 12px; color: #888; text-transform: uppercase; }
+        .semi-meta-value { font-size: 14px; font-weight: 500; }
+        .semi-composition-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+        .semi-composition-list {
+            background: #252538;
+            border-radius: 6px;
+            padding: 12px;
+        }
+        .semi-composition-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #333;
+            font-size: 14px;
+        }
+        .semi-composition-item:last-child { border-bottom: none; }
+        .semi-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        /* Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-success { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+        .badge-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus { outline: none; border-color: #e94560; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Composition Builder */
+        .composition-list {
+            background: #252538;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .composition-item {
+            display: grid;
+            grid-template-columns: 2fr 1fr 80px 1fr 40px;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .composition-item select,
+        .composition-item input {
+            padding: 8px 12px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 13px;
+        }
+        .btn-remove-item {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add-item {
+            width: 100%;
+            padding: 12px;
+            background: #1a1a2e;
+            border: 1px dashed #555;
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+        }
+        .btn-add-item:hover { border-color: #e94560; color: #e94560; }
+        
+        /* Toggle */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            cursor: pointer;
+        }
+        .toggle-switch input { display: none; }
+        .toggle-slider {
+            width: 44px;
+            height: 24px;
+            background: #444;
+            border-radius: 12px;
+            position: relative;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+        .toggle-switch span:last-child {
+            flex: 1;
+            line-height: 1.4;
+            margin-left: 10px;
+            word-wrap: break-word;
+        }
+        
+        .form-group .toggle-switch {
+            padding: 8px 0;
+        }
+        .toggle-slider::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #e94560; }
+        .toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state h3 { font-size: 20px; margin-bottom: 10px; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SOHO</h1>
+                <span>CRM Система</span>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-header active" onclick="toggleSection(this)">
+                    <span>🍽️ Меню</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items">
+                    <a href="crm-menu.html" class="nav-item">Обзор</a>
+                    <a href="crm-menu-ingredients.html" class="nav-item">Ингредиенты</a>
+                    <a href="crm-menu-products.html" class="nav-item">Товары</a>
+                    <a href="crm-menu-categories.html" class="nav-item">Категории</a>
+                    <a href="crm-menu-semi.html" class="nav-item active">Полуфабрикаты</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h2>⚙️ Полуфабрикаты</h2>
+                <button class="btn btn-primary" onclick="openSemiModal()">+ Новый полуфабрикат</button>
+            </div>
+
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Поиск полуфабрикатов..." onkeyup="loadSemiFinished()">
+                </div>
+            </div>
+
+            <div class="semi-grid" id="semiGrid">
+                <div class="empty-state" style="grid-column: 1/-1;">
+                    <div class="empty-state-icon">⚙️</div>
+                    <h3>Загрузка...</h3>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="semiModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Новый полуфабрикат</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="semiId">
+                <div class="form-group">
+                    <label>Название *</label>
+                    <input type="text" id="semiName" placeholder="Например: Соус BBQ">
+                </div>
+                <div class="form-group">
+                    <label>Описание</label>
+                    <textarea id="semiDesc" placeholder="Описание полуфабриката..."></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Единица измерения *</label>
+                        <select id="semiUnit">
+                            <option value="">Выберите...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Цех приготовления</label>
+                        <select id="semiDepartment">
+                            <option value="">Не указан</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Время приготовления (мин)</label>
+                    <input type="number" id="semiPrepTime" placeholder="15" min="1">
+                </div>
+                
+                <h4 style="margin: 25px 0 15px; font-size: 16px;">📋 Состав</h4>
+                <div id="compositionList" class="composition-list"></div>
+                <button class="btn-add-item" onclick="addCompositionItem()">+ Добавить ингредиент</button>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="semiActive" checked>
+                        <span class="toggle-slider"></span>
+                        <span>Активен</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveSemiFinished()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let semiFinished = [];
+        let ingredients = [];
+        let units = [];
+        let departments = [];
+        let compositionItems = [];
+
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            header.nextElementSibling.classList.toggle('collapsed');
+        }
+
+        async function loadData() {
+            const [semiRes, ingRes, unitRes, deptRes] = await Promise.all([
+                fetch(`${API_URL}/menu/semi-finished`),
+                fetch(`${API_URL}/menu/ingredients`),
+                fetch(`${API_URL}/menu/units`),
+                fetch(`${API_URL}/production/departments`)
+            ]);
+            semiFinished = await semiRes.json();
+            ingredients = await ingRes.json();
+            units = await unitRes.json();
+            departments = await deptRes.json();
+            
+            document.getElementById('semiUnit').innerHTML = '<option value="">Выберите...</option>' + 
+                units.map(u => `<option value="${u.id}">${u.name} (${u.abbreviation})</option>`).join('');
+            document.getElementById('semiDepartment').innerHTML = '<option value="">Не указан</option>' + 
+                departments.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            
+            renderSemiFinished();
+        }
+
+        async function loadSemiFinished() {
+            const search = document.getElementById('searchInput').value;
+            const url = new URL(`${API_URL}/menu/semi-finished`);
+            if (search) url.searchParams.append('search', search);
+            
+            const res = await fetch(url);
+            semiFinished = await res.json();
+            renderSemiFinished();
+        }
+
+        function renderSemiFinished() {
+            const container = document.getElementById('semiGrid');
+            if (semiFinished.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <div class="empty-state-icon">⚙️</div>
+                        <h3>Нет полуфабрикатов</h3>
+                        <p>Полуфабрикаты упрощают создание техкарт. Например: соусы, маринады, заготовки.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = semiFinished.map(sf => `
+                <div class="semi-card">
+                    <div class="semi-header">
+                        <span class="semi-name">${sf.name}</span>
+                        <span class="badge ${sf.is_active ? 'badge-success' : 'badge-danger'}">
+                            ${sf.is_active ? 'Активен' : 'Неактивен'}
+                        </span>
+                    </div>
+                    <div class="semi-desc">${sf.description || 'Нет описания'}</div>
+                    <div class="semi-meta">
+                        <div class="semi-meta-item">
+                            <span class="semi-meta-label">Ед. изм.</span>
+                            <span class="semi-meta-value">${sf.unit?.abbreviation || '-'}</span>
+                        </div>
+                        <div class="semi-meta-item">
+                            <span class="semi-meta-label">Цех</span>
+                            <span class="semi-meta-value">${sf.department?.name || '-'}</span>
+                        </div>
+                        <div class="semi-meta-item">
+                            <span class="semi-meta-label">Время</span>
+                            <span class="semi-meta-value">${sf.preparation_time_minutes ? sf.preparation_time_minutes + ' мин' : '-'}</span>
+                        </div>
+                    </div>
+                    <div class="semi-composition-title">Состав:</div>
+                    <div class="semi-composition-list">
+                        ${sf.composition && sf.composition.length > 0 
+                            ? sf.composition.map(item => `
+                                <div class="semi-composition-item">
+                                    <span>${item.item_name}</span>
+                                    <span>${item.quantity} ${item.unit_abbreviation || ''}</span>
+                                </div>
+                            `).join('')
+                            : '<div style="color: #888; font-size: 13px;">Нет состава</div>'
+                        }
+                    </div>
+                    <div class="semi-actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editSemiFinished(${sf.id})">✏️ Редактировать</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteSemiFinished(${sf.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openSemiModal(id = null) {
+            document.getElementById('modalTitle').textContent = id ? 'Редактировать полуфабрикат' : 'Новый полуфабрикат';
+            document.getElementById('semiId').value = id || '';
+            compositionItems = [];
+            renderComposition();
+            
+            if (id) {
+                const sf = semiFinished.find(s => s.id === id);
+                if (sf) {
+                    document.getElementById('semiName').value = sf.name;
+                    document.getElementById('semiDesc').value = sf.description || '';
+                    document.getElementById('semiUnit').value = sf.unit_id || '';
+                    document.getElementById('semiDepartment').value = sf.department_id || '';
+                    document.getElementById('semiPrepTime').value = sf.preparation_time_minutes || '';
+                    document.getElementById('semiActive').checked = sf.is_active;
+                    
+                    if (sf.composition) {
+                        compositionItems = sf.composition.map(c => ({
+                            item_type: c.item_type,
+                            item_id: c.item_id,
+                            quantity: c.quantity,
+                            unit_id: c.unit_id
+                        }));
+                        renderComposition();
+                    }
+                }
+            } else {
+                document.querySelectorAll('#semiModal input[type="text"], #semiModal textarea, #semiModal input[type="number"]').forEach(el => el.value = '');
+                document.querySelectorAll('#semiModal select').forEach(el => el.value = '');
+                document.getElementById('semiActive').checked = true;
+            }
+            
+            document.getElementById('semiModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('semiModal').classList.remove('active');
+        }
+
+        function addCompositionItem() {
+            compositionItems.push({ item_type: 'ingredient', item_id: '', quantity: '', unit_id: '' });
+            renderComposition();
+        }
+
+        function removeCompositionItem(index) {
+            compositionItems.splice(index, 1);
+            renderComposition();
+        }
+
+        function renderComposition() {
+            const container = document.getElementById('compositionList');
+            if (compositionItems.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Добавьте ингредиенты в состав</p>';
+                return;
+            }
+            container.innerHTML = compositionItems.map((item, idx) => `
+                <div class="composition-item">
+                    <select onchange="compositionItems[${idx}].item_id = this.value; compositionItems[${idx}].item_type = 'ingredient'">
+                        <option value="">Выберите ингредиент...</option>
+                        ${ingredients.map(i => `<option value="${i.id}" ${item.item_id == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
+                    </select>
+                    <input type="number" placeholder="Кол-во" value="${item.quantity}" onchange="compositionItems[${idx}].quantity = this.value" step="0.001">
+                    <select onchange="compositionItems[${idx}].unit_id = this.value">
+                        <option value="">Ед.</option>
+                        ${units.map(u => `<option value="${u.id}" ${item.unit_id == u.id ? 'selected' : ''}>${u.abbreviation}</option>`).join('')}
+                    </select>
+                    <button class="btn-remove-item" onclick="removeCompositionItem(${idx})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        async function saveSemiFinished() {
+            const id = document.getElementById('semiId').value;
+            const data = {
+                name: document.getElementById('semiName').value,
+                description: document.getElementById('semiDesc').value || null,
+                unit_id: document.getElementById('semiUnit').value,
+                department_id: document.getElementById('semiDepartment').value || null,
+                preparation_time_minutes: parseInt(document.getElementById('semiPrepTime').value) || null,
+                is_active: document.getElementById('semiActive').checked,
+                composition: compositionItems.filter(i => i.item_id && i.quantity).map(i => ({
+                    item_type: i.item_type || 'ingredient',
+                    item_id: parseInt(i.item_id),
+                    quantity: parseFloat(i.quantity),
+                    unit_id: parseInt(i.unit_id) || null
+                }))
+            };
+
+            if (!data.name || !data.unit_id) {
+                alert('Заполните название и единицу измерения');
+                return;
+            }
+
+            const url = id ? `${API_URL}/menu/semi-finished/${id}` : `${API_URL}/menu/semi-finished`;
+            const method = id ? 'PUT' : 'POST';
+            
+            const res = await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                closeModal();
+                loadData();
+            } else {
+                const err = await res.json();
+                alert(err.detail || 'Ошибка сохранения');
+            }
+        }
+
+        async function editSemiFinished(id) {
+            const res = await fetch(`${API_URL}/menu/semi-finished/${id}`);
+            const sf = await res.json();
+            const idx = semiFinished.findIndex(s => s.id === id);
+            if (idx >= 0) semiFinished[idx] = sf;
+            openSemiModal(id);
+        }
+
+        async function deleteSemiFinished(id) {
+            if (!confirm('Удалить полуфабрикат?')) return;
+            await fetch(`${API_URL}/menu/semi-finished/${id}`, { method: 'DELETE' });
+            loadData();
+        }
+
+        window.onclick = function(e) {
+            if (e.target.classList.contains('modal')) e.target.classList.remove('active');
+        }
+
+        loadData();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

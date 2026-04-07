@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход для операторов | SOHO</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        
+        .logo span { color: var(--accent-red); }
+        
+        h1 { font-size: 24px; margin-bottom: 10px; }
+        
+        .subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            border-color: var(--accent-red);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--accent-red);
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn:hover { opacity: 0.9; }
+        
+        .divider {
+            margin: 25px 0;
+            border-top: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .divider span {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            padding: 0 15px;
+            color: var(--text-secondary);
+            font-size: 12px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-link:hover { color: var(--accent-red); }
+        
+        .operator-badge {
+            display: inline-block;
+            background: var(--accent-blue);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stations {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .station-btn {
+            padding: 15px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .station-btn:hover {
+            border-color: var(--accent-red);
+            background: var(--bg-hover);
+        }
+        
+        .station-btn .icon { font-size: 24px; display: block; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🍕 <span>SOHO</span></div>
+        <div class="operator-badge">🎧 ПАНЕЛЬ ОПЕРАТОРА</div>
+        <h1>Вход в систему</h1>
+        <p class="subtitle">Выберите рабочую станцию для приёма заказов</p>
+        
+        <div class="stations">
+            <button class="station-btn" onclick="enterAs('operator1')">
+                <span class="icon">🖥️</span>
+                Станция 1
+            </button>
+            <button class="station-btn" onclick="enterAs('operator2')">
+                <span class="icon">🖥️</span>
+                Станция 2
+            </button>
+            <button class="station-btn" onclick="enterAs('operator3')">
+                <span class="icon">🖥️</span>
+                Станция 3
+            </button>
+            <button class="station-btn" onclick="enterAs('kiosk')">
+                <span class="icon">📱</span>
+                Киоск
+            </button>
+        </div>
+        
+        <div class="divider"><span>или</span></div>
+        
+        <form id="loginForm" onsubmit="return doLogin(event)">
+            <div class="form-group">
+                <label>Пин-код оператора</label>
+                <input type="password" id="pinCode" placeholder="••••" maxlength="4" inputmode="numeric">
+            </div>
+            <button type="submit" class="btn btn-primary">Войти по пин-коду</button>
+        </form>
+        
+        <a href="crm-dashboard.html" class="back-link">← Вернуться в админ-панель</a>
+    </div>
+    
+    <script>
+        function enterAs(station) {
+            // Save station to localStorage
+            localStorage.setItem('operatorStation', station);
+            localStorage.setItem('operatorMode', 'true');
+            // Open orders panel in new window
+            window.open('crm-orders.html?operator=' + station, '_blank', 'width=1400,height=900');
+        }
+        
+        function doLogin(e) {
+            e.preventDefault();
+            const pin = document.getElementById('pinCode').value;
+            if (pin.length === 4) {
+                // TODO: Validate PIN via API
+                localStorage.setItem('operatorMode', 'true');
+                localStorage.setItem('operatorPin', pin);
+                window.open('crm-orders.html', '_blank', 'width=1400,height=900');
+            } else {
+                alert('Введите 4-значный пин-код');
+            }
+            return false;
+        }
+        
+        // Auto-focus PIN input
+        document.getElementById('pinCode')?.focus();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

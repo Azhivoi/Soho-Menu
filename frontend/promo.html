@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soho.By - Кафе и Доставка</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #FFDF00;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 160px;
+            height: 160px;
+            margin: -80px auto 20px;
+            border-radius: 20px;
+            object-fit: contain;
+            background: #fff;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            padding: 5px;
+        }
+        
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 12px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .btn:hover {
+            background: #333;
+            color: #fff;
+        }
+        
+        .btn:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* Custom fields container */
+        .custom-fields {
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .custom-field {
+            margin-bottom: 15px;
+        }
+        
+        .custom-field-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .custom-field-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .custom-field-text {
+            padding: 12px;
+            background: #f5f5f5;
+            border-radius: 8px;
+        }
+        
+        .custom-field-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background: transparent;
+            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .custom-field-btn:hover {
+            background: #333;
+            color: #fff;
+        }
+    </style>
+    <style id="customStyles"></style>
+</head>
+<body>
+    <div class="card">
+        <img src="/uploads/logo.png" alt="Soho.By" class="logo" id="promoLogo">
+        <h1 class="title" id="promoTitle">Кафе и Доставка Soho.By</h1>
+        <p class="description" id="promoDesc">Выбирайте: сайт или приложение! Посетите наш Instagram</p>
+        
+        <!-- Custom fields will be inserted here -->
+        <div class="custom-fields" id="customFields"></div>
+        
+        <a href="https://foodpicasso.com/x/2307x621" class="btn" id="btnApp" target="_blank">Скачать Мобильное Приложение</a>
+        <a href="https://soho.by/" class="btn" id="btnSite" target="_blank">Наш Сайт</a>
+        <a href="https://www.instagram.com/cafe_soho.by" class="btn" id="btnInsta" target="_blank">Instagram</a>
+    </div>
+    
+    <script>
+        // Load promo content from API
+        async function loadPromoContent() {
+            try {
+                const response = await fetch('/api/content/promo');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.logo) document.getElementById('promoLogo').src = data.logo;
+                    if (data.title) document.getElementById('promoTitle').textContent = data.title;
+                    if (data.description) document.getElementById('promoDesc').textContent = data.description;
+                    if (data.app_url) document.getElementById('btnApp').href = data.app_url;
+                    if (data.site_url) document.getElementById('btnSite').href = data.site_url;
+                    if (data.instagram_url) document.getElementById('btnInsta').href = data.instagram_url;
+                    
+                    // Apply custom CSS
+                    if (data.custom_css) {
+                        document.getElementById('customStyles').textContent = data.custom_css;
+                    }
+                    
+                    // Render custom fields
+                    if (data.custom_fields && data.custom_fields.length > 0) {
+                        const container = document.getElementById('customFields');
+                        container.innerHTML = '';
+                        data.custom_fields.forEach(field => {
+                            if (field.name && field.value) {
+                                const div = document.createElement('div');
+                                div.className = 'custom-field';
+                                
+                                // Check if it's a button type or has URL
+                                if (field.type === 'button' || field.url) {
+                                    div.innerHTML = `
+                                        <a href="${field.url || field.value}" class="custom-field-btn" target="_blank">${field.name}</a>
+                                    `;
+                                } else {
+                                    div.innerHTML = `
+                                        <div class="custom-field-label">${field.name}</div>
+                                        <div class="custom-field-value custom-field-text">${field.value}</div>
+                                    `;
+                                }
+                                container.appendChild(div);
+                            }
+                        });
+                    }
+                }
+            } catch (err) {
+                console.log('Using default promo content');
+            }
+        }
+        
+        loadPromoContent();
+    </script>
+</body>
+</html>

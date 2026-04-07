@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Маркетинг | SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, sans-serif; background: #0f0f1a; color: #fff; min-height: 100vh; }
+        .layout { display: flex; min-height: 100vh; }
+        
+        .main { flex: 1; margin-left: 0; }
+        .header { height: 70px; background: #1a1a2e; border-bottom: 1px solid #2a2a40; display: flex; align-items: center; justify-content: space-between; padding: 0 24px; }
+        .content { padding: 24px; }
+        
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #e94560; color: white; }
+        .btn-secondary { background: #2a2a40; color: #fff; }
+        .btn-success { background: #4caf50; color: white; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; margin-bottom: 6px; font-size: 13px; color: #888; }
+        .form-input, .form-select, .form-textarea { width: 100%; padding: 12px; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 8px; color: #fff; font-size: 14px; }
+        .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #e94560; }
+        .form-textarea { min-height: 100px; resize: vertical; }
+        
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+        
+        .promo-card { background: #252538; border-radius: 12px; padding: 16px; margin-bottom: 16px; border-left: 4px solid #e94560; min-height: 120px; }
+        .promo-card.active { border-left-color: #4caf50; }
+        .promo-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; gap: 12px; }
+        .promo-title { font-size: 16px; font-weight: 600; }
+        .promo-status { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+        .status-active { background: rgba(76,175,80,0.2); color: #4caf50; }
+        .status-draft { background: rgba(160,160,184,0.2); color: #a0a0b8; }
+        
+        .promo-actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a2e; border-radius: 16px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { padding: 20px 24px; border-bottom: 1px solid #2a2a40; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 24px; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid #2a2a40; display: flex; justify-content: flex-end; gap: 12px; }
+        
+        .empty-state { text-align: center; padding: 60px 20px; color: #888; }
+        
+        .section-title { font-size: 14px; font-weight: 600; color: #e94560; margin: 20px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #2a2a40; }
+        
+        .product-section { background: #252538; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+        .product-section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #a0a0b0; }
+        
+        .product-list { max-height: 250px; overflow-y: auto; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 8px; }
+        .product-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid #2a2a40; cursor: pointer; }
+        .product-item:hover { background: #1a1a2e; }
+        .product-item.selected { background: rgba(233,69,96,0.2); }
+        .product-item input[type="checkbox"] { width: 18px; height: 18px; }
+        
+        /* Drag & Drop styles */
+        .promo-card.drag-over { border: 2px dashed #e94560; background: rgba(233,69,96,0.1); }
+        .promo-card[draggable="true"] { transition: opacity 0.2s; }
+        
+        .selected-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .tag { background: #e94560; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        .tag-gift { background: #4caf50; }
+        .tag-remove { cursor: pointer; font-weight: bold; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <main class="main" style="margin-left: 0;">
+            <header class="header">
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <a href="admin-panel.html" class="btn btn-secondary" style="text-decoration: none;">← Назад</a>
+                    <h2>🎁 Акции и скидки</h2>
+                </div>
+                <button class="btn btn-primary" onclick="openPromoModal()">➕ Создать акцию</button>
+            </header>
+            
+            <div class="content">
+                <!-- Promotions Section -->
+                <div class="section-title">📢 Акции</div>
+                <div id="promotionsList">
+                    <div class="empty-state">Загрузка...</div>
+                </div>
+                
+                <!-- Discounts Section -->
+                <div class="section-title" style="margin-top: 40px;">💰 Скидки</div>
+                <div style="background: #252538; padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 16px;">Создать скидку</h4>
+                    <div style="display: grid; gap: 12px;">
+                        <input type="text" id="newDiscountName" placeholder="Название скидки" style="padding: 12px; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 8px; color: #fff;">
+                        <div style="display: flex; gap: 12px;">
+                            <input type="number" id="newDiscountValue" placeholder="%" min="0" max="100" style="width: 100px; padding: 12px; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 8px; color: #fff;">
+                            <select id="newDiscountType" style="flex: 1; padding: 12px; background: #0f0f1a; border: 1px solid #2a2a40; border-radius: 8px; color: #fff;">
+                                <option value="percent">Процент (%)</option>
+                                <option value="fixed">Фиксированная сумма (BYN)</option>
+                            </select>
+                        </div>
+                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                            <input type="checkbox" id="newDiscountForItems" style="width: 18px; height: 18px;">
+                            <span>Применять к позициям (доступна в корзине для каждого товара)</span>
+                        </label>
+                        <button onclick="createDiscount()" class="btn btn-primary" style="width: fit-content;">➕ Добавить скидку</button>
+                    </div>
+                </div>
+                
+                <div style="background: #252538; padding: 20px; border-radius: 12px;">
+                    <h4 style="margin-bottom: 16px;">Активные скидки</h4>
+                    <div id="discountsList">
+                        <div class="empty-state">Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Create/Edit Promo Modal -->
+    <div class="modal" id="promoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Создать акцию</h3>
+                <button onclick="closePromoModal()" style="background: none; border: none; color: #888; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="promoId">
+                
+                <!-- Basic Info -->
+                <div class="section-title">Основная информация</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Название акции *</label>
+                        <input type="text" class="form-input" id="promoName" placeholder="Например: Скидка 20% на пиццу">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Тип акции *</label>
+                        <select class="form-select" id="promoType" onchange="onTypeChange()">
+                            <option value="percentage">📉 Процент скидки</option>
+                            <option value="fixed_amount">💰 Фиксированная сумма</option>
+                            <option value="n_plus_gift">🎁 n + подарок (2+1)</option>
+                            <option value="n_plus_discount">💯 n + скидка на N-й</option>
+                            <option value="sum_gift">🎁 Сумма + подарок</option>
+                            <option value="sum_discount">💯 Сумма + скидка</option>
+                            <option value="item_discount">🍽️ Блюдо со скидкой</option>
+                            <option value="one_plus_one_fix">1️⃣ 1+1 = фикс цена</option>
+                            <option value="free_delivery">🚚 Бесплатная доставка</option>
+                            <option value="combo">🍽️ Комбо-набор</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Описание (полное)</label>
+                    <textarea class="form-textarea" id="promoDescription" placeholder="Полное описание условий акции..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Краткое описание (для слайдера)</label>
+                    <input type="text" class="form-input" id="promoShortDesc" placeholder="Например: При заказе от 40 BYN" maxlength="100">
+                    <div style="font-size: 11px; color: #888; margin-top: 4px;">Максимум 100 символов. Если пусто — используется начало полного описания.</div>
+                </div>
+                
+                <!-- Discount Value -->
+                <div class="grid-3" id="discountValueSection">
+                    <div class="form-group">
+                        <label class="form-label">Значение скидки *</label>
+                        <input type="number" class="form-input" id="promoValue" placeholder="20">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Мин. сумма заказа</label>
+                        <input type="number" class="form-input" id="promoMinOrder" placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Макс. скидка</label>
+                        <input type="number" class="form-input" id="promoMaxDiscount" placeholder="">
+                    </div>
+                </div>
+                
+                <!-- Product Selection for N+Gift -->
+                <div id="nPlusGiftSection" class="hidden">
+                    <div class="section-title">🎁 Условия n + подарок</div>
+                    
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Купить N шт.</label>
+                            <input type="number" class="form-input" id="buyN" value="2" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Получить (шт.)</label>
+                            <input type="number" class="form-input" id="getN" value="1" min="1">
+                        </div>
+                    </div>
+                    
+                    <!-- BUY Section -->
+                    <div class="product-section">
+                        <div class="product-section-title">🛒 Что купить (выберите категорию и товары)</div>
+                        <div class="form-group">
+                            <label class="form-label">Категория *</label>
+                            <select class="form-select" id="buyCategory" onchange="filterBuyProducts()">
+                                <option value="">Выберите категорию</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Поиск товара</label>
+                            <input type="text" class="form-input" id="buySearch" placeholder="Введите название..." oninput="filterBuyProducts()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Выберите товары (если не выбрано - любой из категории)</label>
+                            <div class="product-list" id="buyProductList">
+                                <div style="color: #888; padding: 12px;">Сначала выберите категорию</div>
+                            </div>
+                        </div>
+                        <div class="selected-tags" id="buySelectedTags"></div>
+                    </div>
+                    
+                    <!-- GIFT Section -->
+                    <div class="product-section">
+                        <div class="product-section-title">🎁 Что в подарок (выберите товары)</div>
+                        <div class="form-group">
+                            <label class="form-label">Поиск товара</label>
+                            <input type="text" class="form-input" id="giftSearch" placeholder="Введите название..." oninput="filterGiftProducts()">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Выберите товары в подарок *</label>
+                            <div class="product-list" id="giftProductList">
+                                <div style="color: #888; padding: 12px;">Загрузка товаров...</div>
+                            </div>
+                        </div>
+                        <div class="selected-tags" id="giftSelectedTags"></div>
+                    </div>
+                </div>
+                
+                <!-- Time Settings -->
+                <div class="section-title">⏰ Время действия</div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Дата начала</label>
+                        <input type="date" class="form-input" id="promoStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Дата окончания</label>
+                        <input type="date" class="form-input" id="promoEndDate">
+                    </div>
+                </div>
+                
+                <!-- Days of Week -->
+                <div class="form-group">
+                    <label class="form-label">📅 Дни недели (если не выбрано — все дни)</label>
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="1" style="width: 18px; height: 18px;"> Пн
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="2" style="width: 18px; height: 18px;"> Вт
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="3" style="width: 18px; height: 18px;"> Ср
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="4" style="width: 18px; height: 18px;"> Чт
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="5" style="width: 18px; height: 18px;"> Пт
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="6" style="width: 18px; height: 18px;"> Сб
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                            <input type="checkbox" class="day-checkbox" value="7" style="width: 18px; height: 18px;"> Вс
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Promo Code -->
+                <div class="section-title">🏷️ Промокод</div>
+                <div class="form-group">
+                    <label class="form-label">Промокод (если пусто — автоприменение)</label>
+                    <input type="text" class="form-input" id="promoCode" placeholder="Например: PIZZA20" style="text-transform: uppercase;">
+                </div>
+                
+                <!-- Banner Images -->
+                <div class="section-title">🖼️ Баннеры акции</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Mobile (320x200)</label>
+                        <input type="file" class="form-input" id="promoImageMobile" accept="image/*" onchange="previewImage(this, 'previewMobile')">
+                        <div id="previewMobile" style="margin-top: 8px; max-height: 100px; overflow: hidden; border-radius: 8px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Tablet (768x300)</label>
+                        <input type="file" class="form-input" id="promoImageTablet" accept="image/*" onchange="previewImage(this, 'previewTablet')">
+                        <div id="previewTablet" style="margin-top: 8px; max-height: 100px; overflow: hidden; border-radius: 8px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Desktop (1200x400)</label>
+                        <input type="file" class="form-input" id="promoImageWeb" accept="image/*" onchange="previewImage(this, 'previewWeb')">
+                        <div id="previewWeb" style="margin-top: 8px; max-height: 100px; overflow: hidden; border-radius: 8px;"></div>
+                    </div>
+                </div>
+                
+                <!-- Display Settings -->
+                <div class="section-title">👀 Отображение</div>
+                <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="promoShowOnMain"> Показывать на главной
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="promoFeatured"> Важная акция
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="promoAutoApply" checked> Автоприменение
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePromoModal()">Отмена</button>
+                <button class="btn btn-success" onclick="savePromo()">💾 Сохранить</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Global data
+        let categories = [];
+        let products = [];
+        let selectedBuy = [];  // Product IDs
+        let selectedBuyVariants = {};  // {productId: [variantIds]}
+        let selectedGift = [];  // Product IDs
+        let selectedGiftVariants = {};  // {productId: [variantIds]}
+        
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadData();
+            loadPromotions();
+        });
+        
+        async function loadData() {
+            try {
+                const [catRes, prodRes] = await Promise.all([
+                    fetch('/api/menu/categories'),
+                    fetch('/api/menu/products')
+                ]);
+                
+                if (catRes.ok) categories = await catRes.json();
+                if (prodRes.ok) {
+                    const allProducts = await prodRes.json();
+                    products = [];
+                    
+                    for (const p of allProducts) {
+                        if (p.is_variable && p.variations && p.variations.length > 0) {
+                            // Add variations as separate products
+                            for (const v of p.variations) {
+                                products.push({
+                                    id: v.id,
+                                    name: `${p.name} - ${v.name}`,
+                                    price: v.price,
+                                    sku: v.sku,
+                                    parent_id: p.id,
+                                    category_id: p.category_id,
+                                    image_url: p.image_url
+                                });
+                            }
+                        } else if (!p.is_variable && p.price > 0) {
+                            // Simple product without variations
+                            products.push(p);
+                        }
+                    }
+                    console.log('Loaded', products.length, 'sellable products (including variations)');
+                }
+                
+                console.log('Loaded:', categories.length, 'categories,', products.length, 'products');
+                
+                // Fill category select
+                const catSelect = document.getElementById('buyCategory');
+                if (catSelect) {
+                    catSelect.innerHTML = '<option value="">Выберите категорию</option>' +
+                        categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                }
+                
+                // Fill gift products (all)
+                renderGiftList(products);
+                
+            } catch (err) {
+                console.error('Error loading data:', err);
+            }
+        }
+        
+        // Load variants for specific product on demand
+        // Note: Variants are now pre-loaded from the main products API
+        async function loadProductVariants(productId) {
+            const product = products.find(p => p.id == productId);
+            if (!product) return;
+            
+            // Variants should already be loaded from the main API
+            // Just trigger a re-render to show them
+            filterBuyProducts();
+            filterGiftProducts();
+        }
+        
+        function onTypeChange() {
+            const type = document.getElementById('promoType').value;
+            const needsProducts = type === 'n_plus_gift' || type === 'n_plus_discount' || type === 'sum_gift';
+            
+            document.getElementById('nPlusGiftSection').classList.toggle('hidden', !needsProducts);
+            document.getElementById('discountValueSection').classList.toggle('hidden', type === 'free_delivery');
+        }
+        
+        function filterBuyProducts() {
+            const catId = document.getElementById('buyCategory').value;
+            const search = document.getElementById('buySearch').value.toLowerCase();
+            
+            let filtered = products;
+            if (catId) filtered = filtered.filter(p => p.category_id == catId);
+            if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+            
+            renderBuyList(filtered);
+        }
+        
+        function renderBuyList(items) {
+            const container = document.getElementById('buyProductList');
+            if (!container) return;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div style="color: #888; padding: 12px;">Нет товаров</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(p => {
+                const hasVariants = p.variants && p.variants.length > 0;
+                const isSelected = selectedBuy.includes(p.id);
+                
+                let html = `
+                    <div class="product-item ${isSelected ? 'selected' : ''}">
+                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;" onclick="toggleBuy(${p.id})">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleBuy(${p.id})">
+                            <span style="flex: 1;">${p.name}</span>
+                            <span style="color: #888;">${p.price} BYN</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Show variants section if product is selected
+                if (isSelected) {
+                    if (hasVariants) {
+                        html += `
+                            <div style="padding-left: 40px; background: #1a1a2e; border-bottom: 1px solid #2a2a40;">
+                                <div style="font-size: 12px; color: #888; padding: 8px 12px;">Выберите размер:</div>
+                                ${p.variants.map(v => `
+                                    <div class="product-item ${selectedBuyVariants[p.id]?.includes(v.id) ? 'selected' : ''}" 
+                                         style="padding-left: 20px;"
+                                         onclick="toggleBuyVariant(${p.id}, ${v.id})">
+                                        <input type="checkbox" ${selectedBuyVariants[p.id]?.includes(v.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleBuyVariant(${p.id}, ${v.id})">
+                                        <span style="flex: 1;">${v.variant_name || v.size || v.name_ru}</span>
+                                        <span style="color: #888;">${v.price} BYN</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else if (p.variants === undefined) {
+                        // Loading state
+                        html += `
+                            <div style="padding-left: 40px; background: #1a1a2e; border-bottom: 1px solid #2a2a40; padding: 8px 12px;">
+                                <span style="font-size: 12px; color: #888;">Загрузка вариаций...</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                return html;
+            }).join('');
+        }
+        
+        function toggleBuy(id) {
+            const idx = selectedBuy.indexOf(id);
+            if (idx > -1) {
+                selectedBuy.splice(idx, 1);
+                delete selectedBuyVariants[id];
+            } else {
+                selectedBuy.push(id);
+                // Load variants when product is selected
+                loadProductVariants(id);
+            }
+            
+            filterBuyProducts();
+            renderBuyTags();
+        }
+        
+        function toggleBuyVariant(productId, variantId) {
+            if (!selectedBuyVariants[productId]) {
+                selectedBuyVariants[productId] = [];
+            }
+            const idx = selectedBuyVariants[productId].indexOf(variantId);
+            if (idx > -1) {
+                selectedBuyVariants[productId].splice(idx, 1);
+            } else {
+                selectedBuyVariants[productId].push(variantId);
+            }
+            filterBuyProducts();
+            renderBuyTags();
+        }
+        
+        function renderBuyTags() {
+            const container = document.getElementById('buySelectedTags');
+            if (!container) return;
+            
+            if (selectedBuy.length === 0) {
+                container.innerHTML = '<span style="color: #888; font-size: 13px;">Любой товар из категории</span>';
+                return;
+            }
+            
+            let html = '';
+            selectedBuy.forEach(id => {
+                const p = products.find(x => x.id == id);
+                if (!p) return;
+                
+                const variants = selectedBuyVariants[id] || [];
+                if (variants.length > 0 && p.variants) {
+                    // Show specific variants
+                    variants.forEach(vid => {
+                        const v = p.variants.find(x => x.id == vid);
+                        if (v) {
+                            html += `<span class="tag">${p.name} - ${v.variant_name || v.size} <span class="tag-remove" onclick="toggleBuyVariant(${id}, ${vid})">×</span></span>`;
+                        }
+                    });
+                } else {
+                    // Show product only
+                    html += `<span class="tag">${p.name} <span class="tag-remove" onclick="toggleBuy(${id})">×</span></span>`;
+                }
+            });
+            
+            container.innerHTML = html || '<span style="color: #888; font-size: 13px;">Выберите товары</span>';
+        }
+        
+        function filterGiftProducts() {
+            const search = document.getElementById('giftSearch').value.toLowerCase();
+            const filtered = search 
+                ? products.filter(p => p.name.toLowerCase().includes(search))
+                : products;
+            renderGiftList(filtered);
+        }
+        
+        function renderGiftList(items) {
+            const container = document.getElementById('giftProductList');
+            if (!container) return;
+            
+            if (items.length === 0) {
+                container.innerHTML = '<div style="color: #888; padding: 12px;">Нет товаров</div>';
+                return;
+            }
+            
+            container.innerHTML = items.map(p => {
+                const hasVariants = p.variants && p.variants.length > 0;
+                const isSelected = selectedGift.includes(p.id);
+                
+                let html = `
+                    <div class="product-item ${isSelected ? 'selected' : ''}">
+                        <div style="display: flex; align-items: center; gap: 12px; width: 100%;" onclick="toggleGift(${p.id})">
+                            <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleGift(${p.id})">
+                            <span style="flex: 1;">${p.name}</span>
+                            <span style="color: #888;">${p.price} BYN</span>
+                        </div>
+                    </div>
+                `;
+                
+                // Show variants section if product is selected
+                if (isSelected) {
+                    if (hasVariants) {
+                        html += `
+                            <div style="padding-left: 40px; background: #1a1a2e; border-bottom: 1px solid #2a2a40;">
+                                <div style="font-size: 12px; color: #888; padding: 8px 12px;">Выберите размер:</div>
+                                ${p.variants.map(v => `
+                                    <div class="product-item ${selectedGiftVariants[p.id]?.includes(v.id) ? 'selected' : ''}" 
+                                         style="padding-left: 20px;"
+                                         onclick="toggleGiftVariant(${p.id}, ${v.id})">
+                                        <input type="checkbox" ${selectedGiftVariants[p.id]?.includes(v.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleGiftVariant(${p.id}, ${v.id})">
+                                        <span style="flex: 1;">${v.variant_name || v.size || v.name_ru}</span>
+                                        <span style="color: #888;">${v.price} BYN</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    } else if (p.variants === undefined) {
+                        // Loading state
+                        html += `
+                            <div style="padding-left: 40px; background: #1a1a2e; border-bottom: 1px solid #2a2a40; padding: 8px 12px;">
+                                <span style="font-size: 12px; color: #888;">Загрузка вариаций...</span>
+                            </div>
+                        `;
+                    }
+                }
+                
+                return html;
+            }).join('');
+        }
+        
+        function toggleGift(id) {
+            const idx = selectedGift.indexOf(id);
+            if (idx > -1) {
+                selectedGift.splice(idx, 1);
+                delete selectedGiftVariants[id];
+            } else {
+                selectedGift.push(id);
+                // Load variants when product is selected
+                loadProductVariants(id);
+            }
+            
+            filterGiftProducts();
+            renderGiftTags();
+        }
+        
+        function toggleGiftVariant(productId, variantId) {
+            if (!selectedGiftVariants[productId]) {
+                selectedGiftVariants[productId] = [];
+            }
+            const idx = selectedGiftVariants[productId].indexOf(variantId);
+            if (idx > -1) {
+                selectedGiftVariants[productId].splice(idx, 1);
+            } else {
+                selectedGiftVariants[productId].push(variantId);
+            }
+            filterGiftProducts();
+            renderGiftTags();
+        }
+        
+        function renderGiftTags() {
+            const container = document.getElementById('giftSelectedTags');
+            if (!container) return;
+            
+            if (selectedGift.length === 0) {
+                container.innerHTML = '<span style="color: #888; font-size: 13px;">Не выбраны товары в подарок</span>';
+                return;
+            }
+            
+            let html = '';
+            selectedGift.forEach(id => {
+                const p = products.find(x => x.id == id);
+                if (!p) return;
+                
+                const variants = selectedGiftVariants[id] || [];
+                if (variants.length > 0 && p.variants) {
+                    // Show specific variants
+                    variants.forEach(vid => {
+                        const v = p.variants.find(x => x.id == vid);
+                        if (v) {
+                            html += `<span class="tag tag-gift">${p.name} - ${v.variant_name || v.size} <span class="tag-remove" onclick="toggleGiftVariant(${id}, ${vid})">×</span></span>`;
+                        }
+                    });
+                } else {
+                    // Show product only
+                    html += `<span class="tag tag-gift">${p.name} <span class="tag-remove" onclick="toggleGift(${id})">×</span></span>`;
+                }
+            });
+            
+            container.innerHTML = html || '<span style="color: #888; font-size: 13px;">Выберите товары</span>';
+        }
+        
+        // Image preview and storage
+        let promoImages = { mobile: null, tablet: null, web: null };
+        
+        function previewImage(input, previewId) {
+            const preview = document.getElementById(previewId);
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: auto; border-radius: 8px;">`;
+                    // Store for upload
+                    if (previewId === 'previewMobile') promoImages.mobile = input.files[0];
+                    if (previewId === 'previewTablet') promoImages.tablet = input.files[0];
+                    if (previewId === 'previewWeb') promoImages.web = input.files[0];
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        
+        async function uploadPromoImages(promoId) {
+            const uploads = [];
+
+            if (promoImages.mobile) {
+                const formData = new FormData();
+                formData.append('file', promoImages.mobile);
+                formData.append('type', 'mobile');
+                uploads.push(
+                    fetch(`/api/marketing/promotions/${promoId}/images`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }).then(async res => {
+                        if (!res.ok) {
+                            const text = await res.text();
+                            throw new Error(`HTTP ${res.status}: ${text}`);
+                        }
+                        return res;
+                    }).catch(err => {
+                        console.error('Error uploading mobile image:', err);
+                        // Don't throw - continue with other uploads
+                    })
+                );
+            }
+
+            if (promoImages.tablet) {
+                const formData = new FormData();
+                formData.append('file', promoImages.tablet);
+                formData.append('type', 'tablet');
+                uploads.push(
+                    fetch(`/api/marketing/promotions/${promoId}/images`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }).then(async res => {
+                        if (!res.ok) {
+                            const text = await res.text();
+                            throw new Error(`HTTP ${res.status}: ${text}`);
+                        }
+                        return res;
+                    }).catch(err => {
+                        console.error('Error uploading tablet image:', err);
+                        // Don't throw - continue with other uploads
+                    })
+                );
+            }
+
+            if (promoImages.web) {
+                const formData = new FormData();
+                formData.append('file', promoImages.web);
+                formData.append('type', 'web');
+                uploads.push(
+                    fetch(`/api/marketing/promotions/${promoId}/images`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }).then(async res => {
+                        if (!res.ok) {
+                            const text = await res.text();
+                            throw new Error(`HTTP ${res.status}: ${text}`);
+                        }
+                        return res;
+                    }).catch(err => {
+                        console.error('Error uploading web image:', err);
+                        // Don't throw - continue with other uploads
+                    })
+                );
+            }
+
+            if (uploads.length > 0) {
+                await Promise.all(uploads);
+            }
+        }
+        
+        async function togglePromoStatus(id, currentStatus) {
+            try {
+                const newStatus = currentStatus === 'active' ? 'draft' : 'active';
+                const res = await fetch(`/api/marketing/promotions/${id}/status`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ status: newStatus })
+                });
+
+                if (res.ok) {
+                    loadPromotions();
+                } else {
+                    alert('❌ Ошибка изменения статуса');
+                }
+            } catch (err) {
+                console.error('Error toggling status:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+
+        async function togglePromoVisibility(id, isCurrentlyPublished) {
+            try {
+                const res = await fetch(`/api/marketing/promotions/${id}/visibility`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ show_on_main: !isCurrentlyPublished, show_in_app: !isCurrentlyPublished })
+                });
+
+                if (res.ok) {
+                    loadPromotions();
+                } else {
+                    alert('❌ Ошибка изменения видимости');
+                }
+            } catch (err) {
+                console.error('Error toggling visibility:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        // Drag & Drop переменные
+        let draggedId = null;
+        let promosList = [];
+
+        async function loadPromotions() {
+            try {
+                const res = await fetch('/api/marketing/promotions');
+                if (res.ok) {
+                    promosList = await res.json();
+                    renderPromos(promosList);
+                }
+            } catch (err) {
+                console.error('Error loading promotions:', err);
+            }
+        }
+
+        // Drag & Drop функции
+        function dragStart(event, id) {
+            draggedId = id;
+            event.dataTransfer.effectAllowed = 'move';
+            event.target.style.opacity = '0.5';
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+        }
+
+        function dragLeave(event) {
+            event.target.closest('.promo-card')?.classList.remove('drag-over');
+        }
+
+        async function drop(event, targetId) {
+            event.preventDefault();
+            if (draggedId === null || draggedId === targetId) {
+                draggedId = null;
+                document.querySelectorAll('.promo-card').forEach(card => card.style.opacity = '1');
+                return;
+            }
+
+            // Находим индексы
+            const draggedIndex = promosList.findIndex(p => p.id === draggedId);
+            const targetIndex = promosList.findIndex(p => p.id === targetId);
+
+            if (draggedIndex === -1 || targetIndex === -1) {
+                draggedId = null;
+                document.querySelectorAll('.promo-card').forEach(card => card.style.opacity = '1');
+                return;
+            }
+
+            // Меняем местами в массиве
+            const [draggedPromo] = promosList.splice(draggedIndex, 1);
+            promosList.splice(targetIndex, 0, draggedPromo);
+
+            // Обновляем sort_order для всех
+            const updates = promosList.map((p, idx) => ({
+                id: parseInt(p.id),
+                sort_order: parseInt((promosList.length - idx) * 10)
+            }));
+
+            console.log('Sending sort order updates:', updates);
+
+            try {
+                const response = await fetch('/api/marketing/promotions/sort-order', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updates)
+                });
+
+                if (response.ok) {
+                    renderPromos(promosList); // Перерисовываем без перезагрузки
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error updating sort order:', response.status, errorText);
+                    loadPromotions(); // Перезагружаем при ошибке
+                }
+            } catch (e) {
+                console.error('Error updating sort order:', e);
+                loadPromotions();
+            }
+
+            draggedId = null;
+            document.querySelectorAll('.promo-card').forEach(card => {
+                card.style.opacity = '1';
+                card.classList.remove('drag-over');
+            });
+        }
+        
+        function renderPromos(promos) {
+            const container = document.getElementById('promotionsList');
+            if (promos.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет созданных акций</div>';
+                return;
+            }
+            
+            container.innerHTML = promos.map(p => {
+                const isActive = p.status === 'active';
+                const isPublished = p.show_on_main || p.show_in_app;
+                const imagePreview = p.image_mobile || p.image_tablet || p.image_web 
+                    ? `<div style="margin: 12px 0; display: flex; gap: 8px;">
+                        ${p.image_mobile ? `<img src="${p.image_mobile}" style="height: 60px; border-radius: 4px; object-fit: cover;">` : ''}
+                        ${p.image_tablet ? `<img src="${p.image_tablet}" style="height: 60px; border-radius: 4px; object-fit: cover;">` : ''}
+                        ${p.image_web ? `<img src="${p.image_web}" style="height: 60px; border-radius: 4px; object-fit: cover;">` : ''}
+                       </div>` 
+                    : '';
+                const promoCodeBadge = p.promo_code 
+                    ? `<span style="background: #e94560; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px; margin-left: 8px;">🏷️ ${p.promo_code}</span>` 
+                    : '';
+                const publishedBadge = isPublished
+                    ? `<span style="background: #17a2b8; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 8px;">👁️ Опубликована</span>`
+                    : `<span style="background: #6c757d; color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-left: 8px;">🙈 Скрыта</span>`;
+                
+                const shortDesc = p.short_description || (p.description ? p.description.substring(0, 100) + '...' : '');
+                const typeLabels = {
+                    'percentage': '📉 Процент скидки',
+                    'fixed_amount': '💰 Фиксированная сумма',
+                    'n_plus_gift': '🎁 n + подарок (2+1)',
+                    'n_plus_discount': '💯 n + скидка на N-й',
+                    'sum_gift': '🎁 Сумма + подарок',
+                    'sum_discount': '💯 Сумма + скидка',
+                    'item_discount': '🍽️ Блюдо со скидкой',
+                    'one_plus_one_fix': '1️⃣ 1+1 = фикс цена',
+                    'free_delivery': '🚚 Бесплатная доставка',
+                    'combo': '🍽️ Комбо-набор'
+                };
+                const typeLabel = typeLabels[p.type] || p.type;
+
+                // Форматируем дни недели
+                let daysText = '';
+                if (p.days_of_week && p.days_of_week.length > 0) {
+                    const dayNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+                    const days = Array.isArray(p.days_of_week) ? p.days_of_week : JSON.parse(p.days_of_week || '[]');
+                    daysText = `<div style="font-size: 11px; color: #888; margin-top: 4px;">📅 ${days.map(d => dayNames[d-1]).join(', ')}</div>`;
+                }
+
+                return `
+                <div class="promo-card ${p.status}" 
+                     draggable="true" 
+                     ondragstart="dragStart(event, ${p.id})" 
+                     ondragover="dragOver(event)"
+                     ondragleave="dragLeave(event)"
+                     ondrop="drop(event, ${p.id})"
+                     style="cursor: move;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #333;">
+                        <span style="cursor: move; color: #666; font-size: 18px; user-select: none;" title="Перетащите для сортировки">⋮⋮</span>
+                        <span style="font-size: 11px; color: #888;">#${p.sort_order || 0}</span>
+                    </div>
+                    <div class="promo-header">
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="promo-title" style="display: flex; flex-wrap: wrap; align-items: center; gap: 4px;">${p.name}${promoCodeBadge}${publishedBadge}</div>
+                            ${daysText}
+                            <div style="font-size: 13px; color: #888; margin-top: 4px;">${typeLabel}</div>
+                            ${shortDesc ? `<div style="font-size: 12px; color: #a0a0b0; margin-top: 8px; line-height: 1.4;">${shortDesc}</div>` : ''}
+                        </div>
+                        <span class="promo-status status-${p.status}" style="flex-shrink: 0; margin-left: 12px;">${isActive ? 'Активна' : 'Черновик'}</span>
+                    </div>
+                    ${imagePreview}
+                    <div class="promo-actions">
+                        <button class="btn btn-secondary" onclick="editPromo(${p.id})">✏️ Редактировать</button>
+                        <button class="btn ${isActive ? 'btn-secondary' : 'btn-success'}" onclick="togglePromoStatus(${p.id}, '${p.status}')" style="background: ${isActive ? '#dc3545' : '#4caf50'};">
+                            ${isActive ? '⏹️ Деактивировать' : '▶️ Активировать'}
+                        </button>
+                        <button class="btn ${isPublished ? 'btn-secondary' : 'btn-success'}" onclick="togglePromoVisibility(${p.id}, ${isPublished})" style="background: ${isPublished ? '#6c757d' : '#17a2b8'};">
+                            ${isPublished ? '🙈 Скрыть' : '👁️ Публиковать'}
+                        </button>
+                        <button class="btn btn-secondary" onclick="deletePromo(${p.id})" style="background: #6c757d;">🗑️ Удалить</button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+        
+        function openPromoModal() {
+            document.getElementById('promoModal').classList.add('active');
+            document.getElementById('modalTitle').textContent = 'Создать акцию';
+            document.getElementById('promoId').value = '';
+            
+            // Clear form
+            document.getElementById('promoName').value = '';
+            document.getElementById('promoDescription').value = '';
+            document.getElementById('promoShortDesc').value = '';
+            document.getElementById('promoValue').value = '';
+            document.getElementById('promoMinOrder').value = '';
+            document.getElementById('promoMaxDiscount').value = '';
+            document.getElementById('promoCode').value = '';
+            document.getElementById('buyN').value = '2';
+            document.getElementById('getN').value = '1';
+            
+            // Clear images
+            promoImages = { mobile: null, tablet: null, web: null };
+            document.getElementById('previewMobile').innerHTML = '';
+            document.getElementById('previewTablet').innerHTML = '';
+            document.getElementById('previewWeb').innerHTML = '';
+            document.getElementById('promoImageMobile').value = '';
+            document.getElementById('promoImageTablet').value = '';
+            document.getElementById('promoImageWeb').value = '';
+            
+            // Reset selections
+            selectedBuy = [];
+            selectedBuyVariants = {};
+            selectedGift = [];
+            selectedGiftVariants = {};
+            renderBuyTags();
+            renderGiftTags();
+            
+            onTypeChange();
+        }
+        
+        function closePromoModal() {
+            document.getElementById('promoModal').classList.remove('active');
+        }
+        
+        async function savePromo() {
+            const type = document.getElementById('promoType').value;
+            const config = {};
+            
+            if (type === 'n_plus_gift' || type === 'n_plus_discount') {
+                config.buy_n = parseInt(document.getElementById('buyN').value) || 2;
+                config.get_n = parseInt(document.getElementById('getN').value) || 1;
+                config.buy_category_id = document.getElementById('buyCategory').value || null;
+                
+                // Include products with their variants
+                config.buy_items = selectedBuy.map(id => ({
+                    product_id: id,
+                    variant_ids: selectedBuyVariants[id] || null
+                }));
+                
+                config.gift_items = selectedGift.map(id => ({
+                    product_id: id,
+                    variant_ids: selectedGiftVariants[id] || null
+                }));
+            }
+            
+            // Собираем выбранные дни недели
+            const daysOfWeek = [];
+            document.querySelectorAll('.day-checkbox:checked').forEach(cb => {
+                daysOfWeek.push(parseInt(cb.value));
+            });
+
+            const data = {
+                name: document.getElementById('promoName').value,
+                type: type,
+                description: document.getElementById('promoDescription').value,
+                short_description: document.getElementById('promoShortDesc').value || null,
+                value: parseFloat(document.getElementById('promoValue').value) || 0,
+                config: Object.keys(config).length > 0 ? config : null,
+                min_order_amount: parseFloat(document.getElementById('promoMinOrder').value) || null,
+                max_discount: parseFloat(document.getElementById('promoMaxDiscount').value) || null,
+                start_date: document.getElementById('promoStartDate').value || null,
+                end_date: document.getElementById('promoEndDate').value || null,
+                days_of_week: daysOfWeek.length > 0 ? daysOfWeek : null,
+                promo_code: document.getElementById('promoCode').value.toUpperCase() || null,
+                show_on_main: document.getElementById('promoShowOnMain').checked,
+                is_featured: document.getElementById('promoFeatured').checked,
+                auto_apply: document.getElementById('promoAutoApply').checked && !document.getElementById('promoCode').value
+            };
+            
+            if (!data.name) {
+                alert('Введите название акции');
+                return;
+            }
+            
+            if ((type === 'n_plus_gift' || type === 'n_plus_discount') && selectedGift.length === 0) {
+                alert('Выберите хотя бы один товар в подарок');
+                return;
+            }
+            
+            try {
+                const id = document.getElementById('promoId').value;
+                const url = id ? `/api/marketing/promotions/${id}` : '/api/marketing/promotions';
+                const method = id ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    const result = await res.json();
+                    const promoId = id || result.id;
+                    
+                    // Upload images if any
+                    if (promoId && (promoImages.mobile || promoImages.tablet || promoImages.web)) {
+                        await uploadPromoImages(promoId);
+                    }
+                    
+                    // Reset all selections
+                    selectedBuy = [];
+                    selectedBuyVariants = {};
+                    selectedGift = [];
+                    selectedGiftVariants = {};
+                    promoImages = { mobile: null, tablet: null, web: null };
+                    
+                    closePromoModal();
+                    loadPromotions();
+                    alert(id ? '✅ Акция обновлена' : '✅ Акция создана');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                console.error('Error saving:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        async function editPromo(id) {
+            try {
+                const res = await fetch(`/api/marketing/promotions/${id}`);
+                if (res.ok) {
+                    const p = await res.json();
+                    
+                    document.getElementById('promoId').value = p.id;
+                    document.getElementById('promoName').value = p.name;
+                    document.getElementById('promoType').value = p.type;
+
+                    document.getElementById('promoDescription').value = p.description || '';
+                    document.getElementById('promoShortDesc').value = p.short_description || '';
+                    document.getElementById('promoValue').value = p.value || '';
+                    document.getElementById('promoMinOrder').value = p.min_order_amount || '';
+                    document.getElementById('promoMaxDiscount').value = p.max_discount || '';
+                    document.getElementById('promoStartDate').value = p.start_date || '';
+                    document.getElementById('promoEndDate').value = p.end_date || '';
+                    
+                    // Загружаем дни недели
+                    document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = false);
+                    if (p.days_of_week) {
+                        const days = Array.isArray(p.days_of_week) ? p.days_of_week : JSON.parse(p.days_of_week || '[]');
+                        days.forEach(day => {
+                            const cb = document.querySelector(`.day-checkbox[value="${day}"]`);
+                            if (cb) cb.checked = true;
+                        });
+                    }
+                    
+                    document.getElementById('promoCode').value = p.promo_code || '';
+                    document.getElementById('promoShowOnMain').checked = p.show_on_main;
+                    document.getElementById('promoFeatured').checked = p.is_featured;
+                    document.getElementById('promoAutoApply').checked = p.auto_apply !== false;
+                    
+                    // Show existing images
+                    promoImages = { mobile: null, tablet: null, web: null };
+                    document.getElementById('previewMobile').innerHTML = p.image_mobile ? `<img src="${p.image_mobile}" style="width: 100%; height: auto; border-radius: 8px;">` : '';
+                    document.getElementById('previewTablet').innerHTML = p.image_tablet ? `<img src="${p.image_tablet}" style="width: 100%; height: auto; border-radius: 8px;">` : '';
+                    document.getElementById('previewWeb').innerHTML = p.image_web ? `<img src="${p.image_web}" style="width: 100%; height: auto; border-radius: 8px;">` : '';
+                    
+                    // Load config
+                    if (p.config) {
+                        document.getElementById('buyN').value = p.config.buy_n || 2;
+                        document.getElementById('getN').value = p.config.get_n || 1;
+                        document.getElementById('buyCategory').value = p.config.buy_category_id || '';
+                        
+                        // Load buy items with variants
+                        selectedBuy = [];
+                        selectedBuyVariants = {};
+                        if (p.config.buy_items) {
+                            p.config.buy_items.forEach(item => {
+                                selectedBuy.push(item.product_id);
+                                if (item.variant_ids) {
+                                    selectedBuyVariants[item.product_id] = item.variant_ids;
+                                }
+                            });
+                        } else if (p.config.buy_product_ids) {
+                            // Legacy format
+                            selectedBuy = p.config.buy_product_ids;
+                        }
+                        
+                        // Load gift items with variants
+                        selectedGift = [];
+                        selectedGiftVariants = {};
+                        if (p.config.gift_items) {
+                            p.config.gift_items.forEach(item => {
+                                selectedGift.push(item.product_id);
+                                if (item.variant_ids) {
+                                    selectedGiftVariants[item.product_id] = item.variant_ids;
+                                }
+                            });
+                        } else if (p.config.gift_product_ids) {
+                            // Legacy format
+                            selectedGift = p.config.gift_product_ids;
+                        }
+                        
+                        // Load variants for selected products
+                        selectedBuy.forEach(id => loadProductVariants(id));
+                        selectedGift.forEach(id => loadProductVariants(id));
+                    }
+                    
+                    onTypeChange();
+                    filterBuyProducts();
+                    filterGiftProducts();
+                    renderBuyTags();
+                    renderGiftTags();
+                    
+                    document.getElementById('promoModal').classList.add('active');
+                    document.getElementById('modalTitle').textContent = 'Редактировать акцию';
+                }
+            } catch (err) {
+                console.error('Error loading promo:', err);
+            }
+        }
+        
+        async function deletePromo(id) {
+            if (!confirm('Удалить акцию?')) return;
+            
+            try {
+                const res = await fetch(`/api/marketing/promotions/${id}`, { method: 'DELETE' });
+                if (res.ok) loadPromotions();
+            } catch (err) {
+                console.error('Error deleting:', err);
+            }
+        }
+        
+        // ========== DISCOUNTS ==========
+        async function loadDiscounts() {
+            try {
+                const res = await fetch('/api/crm-settings/discounts');
+                if (res.ok) {
+                    const discounts = await res.json();
+                    renderDiscounts(discounts);
+                }
+            } catch (err) {
+                console.error('Error loading discounts:', err);
+            }
+        }
+        
+        function renderDiscounts(discounts) {
+            const container = document.getElementById('discountsList');
+            if (discounts.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет созданных скидок</div>';
+                return;
+            }
+            
+            container.innerHTML = discounts.map(d => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #1a1a2e; border-radius: 8px; margin-bottom: 8px;">
+                    <div>
+                        <span style="font-weight: 600;">${d.name}</span>
+                        <span style="color: #888; margin-left: 8px;">${d.discount_type === 'percent' ? d.value + '%' : d.value + ' BYN'}</span>
+                        <span style="color: #666; margin-left: 8px; font-size: 12px;">${d.applies_to === 'item' ? '(к позициям)' : '(к заказу)'}</span>
+                    </div>
+                    <button onclick="deleteDiscount(${d.id})" style="background: none; border: none; color: #e94560; cursor: pointer; font-size: 18px;">🗑</button>
+                </div>
+            `).join('');
+        }
+        
+        async function createDiscount() {
+            let name = document.getElementById('newDiscountName').value.trim();
+            const value = parseFloat(document.getElementById('newDiscountValue').value) || 0;
+            const type = document.getElementById('newDiscountType').value;
+            const forItems = document.getElementById('newDiscountForItems').checked;
+            
+            if (value <= 0) {
+                alert('Введите значение скидки');
+                return;
+            }
+            
+            // Auto-generate name if empty
+            if (!name) {
+                name = type === 'percent' ? `Скидка ${value}%` : `Скидка ${value} BYN`;
+            }
+            
+            try {
+                const res = await fetch('/api/crm-settings/discounts', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name: name,
+                        value: value,
+                        discount_type: type,
+                        applies_to: forItems ? 'item' : 'order',
+                        is_active: true
+                    })
+                });
+                
+                if (res.ok) {
+                    document.getElementById('newDiscountName').value = '';
+                    document.getElementById('newDiscountValue').value = '';
+                    document.getElementById('newDiscountForItems').checked = false;
+                    loadDiscounts();
+                } else {
+                    alert('Ошибка создания скидки');
+                }
+            } catch (err) {
+                console.error('Error creating discount:', err);
+                alert('Ошибка создания скидки');
+            }
+        }
+        
+        async function deleteDiscount(id) {
+            if (!confirm('Удалить скидку?')) return;
+            
+            try {
+                const res = await fetch(`/api/crm-settings/discounts/${id}`, { method: 'DELETE' });
+                if (res.ok) loadDiscounts();
+            } catch (err) {
+                console.error('Error deleting discount:', err);
+            }
+        }
+        
+        // Load discounts on page load
+        document.addEventListener('DOMContentLoaded', loadDiscounts);
+    </script>
+</body>
+</html>

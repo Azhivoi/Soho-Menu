@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Сотрудники - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .page-header p {
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        /* Employee List Sidebar */
+        .employees-sidebar {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 16px 20px;
+            background: #252538;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #a0a0b0;
+        }
+        
+        .btn-add {
+            padding: 8px 16px;
+            background: #e94560;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-add:hover {
+            background: #ff5773;
+        }
+        
+        .employees-list {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .employee-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid #2a2a40;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .employee-item:hover {
+            background: rgba(233, 69, 96, 0.05);
+        }
+        .employee-item.active {
+            background: rgba(233, 69, 96, 0.1);
+            border-left: 3px solid #e94560;
+        }
+        
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            background: #252538;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .employee-item.active .employee-avatar {
+            background: #e94560;
+        }
+        
+        .employee-info {
+            flex: 1;
+        }
+        .employee-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .employee-role {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            background: #252538;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Form Styles */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+        
+        .form-label {
+            font-size: 12px;
+            color: #a0a0b0;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+
+        .field-hint {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+            display: block;
+        }
+        
+        .form-input, .form-select, .form-textarea {
+            padding: 12px 16px;
+            background: #16162a;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        /* Schedule Grid */
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .schedule-day {
+            background: #16162a;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .schedule-day-name {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .schedule-day input {
+            width: 100%;
+            padding: 6px;
+            background: #252538;
+            border: 1px solid #2a2a40;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            padding: 0 20px;
+            background: #252538;
+            border-bottom: 1px solid #2a2a40;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-btn:hover {
+            color: #fff;
+        }
+        .tab-btn.active {
+            color: #e94560;
+            border-bottom-color: #e94560;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #ff5773;
+        }
+        .btn-secondary {
+            background: #252538;
+            color: #fff;
+            border: 1px solid #2a2a40;
+        }
+        .btn-secondary:hover {
+            background: #2a2a40;
+        }
+        .btn-success {
+            background: #4caf50;
+            color: #fff;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        /* Monthly Schedule */
+        .schedule-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+
+        .schedule-day-header {
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .schedule-day-header.weekend {
+            color: #ff9800;
+        }
+
+        .schedule-day-cell {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .schedule-day-cell:hover {
+            transform: scale(1.05);
+        }
+
+        .schedule-day-cell.work-day {
+            background: #4caf50;
+            color: #fff;
+        }
+
+        .schedule-day-cell.rest-day {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            color: #888;
+        }
+
+        .schedule-day-cell.weekend-rest {
+            background: #ff9800;
+            color: #000;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Work Hours Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #2a2a40;
+        }
+        .data-table th {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-active {
+            background: #4caf50;
+            color: #fff;
+        }
+        .status-inactive {
+            background: #666;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>👥 Управление сотрудниками</h1>
+        <p>Карточки сотрудников, зарплата, график работы</p>
+    </div>
+    
+    <div class="content-grid">
+        <!-- Employee List -->
+        <div class="employees-sidebar">
+            <div class="sidebar-header">
+                <h2>Сотрудники</h2>
+                <button class="btn-add" onclick="showNewEmployeeForm()">+ Добавить</button>
+            </div>
+            <div class="employees-list" id="employeesList">
+                <div class="empty-state">
+                    <div class="empty-state-icon">👤</div>
+                    <p>Загрузка сотрудников...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content" id="employeeDetail">
+            <div class="empty-state">
+                <div class="empty-state-icon">👈</div>
+                <p>Выберите сотрудника из списка<br>или создайте нового</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let employees = [];
+        let roles = [];
+        let locations = [];
+        let currentEmployeeId = null;
+        
+        // Load data on startup
+        async function init() {
+            await Promise.all([
+                loadEmployees(),
+                loadRoles(),
+                loadLocations()
+            ]);
+        }
+        
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees/employees');
+                if (response.ok) {
+                    employees = await response.json();
+                    renderEmployeesList();
+                }
+            } catch (err) {
+                console.error('Error loading employees:', err);
+            }
+        }
+        
+        async function loadRoles() {
+            try {
+                const response = await fetch('/api/employees/roles');
+                if (response.ok) {
+                    roles = await response.json();
+                }
+            } catch (err) {
+                console.error('Error loading roles:', err);
+            }
+        }
+        
+        async function loadLocations() {
+            try {
+                const response = await fetch('/api/locations');
+                if (response.ok) {
+                    locations = await response.json();
+                }
+            } catch (err) {
+                console.error('Error loading locations:', err);
+            }
+        }
+        
+        function renderEmployeesList() {
+            const list = document.getElementById('employeesList');
+            if (employees.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👤</div>
+                        <p>Нет сотрудников</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            list.innerHTML = employees.map(emp => {
+                const initials = emp.first_name[0] + (emp.last_name ? emp.last_name[0] : '');
+                return `
+                    <div class="employee-item ${emp.id === currentEmployeeId ? 'active' : ''}" onclick="selectEmployee(${emp.id})">
+                        <div class="employee-avatar">${initials}</div>
+                        <div class="employee-info">
+                            <div class="employee-name">${emp.name}</div>
+                            <div class="employee-role">${emp.role_name} ${emp.pin_code ? '• PIN: ' + emp.pin_code : ''}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function selectEmployee(id) {
+            currentEmployeeId = id;
+            renderEmployeesList();
+            renderEmployeeDetail(id);
+        }
+        
+        function renderEmployeeDetail(id) {
+            const emp = employees.find(e => e.id === id);
+            if (!emp) return;
+            
+            const detail = document.getElementById('employeeDetail');
+            detail.innerHTML = `
+                <div class="card">
+                    <div class="tabs">
+                        <button class="tab-btn active" onclick="switchTab('personal')">👤 Личные данные</button>
+                        <button class="tab-btn" onclick="switchTab('work')">💼 Работа</button>
+                        <button class="tab-btn" onclick="switchTab('schedule')">📅 График</button>
+                        <button class="tab-btn" onclick="switchTab('payroll')">💰 Зарплата</button>
+                    </div>
+                    
+                    <!-- Personal Tab -->
+                    <div id="tab-personal" class="tab-content active">
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Фамилия</label>
+                                    <input type="text" id="empLastName" class="form-input" value="${emp.last_name || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Имя *</label>
+                                    <input type="text" id="empFirstName" class="form-input" value="${emp.first_name}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Отчество</label>
+                                    <input type="text" id="empMiddleName" class="form-input" value="${emp.middle_name || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Дата рождения</label>
+                                    <input type="date" id="empBirthDate" class="form-input" value="${emp.birth_date || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Телефон</label>
+                                    <input type="tel" id="empPhone" class="form-input" value="${emp.phone || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email (для входа в админ-панель)</label>
+                                    <input type="email" id="empEmail" class="form-input" value="${emp.email || ''}" placeholder="email@company.com">
+                                </div>
+                                <div class="form-group" style="border: 1px solid #e94560; padding: 10px; border-radius: 8px; background: rgba(233, 69, 96, 0.1);">
+                                    <label class="form-label" style="color: #e94560;">🔐 Пароль для входа в админ-панель</label>
+                                    <input type="password" id="empPassword" class="form-input" placeholder="Введите пароль (мин. 6 символов)" style="border-color: #e94560;">
+                                    <span class="field-hint">Только для ролей Администратор/Менеджер. Оставьте пустым, чтобы не менять.</span>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Адрес</label>
+                                    <textarea id="empAddress" class="form-textarea">${emp.address || ''}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Work Tab -->
+                    <div id="tab-work" class="tab-content">
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Должность *</label>
+                                    <select id="empRole" class="form-select">
+                                        ${roles.map(r => `<option value="${r.id}" ${r.id === emp.role_id ? 'selected' : ''}>${r.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Торговая точка</label>
+                                    <select id="empLocation" class="form-select">
+                                        <option value="">Не выбрана</option>
+                                        ${locations.map(l => `<option value="${l.id}" ${l.id === emp.location_id ? 'selected' : ''}>${l.name}</option>`).join('')}
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Дата приема</label>
+                                    <input type="date" id="empHireDate" class="form-input" value="${emp.hire_date || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Внутренний номер</label>
+                                    <input type="text" id="empExtension" class="form-input" value="${emp.extension || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">PIN-код (4 цифры)</label>
+                                    <input type="text" id="empPin" class="form-input" maxlength="4" value="${emp.pin_code || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Статус</label>
+                                    <select id="empStatus" class="form-select">
+                                        <option value="true" ${emp.is_active ? 'selected' : ''}>Активен</option>
+                                        <option value="false" ${!emp.is_active ? 'selected' : ''}>Неактивен</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Schedule Tab - Monthly Planning -->
+                    <div id="tab-schedule" class="tab-content">
+                        <div class="card-body">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                                <h3>📅 Планировочный график</h3>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <select id="scheduleMonth" class="form-select" style="width: 110px;" onchange="renderMonthlySchedule(${emp.id})">
+                                        <option value="0">Янв</option>
+                                        <option value="1">Фев</option>
+                                        <option value="2">Мар</option>
+                                        <option value="3">Апр</option>
+                                        <option value="4">Май</option>
+                                        <option value="5">Июн</option>
+                                        <option value="6">Июл</option>
+                                        <option value="7">Авг</option>
+                                        <option value="8">Сен</option>
+                                        <option value="9">Окт</option>
+                                        <option value="10">Ноя</option>
+                                        <option value="11">Дек</option>
+                                    </select>
+                                    <select id="scheduleYear" class="form-select" style="width: 80px;" onchange="renderMonthlySchedule(${emp.id})">
+                                        <option value="2025">2025</option>
+                                        <option value="2026" selected>2026</option>
+                                        <option value="2027">2027</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <p style="color: #888; font-size: 12px; margin-bottom: 12px;">
+                                💡 Кликайте на день чтобы отметить "Р" (рабочий)
+                            </p>
+                            <div id="monthlyScheduleContainer">
+                                <!-- Generated by JS -->
+                            </div>
+                            <div style="margin-top: 12px; display: flex; gap: 16px; font-size: 12px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 18px; height: 18px; background: #4caf50; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold;">Р</div>
+                                    <span>Рабочий</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 18px; height: 18px; background: #1a1a2e; border: 1px solid #2a2a40; border-radius: 3px;"></div>
+                                    <span>Выходной</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <div style="width: 18px; height: 18px; background: #ff9800; border-radius: 3px;"></div>
+                                    <span>Сб/Вс</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payroll Tab -->
+                    <div id="tab-payroll" class="tab-content">
+                        <div class="card-body">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Тип оплаты</label>
+                                    <select id="empPaymentType" class="form-select">
+                                        <option value="hourly" ${emp.payment_type === 'hourly' ? 'selected' : ''}>Почасовая</option>
+                                        <option value="salary" ${emp.payment_type === 'salary' ? 'selected' : ''}>Оклад</option>
+                                        <option value="mixed" ${emp.payment_type === 'mixed' ? 'selected' : ''}>Смешанная</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Ставка в час (BYN)</label>
+                                    <input type="number" id="empHourlyRate" class="form-input" step="0.01" value="${emp.hourly_rate || ''}">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Оклад (BYN)</label>
+                                    <input type="number" id="empSalary" class="form-input" step="0.01" value="${emp.salary || ''}">
+                                </div>
+                            </div>
+                            
+                            <h3 style="margin: 24px 0 16px;">💳 Авансы</h3>
+                            <div id="employeeAdvances">
+                                <p style="color: #888;">Загрузка...</p>
+                            </div>
+                            
+                            <h3 style="margin: 24px 0 16px;">📊 История начислений</h3>
+                            <div id="employeePayroll">
+                                <p style="color: #888;">Загрузка...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body" style="border-top: 1px solid #2a2a40;">
+                        <div class="btn-group">
+                            <button class="btn btn-success" onclick="saveEmployee()">💾 Сохранить изменения</button>
+                            <button class="btn btn-secondary" onclick="deleteEmployee(${emp.id})">🗑 Удалить сотрудника</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Load advances and payroll
+            loadEmployeeAdvances(id);
+            loadEmployeePayroll(id);
+        }
+        
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+
+            // Initialize monthly schedule when opening schedule tab
+            if (tabName === 'schedule' && currentEmployeeId) {
+                // Set current month/year
+                const now = new Date();
+                document.getElementById('scheduleMonth').value = now.getMonth();
+                document.getElementById('scheduleYear').value = now.getFullYear();
+                renderMonthlySchedule(currentEmployeeId);
+            }
+        }
+        
+        async function loadEmployeeAdvances(employeeId) {
+            try {
+                const response = await fetch(`/api/employees/employees/${employeeId}/advances`);
+                if (response.ok) {
+                    const advances = await response.json();
+                    renderAdvances(advances);
+                }
+            } catch (err) {
+                console.error('Error loading advances:', err);
+            }
+        }
+        
+        function renderAdvances(advances) {
+            const container = document.getElementById('employeeAdvances');
+            if (advances.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Нет авансов</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Дата</th>
+                            <th>Сумма</th>
+                            <th>Описание</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${advances.map(a => `
+                            <tr>
+                                <td>${a.advance_date}</td>
+                                <td>${a.amount} BYN</td>
+                                <td>${a.description || '-'}</td>
+                                <td>${a.is_deducted ? '✅ Погашен' : '⏳ Ожидает'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        async function loadEmployeePayroll(employeeId) {
+            try {
+                const response = await fetch(`/api/employees/employees/${employeeId}/payroll`);
+                if (response.ok) {
+                    const payroll = await response.json();
+                    renderPayroll(payroll);
+                }
+            } catch (err) {
+                console.error('Error loading payroll:', err);
+            }
+        }
+        
+        function renderPayroll(payroll) {
+            const container = document.getElementById('employeePayroll');
+            if (payroll.length === 0) {
+                container.innerHTML = '<p style="color: #888;">Нет записей о зарплате</p>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Период</th>
+                            <th>Часы</th>
+                            <th>Начислено</th>
+                            <th>Аванс</th>
+                            <th>Итого</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${payroll.map(p => `
+                            <tr>
+                                <td>${p.period_start} - ${p.period_end}</td>
+                                <td>${p.hours_worked || '-'}</td>
+                                <td>${p.base_amount} BYN</td>
+                                <td>${p.advance_deduction} BYN</td>
+                                <td><strong>${p.final_amount} BYN</strong></td>
+                                <td>${p.is_paid ? '✅ Выплачено' : '⏳ Ожидает'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        function showNewEmployeeForm() {
+            currentEmployeeId = null;
+            renderEmployeesList();
+            
+            const detail = document.getElementById('employeeDetail');
+            detail.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>➕ Новый сотрудник</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Фамилия</label>
+                                <input type="text" id="empLastName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Имя *</label>
+                                <input type="text" id="empFirstName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Отчество</label>
+                                <input type="text" id="empMiddleName" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Телефон</label>
+                                <input type="tel" id="empPhone" class="form-input">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Должность *</label>
+                                <select id="empRole" class="form-select">
+                                    ${roles.map(r => `<option value="${r.id}">${r.name}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">PIN-код (4 цифры)</label>
+                                <input type="text" id="empPin" class="form-input" maxlength="4" placeholder="1234">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Ставка в час (BYN)</label>
+                                <input type="number" id="empHourlyRate" class="form-input" step="0.01" value="15.00">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Дата приема</label>
+                                <input type="date" id="empHireDate" class="form-input" value="${new Date().toISOString().split('T')[0]}">
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-success" onclick="createEmployee()">✓ Создать сотрудника</button>
+                            <button class="btn btn-secondary" onclick="cancelNewEmployee()">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function cancelNewEmployee() {
+            document.getElementById('employeeDetail').innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">👈</div>
+                    <p>Выберите сотрудника из списка</p>
+                </div>
+            `;
+        }
+        
+        async function createEmployee() {
+            const data = {
+                first_name: document.getElementById('empFirstName').value,
+                last_name: document.getElementById('empLastName').value,
+                middle_name: document.getElementById('empMiddleName').value,
+                phone: document.getElementById('empPhone').value,
+                role_id: parseInt(document.getElementById('empRole').value),
+                pin_code: document.getElementById('empPin').value,
+                hourly_rate: parseFloat(document.getElementById('empHourlyRate').value) || 15,
+                hire_date: document.getElementById('empHireDate').value
+            };
+            
+            if (!data.first_name || !data.role_id) {
+                alert('Заполните обязательные поля (Имя, Должность)');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/employees/employees', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    await loadEmployees();
+                    alert('✅ Сотрудник создан');
+                } else {
+                    alert('❌ Ошибка создания');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        async function saveEmployee() {
+            if (!currentEmployeeId) return;
+            
+            // Collect work schedule
+            const workSchedule = {};
+            ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].forEach(day => {
+                const start = document.getElementById(`sched_${day}_start`)?.value;
+                const end = document.getElementById(`sched_${day}_end`)?.value;
+                if (start && end) {
+                    workSchedule[day] = {start, end};
+                }
+            });
+            
+            const data = {
+                first_name: document.getElementById('empFirstName').value,
+                last_name: document.getElementById('empLastName').value,
+                middle_name: document.getElementById('empMiddleName').value,
+                phone: document.getElementById('empPhone').value,
+                email: document.getElementById('empEmail')?.value,
+                password: document.getElementById('empPassword')?.value,
+                birth_date: document.getElementById('empBirthDate')?.value || null,
+                address: document.getElementById('empAddress')?.value,
+                role_id: parseInt(document.getElementById('empRole').value),
+                location_id: document.getElementById('empLocation')?.value || null,
+                hire_date: document.getElementById('empHireDate')?.value,
+                extension: document.getElementById('empExtension')?.value,
+                pin_code: document.getElementById('empPin')?.value,
+                payment_type: document.getElementById('empPaymentType')?.value,
+                hourly_rate: parseFloat(document.getElementById('empHourlyRate')?.value) || null,
+                salary: parseFloat(document.getElementById('empSalary')?.value) || null,
+                work_schedule: workSchedule,
+                is_active: document.getElementById('empStatus')?.value === 'true'
+            };
+            
+            try {
+                const response = await fetch(`/api/employees/employees/${currentEmployeeId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    await loadEmployees();
+                    alert('✅ Изменения сохранены');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        async function deleteEmployee(id) {
+            if (!confirm('Удалить сотрудника?')) return;
+            
+            try {
+                const response = await fetch(`/api/employees/employees/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    currentEmployeeId = null;
+                    await loadEmployees();
+                    cancelNewEmployee();
+                    alert('✅ Сотрудник удален');
+                } else {
+                    alert('❌ Ошибка удаления');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        // ===== MONTHLY SCHEDULE FUNCTIONS =====
+
+        // Store for monthly schedules (in memory only, not saved to DB)
+        const monthlySchedules = {};
+
+        function renderMonthlySchedule(employeeId) {
+            const month = parseInt(document.getElementById('scheduleMonth').value);
+            const year = parseInt(document.getElementById('scheduleYear').value);
+            const container = document.getElementById('monthlyScheduleContainer');
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            // Get or create schedule for this employee/month/year
+            const scheduleKey = `${employeeId}-${year}-${month}`;
+            if (!monthlySchedules[scheduleKey]) {
+                // Initialize with default pattern (e.g., Mon-Fri work)
+                monthlySchedules[scheduleKey] = {};
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayOfWeek = date.getDay();
+                    // By default: work on Mon-Fri (1-5), rest on Sat-Sun (0,6)
+                    monthlySchedules[scheduleKey][day] = (dayOfWeek >= 1 && dayOfWeek <= 5) ? 'R' : '';
+                }
+            }
+            const schedule = monthlySchedules[scheduleKey];
+
+            // Generate horizontal calendar - one row per week
+            let html = '<div style="overflow-x: auto;">';
+
+            // All days in one horizontal row
+            html += '<div style="display: flex; gap: 2px; min-width: max-content; padding-bottom: 8px;">';
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(year, month, day);
+                const dayOfWeek = date.getDay();
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                const isWorkDay = schedule[day] === 'R';
+                const dayNames = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+
+                let bgColor = isWorkDay ? '#4caf50' : (isWeekend ? '#ff9800' : '#1a1a2e');
+                let textColor = isWorkDay ? '#fff' : (isWeekend ? '#000' : '#888');
+                let borderColor = isWorkDay ? '#4caf50' : '#2a2a40';
+
+                html += `
+                    <div onclick="toggleWorkDay(${employeeId}, ${day})"
+                         style="width: 32px; height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                                background: ${bgColor}; color: ${textColor}; border-radius: 4px; cursor: pointer;
+                                border: 1px solid ${borderColor}; font-size: 11px; transition: all 0.15s; flex-shrink: 0;"
+                         onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'"
+                         title="${day} ${dayNames[dayOfWeek]}">
+                        <div style="font-weight: 600;">${day}</div>
+                        <div style="font-size: 9px; opacity: 0.8;">${dayNames[dayOfWeek]}</div>
+                        ${isWorkDay ? '<div style="font-size: 8px; font-weight: bold;">Р</div>' : '<div style="font-size: 8px;">&nbsp;</div>'}
+                    </div>
+                `;
+            }
+
+            html += '</div></div>';
+
+            // Summary
+            const workDays = Object.values(schedule).filter(v => v === 'R').length;
+            html += `
+                <div style="margin-top: 12px; padding: 10px 12px; background: #252538; border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px;">Рабочих дней:</span>
+                    <span style="font-weight: 700; color: #00d9a5; font-size: 16px;">${workDays} из ${daysInMonth}</span>
+                </div>
+            `;
+
+            container.innerHTML = html;
+        }
+
+        function toggleWorkDay(employeeId, day) {
+            const month = parseInt(document.getElementById('scheduleMonth').value);
+            const year = parseInt(document.getElementById('scheduleYear').value);
+            const scheduleKey = `${employeeId}-${year}-${month}`;
+
+            if (!monthlySchedules[scheduleKey]) {
+                monthlySchedules[scheduleKey] = {};
+            }
+
+            // Toggle work day
+            monthlySchedules[scheduleKey][day] = monthlySchedules[scheduleKey][day] === 'R' ? '' : 'R';
+
+            // Re-render
+            renderMonthlySchedule(employeeId);
+        }
+
+        // Init
+        init();
+    </script>
+</body>
+</html>

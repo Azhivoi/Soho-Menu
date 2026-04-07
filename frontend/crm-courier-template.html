@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблон чека курьера | SOHO Admin</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-link { color: var(--text-secondary); text-decoration: none; font-size: 14px; }
+        h1 { font-size: 24px; }
+        h1 span { color: var(--accent-red); }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 420px; gap: 30px; }
+        @media (max-width: 1100px) { .main-grid { grid-template-columns: 1fr; } }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .card h3 { font-size: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; color: var(--text-secondary); font-size: 14px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 12px 15px;
+            background: var(--bg-secondary); border: 1px solid var(--border-color);
+            border-radius: 8px; color: white; font-size: 14px;
+        }
+        .form-group textarea {
+            min-height: 80px; resize: vertical;
+            font-family: 'Courier New', monospace; line-height: 1.5;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        
+        .toolbar {
+            display: flex; gap: 8px; padding: 10px;
+            background: var(--bg-secondary); border-radius: 8px;
+            margin-bottom: 10px; flex-wrap: wrap;
+        }
+        .toolbar-btn {
+            padding: 8px 12px; background: var(--bg-card);
+            border: 1px solid var(--border-color); border-radius: 6px;
+            color: var(--text-primary); cursor: pointer; font-size: 13px;
+        }
+        .toolbar-btn:hover { background: #2d2d45; border-color: var(--accent-red); }
+        
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
+        .btn-primary { background: var(--accent-red); color: white; }
+        .btn-secondary { background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .actions { display: flex; gap: 10px; margin-top: 30px; }
+        
+        .status { padding: 4px 10px; border-radius: 4px; font-size: 12px; }
+        .status.success { background: var(--accent-green); color: #000; }
+        .status.error { background: var(--accent-red); color: white; }
+        
+        /* === RECEIPT PREVIEW === */
+        .receipt-paper {
+            background: white; color: #000;
+            padding: 15px; border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-family: 'Courier New', monospace;
+            line-height: 1.4; font-size: 12pt;
+        }
+        .receipt-paper.narrow { max-width: 280px; margin: 0 auto; }
+        .receipt-paper.medium { max-width: 360px; margin: 0 auto; }
+        .receipt-paper.wide { max-width: 400px; margin: 0 auto; }
+        
+        .receipt-shop {
+            text-align: center;
+            border-bottom: 1px solid #000;
+            padding-bottom: 10px; margin-bottom: 10px;
+        }
+        .receipt-shop-name { font-weight: bold; font-size: 1.3em; margin-bottom: 3px; }
+        .receipt-shop-addr { font-size: 0.85em; color: #333; }
+        .receipt-shop-phone { font-size: 0.85em; color: #333; margin-top: 3px; }
+        
+        .receipt-order-info {
+            display: flex; justify-content: space-between;
+            font-size: 0.9em; margin: 10px 0;
+            border-bottom: 1px dashed #999; padding-bottom: 8px;
+        }
+        
+        .receipt-table-header {
+            display: grid; grid-template-columns: 1fr 50px 60px;
+            font-weight: bold; font-size: 0.9em;
+            border-bottom: 1px solid #000; padding: 5px 0;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-item {
+            display: grid; grid-template-columns: 1fr 50px 60px;
+            font-size: 0.95em; padding: 4px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        .receipt-item:last-child { border-bottom: none; }
+        .receipt-item-name { text-align: left; padding-right: 5px; }
+        .receipt-item-qty { text-align: center; }
+        .receipt-item-price { text-align: right; }
+        
+        .receipt-totals {
+            border-top: 1px solid #000;
+            margin-top: 10px; padding-top: 10px;
+            font-size: 0.95em;
+        }
+        .receipt-total-row {
+            display: flex; justify-content: space-between;
+            margin: 3px 0;
+        }
+        .receipt-total-row.bold { font-weight: bold; font-size: 1.1em; }
+        .receipt-total-row.discount { color: #c00; }
+        
+        .receipt-client-info {
+            border-top: 1px dashed #999;
+            margin-top: 10px; padding-top: 10px;
+            font-size: 0.85em; line-height: 1.6;
+        }
+        .receipt-client-info strong { display: inline-block; min-width: 100px; }
+        
+        .receipt-footer-text {
+            text-align: center;
+            margin-top: 15px; padding-top: 10px;
+            border-top: 1px dashed #999;
+            font-size: 0.85em; color: #666;
+        }
+        
+        .cut-line {
+            text-align: center; margin-top: 15px;
+            padding-top: 10px; border-top: 1px dashed #ccc;
+            color: #999; font-size: 0.75em;
+        }
+        
+        .checkbox-group { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .checkbox-group input { width: 20px; height: 20px; accent-color: var(--accent-red); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="crm-departments.html" class="back-link">← Назад</a>
+            <h1><span>SOHO</span> Шаблон чека курьера 🚚</h1>
+        </div>
+        
+        <div class="main-grid">
+            <div class="form-section">
+                <div class="card">
+                    <h3>🏪 Данные ресторана</h3>
+                    <div class="form-group">
+                        <label>Название</label>
+                        <input type="text" id="shopName" value="SOHO.by">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Адрес</label>
+                            <input type="text" id="shopAddress" value="Лявданского 1, пав. 114">
+                        </div>
+                        <div class="form-group">
+                            <label>Телефон</label>
+                            <input type="text" id="shopPhone" value="+375(29) 116-77-55">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📄 Шапка заказа</h3>
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="insertVar('orderHeader', '{ORDER_NUM}')">№ заказа</button>
+                        <button class="toolbar-btn" onclick="insertVar('orderHeader', '{DATE}')">Дата</button>
+                        <button class="toolbar-btn" onclick="insertVar('orderHeader', '{TIME}')">Время</button>
+                        <button class="toolbar-btn" onclick="insertVar('orderHeader', '\\n')">Перенос</button>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="orderHeader" placeholder="Дата и номер заказа">{DATE} {TIME}
+№ {ORDER_NUM}</textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔤 Настройки шрифта</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Размер шрифта</label>
+                            <select id="fontSize">
+                                <option value="10">10pt</option>
+                                <option value="11">11pt</option>
+                                <option value="12" selected>12pt (стандарт)</option>
+                                <option value="13">13pt</option>
+                                <option value="14">14pt</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ширина бумаги</label>
+                            <select id="paperWidth">
+                                <option value="58">58 мм (узкая)</option>
+                                <option value="80" selected>80 мм (стандарт)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📋 Информация о клиенте</h3>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showClientName" checked>
+                        <span>Имя клиента</span>
+                    </label>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showBonusInfo" checked>
+                        <span>Баллы (текущие + за заказ)</span>
+                    </label>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showAddress" checked>
+                        <span>Адрес доставки (разбитый)</span>
+                    </label>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showClientPhone" checked>
+                        <span>Телефон клиента</span>
+                    </label>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showComment" checked>
+                        <span>Примечание для курьера</span>
+                    </label>
+                    <label class="checkbox-group" style="margin-bottom: 12px;">
+                        <input type="checkbox" id="showDeliveryMark" checked>
+                        <span>Отметка (тип доставки)</span>
+                    </label>
+                </div>
+                
+                <div class="card">
+                    <h3>📃 Подвал чека</h3>
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '{TOTAL}')">Итого</button>
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '{DISCOUNT}')">Скидка</button>
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '{TO_PAY}')">К оплате</button>
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '\\n')">Перенос</button>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="footerText" placeholder="Дополнительная информация в подвале">Спасибо за заказ!</textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>⚙️ Настройки печати</h3>
+                    <div class="form-row">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="cutPaper" checked>
+                            <span>Отрезать чек</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="printDuplicates" checked>
+                            <span>Печатать 2 копии</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="saveTemplate()">💾 Сохранить шаблон</button>
+                    <button class="btn btn-secondary" onclick="testPrint()">🖨️ Тестовая печать</button>
+                </div>
+                
+                <div id="status" style="margin-top: 15px;"></div>
+            </div>
+            
+            <div class="preview-section">
+                <div class="card">
+                    <h3>👁️ Предпросмотр</h3>
+                    <div class="receipt-paper medium" id="receiptPreview">
+                        <div class="receipt-shop">
+                            <div class="receipt-shop-name" id="previewShopName">SOHO.by</div>
+                            <div class="receipt-shop-addr" id="previewShopAddr">Лявданского 1, пав. 114</div>
+                            <div class="receipt-shop-phone" id="previewShopPhone">+375(29) 116-77-55</div>
+                        </div>
+                        
+                        <div class="receipt-order-info">
+                            <span id="previewDate">04.03.2026 19:19</span>
+                            <span id="previewOrderNum">№ 62213</span>
+                        </div>
+                        
+                        <div class="receipt-table-header">
+                            <span>Наименование</span>
+                            <span>Кол.</span>
+                            <span>Сумма</span>
+                        </div>
+                        
+                        <div class="receipt-items" id="previewItems">
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">4 сыра 30см</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">25</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">Без сыра с форелью с/с и авокадо</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">12</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">Луковые кольца</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">8</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">Картофель Фри - 150гр.</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">6</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">Ямато Хот</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">16</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span class="receipt-item-name">Японский Гарнир</span>
+                                <span class="receipt-item-qty">1</span>
+                                <span class="receipt-item-price">4</span>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-totals">
+                            <div class="receipt-total-row bold">
+                                <span>К ОПЛАТЕ:</span>
+                                <span>71</span>
+                            </div>
+                            <div class="receipt-total-row" style="font-size: 0.9em; margin-top: 5px;">
+                                <span>Способ оплаты: Б/нал.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="receipt-client-info" id="previewClientInfo">
+                            <div><strong>Клиент:</strong> Ирина</div>
+                            <div><strong>Баллы:</strong> 0, за заказ: 0</div>
+                            <div><strong>Улица:</strong> левандского</div>
+                            <div><strong>Дом:</strong> 1</div>
+                            <div><strong>Подъезд:</strong> 7</div>
+                            <div><strong>Этаж:</strong> 7</div>
+                            <div><strong>Кв (офис):</strong> 25</div>
+                            <div><strong>Телефон:</strong> +375(29)751-86-69</div>
+                            <div><strong>Примечание:</strong> код 7789</div>
+                            <div><strong>Отметки:</strong> 2.Доставка,</div>
+                        </div>
+                        
+                        <div class="receipt-footer-text" id="previewFooter">Спасибо за заказ!</div>
+                        
+                        <div class="cut-line" id="previewCut">✂️ --- отрезка ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function updatePreview() {
+            const fontSize = document.getElementById('fontSize').value;
+            const paperWidth = document.getElementById('paperWidth').value;
+            
+            // Shop info
+            document.getElementById('previewShopName').textContent = document.getElementById('shopName').value || 'SOHO.by';
+            document.getElementById('previewShopAddr').textContent = document.getElementById('shopAddress').value;
+            document.getElementById('previewShopAddr').style.display = document.getElementById('shopAddress').value ? 'block' : 'none';
+            document.getElementById('previewShopPhone').textContent = document.getElementById('shopPhone').value;
+            document.getElementById('previewShopPhone').style.display = document.getElementById('shopPhone').value ? 'block' : 'none';
+            
+            // Paper size
+            const paper = document.getElementById('receiptPreview');
+            paper.className = 'receipt-paper ' + (paperWidth == '58' ? 'narrow' : 'medium');
+            paper.style.fontSize = fontSize + 'pt';
+            
+            // Client info visibility
+            const clientInfo = document.getElementById('previewClientInfo');
+            const showName = document.getElementById('showClientName').checked;
+            const showBonus = document.getElementById('showBonusInfo').checked;
+            const showAddr = document.getElementById('showAddress').checked;
+            const showPhone = document.getElementById('showClientPhone').checked;
+            const showComment = document.getElementById('showComment').checked;
+            const showMark = document.getElementById('showDeliveryMark').checked;
+            
+            clientInfo.innerHTML = '';
+            if (showName) clientInfo.innerHTML += '<div><strong>Клиент:</strong> Ирина</div>';
+            if (showBonus) clientInfo.innerHTML += '<div><strong>Баллы:</strong> 0, за заказ: 0</div>';
+            if (showAddr) {
+                clientInfo.innerHTML += '<div><strong>Улица:</strong> левандского</div>';
+                clientInfo.innerHTML += '<div><strong>Дом:</strong> 1</div>';
+                clientInfo.innerHTML += '<div><strong>Подъезд:</strong> 7</div>';
+                clientInfo.innerHTML += '<div><strong>Этаж:</strong> 7</div>';
+                clientInfo.innerHTML += '<div><strong>Кв (офис):</strong> 25</div>';
+            }
+            if (showPhone) clientInfo.innerHTML += '<div><strong>Телефон:</strong> +375(29)751-86-69</div>';
+            if (showComment) clientInfo.innerHTML += '<div><strong>Примечание:</strong> код 7789</div>';
+            if (showMark) clientInfo.innerHTML += '<div><strong>Отметки:</strong> 2.Доставка,</div>';
+            
+            // Footer
+            document.getElementById('previewFooter').textContent = document.getElementById('footerText').value || '';
+            document.getElementById('previewFooter').style.display = document.getElementById('footerText').value ? 'block' : 'none';
+            
+            // Cut line
+            document.getElementById('previewCut').style.display = document.getElementById('cutPaper').checked ? 'block' : 'none';
+        }
+        
+        function insertVar(fieldId, variable) {
+            const textarea = document.getElementById(fieldId);
+            const start = textarea.selectionStart;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + variable + text.substring(start);
+            textarea.focus();
+            textarea.setSelectionRange(start + variable.length, start + variable.length);
+            updatePreview();
+        }
+        
+        async function saveTemplate() {
+            const data = {
+                template_type: 'courier',
+                shop_name: document.getElementById('shopName').value,
+                shop_address: document.getElementById('shopAddress').value,
+                shop_phone: document.getElementById('shopPhone').value,
+                order_header: document.getElementById('orderHeader').value,
+                footer_text: document.getElementById('footerText').value,
+                font_size: parseInt(document.getElementById('fontSize').value),
+                paper_width: parseInt(document.getElementById('paperWidth').value),
+                show_client_name: document.getElementById('showClientName').checked,
+                show_bonus_info: document.getElementById('showBonusInfo').checked,
+                show_address: document.getElementById('showAddress').checked,
+                show_client_phone: document.getElementById('showClientPhone').checked,
+                show_comment: document.getElementById('showComment').checked,
+                show_delivery_mark: document.getElementById('showDeliveryMark').checked,
+                cut_paper: document.getElementById('cutPaper').checked,
+                print_duplicates: document.getElementById('printDuplicates').checked
+            };
+            
+            try {
+                const response = await fetch('/api/production/templates/courier', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showStatus('✅ Шаблон сохранён', 'success');
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (err) {
+                showStatus('❌ Ошибка сохранения', 'error');
+            }
+        }
+        
+        async function loadTemplate() {
+            try {
+                const response = await fetch('/api/production/templates/courier');
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('shopName').value = data.shop_name || 'SOHO.by';
+                    document.getElementById('shopAddress').value = data.shop_address || '';
+                    document.getElementById('shopPhone').value = data.shop_phone || '';
+                    document.getElementById('orderHeader').value = data.order_header || '{DATE} {TIME}\n№ {ORDER_NUM}';
+                    document.getElementById('footerText').value = data.footer_text || '';
+                    document.getElementById('fontSize').value = data.font_size || '12';
+                    document.getElementById('paperWidth').value = data.paper_width || '80';
+                    document.getElementById('showClientName').checked = data.show_client_name !== false;
+                    document.getElementById('showBonusInfo').checked = data.show_bonus_info !== false;
+                    document.getElementById('showAddress').checked = data.show_address !== false;
+                    document.getElementById('showClientPhone').checked = data.show_client_phone !== false;
+                    document.getElementById('showComment').checked = data.show_comment !== false;
+                    document.getElementById('showDeliveryMark').checked = data.show_delivery_mark !== false;
+                    document.getElementById('cutPaper').checked = data.cut_paper !== false;
+                    document.getElementById('printDuplicates').checked = data.print_duplicates !== false;
+                }
+            } catch (err) {
+                // Use defaults
+            }
+            updatePreview();
+        }
+        
+        function testPrint() {
+            showStatus('🖨️ Тестовая печать...', 'info');
+            setTimeout(() => showStatus('✅ Чек отправлен на печать', 'success'), 1000);
+        }
+        
+        function showStatus(msg, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="status ${type}">${msg}</span>`;
+            setTimeout(() => status.innerHTML = '', 3000);
+        }
+        
+        // Event listeners
+        ['shopName', 'shopAddress', 'shopPhone', 'orderHeader', 'footerText', 'fontSize', 'paperWidth'].forEach(id => {
+            document.getElementById(id).addEventListener('input', updatePreview);
+        });
+        ['showClientName', 'showBonusInfo', 'showAddress', 'showClientPhone', 'showComment', 'showDeliveryMark', 'cutPaper'].forEach(id => {
+            document.getElementById(id).addEventListener('change', updatePreview);
+        });
+        
+        loadTemplate();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

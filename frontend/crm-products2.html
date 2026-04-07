@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOHO CRM - Товары</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            height: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            transition: background 0.2s;
+            text-decoration: none;
+            color: white;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+        
+        .phone-btn {
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .user-menu {
+            padding: 0 20px;
+            cursor: pointer;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+        
+        /* Left Sidebar - Categories */
+        .sidebar {
+            width: 220px;
+            background: white;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .category-list {
+            list-style: none;
+        }
+        
+        .category-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .category-item:hover, .category-item.active {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        /* Right Panel */
+        .content-panel {
+            flex: 1;
+            background: #f5f5f5;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        /* Header */
+        .content-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .content-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .content-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #ecf0f1;
+            color: #2c3e50;
+        }
+        
+        /* Search */
+        .search-box {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .search-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        /* Products Table */
+        .products-table-container {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .products-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .products-table th {
+            background: #f8f9fa;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 13px;
+            color: #666;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .products-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+        }
+        
+        .products-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .product-name {
+            color: #1976d2;
+            cursor: pointer;
+        }
+        
+        .product-name:hover {
+            text-decoration: underline;
+        }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        
+        .badge-success {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        
+        .badge-danger {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            background: #f0f0f0;
+        }
+        
+        .action-btn.delete {
+            color: #e74c3c;
+        }
+        
+        .inline-input {
+            width: 80px;
+            padding: 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: right;
+        }
+        
+        .inline-input:focus {
+            border-color: #e94560;
+            outline: none;
+        }
+        
+        .markup-input {
+            color: #27ae60;
+            font-weight: 600;
+        }
+        
+        /* Checkbox */
+        .checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <a href="crm-order.html" class="nav-item">
+            <span>➕</span> Новый заказ
+        </a>
+        <a href="crm-orders.html" class="nav-item">
+            <span>📋</span> Заказы
+        </a>
+        <a href="crm-products.html" class="nav-item active">
+            <span>📚</span> Справочники
+        </a>
+        <a href="crm-inventory.html" class="nav-item">
+            <span>📦</span> Склад
+        </a>
+        <div class="nav-item" onclick="showMoney()">
+            <span>💰</span> Деньги
+        </div>
+        <div class="nav-item" onclick="showStats()">
+            <span>📊</span> Статистика
+        </div>
+        <div class="nav-item" onclick="showSettings()">
+            <span>⚙️</span> Настройки
+        </div>
+        <div class="nav-right">
+            <div class="phone-btn">📞 +375291167755</div>
+            <div class="user-menu">👤 Админ ▼</div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Left Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span>📁</span> Категории
+            </div>
+            <ul class="category-list">
+                <li class="category-item active" onclick="filterCategory('all')">Все товары</li>
+                <li class="category-item" onclick="filterCategory('pizza')">🍕 Пицца</li>
+                <li class="category-item" onclick="filterCategory('uramaki')">🍣 Урамаки</li>
+                <li class="category-item" onclick="filterCategory('hosomaki')">🍱 Хосо-Маки</li>
+                <li class="category-item" onclick="filterCategory('hotmaki')">🔥 Хот-Маки</li>
+                <li class="category-item" onclick="filterCategory('baked')">🥘 Запечённые роллы</li>
+                <li class="category-item" onclick="filterCategory('sets')">🍱 Суши сеты</li>
+                <li class="category-item" onclick="filterCategory('salads')">🥗 Салаты</li>
+                <li class="category-item" onclick="filterCategory('wok')">🍜 Wok</li>
+                <li class="category-item" onclick="filterCategory('burgers')">🍔 Бургеры</li>
+                <li class="category-item" onclick="filterCategory('drinks')">🥤 Напитки</li>
+                <li class="category-item" onclick="filterCategory('fry')">🍟 Фритюр</li>
+                <li class="category-item" onclick="filterCategory('soups')">🍲 Супы</li>
+                <li class="category-item" onclick="filterCategory('sauces')">🥫 Соусы</li>
+            </ul>
+        </aside>
+
+        <!-- Content Panel -->
+        <div class="content-panel">
+            <!-- Header -->
+            <div class="content-header">
+                <h1 class="content-title">Пицца</h1>
+                <div class="content-actions">
+                    <button class="btn btn-primary" onclick="addProduct()">
+                        <span>➕</span> Новый товар
+                    </button>
+                    <button class="btn btn-secondary" onclick="importProducts()">
+                        <span>⬆️</span> Импорт
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div class="search-box">
+                <input type="text" class="search-input" placeholder="Поиск по названию, артикулу..." id="searchInput">
+            </div>
+
+            <!-- Products Table -->
+            <div class="products-table-container">
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>Наименование</th>
+                            <th>Себестоимость</th>
+                            <th>Цена</th>
+                            <th>Наценка %</th>
+                            <th>Ед.</th>
+                            <th>Арт.</th>
+                            <th>Стоп</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <tr data-product-id="1">
+                            <td><span class="product-name" onclick="editProduct(1)">Пепперони 30см</span></td>
+                            <td><input type="number" class="inline-input" value="10.00" step="0.01" onchange="updateProduct(1, 'cost', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input" value="22.00" step="0.01" onchange="updateProduct(1, 'price', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input markup-input" value="120" step="1" onchange="updateProduct(1, 'markup', this.value)"> %</td>
+                            <td>шт</td>
+                            <td>1716</td>
+                            <td><input type="checkbox" class="checkbox"></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" onclick="editProduct(1)">✏️</button>
+                                    <button class="action-btn delete" onclick="deleteProduct(1)">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-product-id="2">
+                            <td><span class="product-name" onclick="editProduct(2)">4 Сыра 30см</span></td>
+                            <td><input type="number" class="inline-input" value="11.00" step="0.01" onchange="updateProduct(2, 'cost', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input" value="24.00" step="0.01" onchange="updateProduct(2, 'price', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input markup-input" value="118" step="1" onchange="updateProduct(2, 'markup', this.value)"> %</td>
+                            <td>шт</td>
+                            <td>1611</td>
+                            <td><input type="checkbox" class="checkbox"></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" onclick="editProduct(2)">✏️</button>
+                                    <button class="action-btn delete" onclick="deleteProduct(2)">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-product-id="3">
+                            <td><span class="product-name" onclick="editProduct(3)">Карбонара 30см</span></td>
+                            <td><input type="number" class="inline-input" value="12.00" step="0.01" onchange="updateProduct(3, 'cost', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input" value="25.00" step="0.01" onchange="updateProduct(3, 'price', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input markup-input" value="108" step="1" onchange="updateProduct(3, 'markup', this.value)"> %</td>
+                            <td>шт</td>
+                            <td>1660</td>
+                            <td><input type="checkbox" class="checkbox"></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" onclick="editProduct(3)">✏️</button>
+                                    <button class="action-btn delete" onclick="deleteProduct(3)">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-product-id="4">
+                            <td><span class="product-name" onclick="editProduct(4)">Маргарита 30см</span></td>
+                            <td><input type="number" class="inline-input" value="9.00" step="0.01" onchange="updateProduct(4, 'cost', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input" value="24.00" step="0.01" onchange="updateProduct(4, 'price', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input markup-input" value="167" step="1" onchange="updateProduct(4, 'markup', this.value)"> %</td>
+                            <td>шт</td>
+                            <td>1681</td>
+                            <td><input type="checkbox" class="checkbox"></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" onclick="editProduct(4)">✏️</button>
+                                    <button class="action-btn delete" onclick="deleteProduct(4)">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr data-product-id="5">
+                            <td><span class="product-name" onclick="editProduct(5)">Гавайская 30см</span></td>
+                            <td><input type="number" class="inline-input" value="10.50" step="0.01" onchange="updateProduct(5, 'cost', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input" value="21.00" step="0.01" onchange="updateProduct(5, 'price', this.value)"> Br</td>
+                            <td><input type="number" class="inline-input markup-input" value="100" step="1" onchange="updateProduct(5, 'markup', this.value)"> %</td>
+                            <td>шт</td>
+                            <td>1632</td>
+                            <td><input type="checkbox" class="checkbox"></td>
+                            <td>
+                                <div class="actions">
+                                    <button class="action-btn" onclick="editProduct(5)">✏️</button>
+                                    <button class="action-btn delete" onclick="deleteProduct(5)">✕</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterCategory(cat) {
+            document.querySelectorAll('.category-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            // TODO: Filter products by category
+        }
+
+        function addProduct() {
+            alert('Добавление нового товара');
+        }
+
+        function importProducts() {
+            alert('Импорт товаров из CSV');
+        }
+
+        function editProduct(id) {
+            alert('Редактирование товара #' + id);
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Удалить товар #' + id + '?')) {
+                alert('Товар удален');
+            }
+        }
+
+        // Update product price, cost or markup
+        function updateProduct(id, field, value) {
+            const row = document.querySelector(`tr[data-product-id="${id}"]`);
+            const costInput = row.querySelector('td:nth-child(2) input');
+            const priceInput = row.querySelector('td:nth-child(3) input');
+            const markupInput = row.querySelector('td:nth-child(4) input');
+            
+            let cost = parseFloat(costInput.value) || 0;
+            let price = parseFloat(priceInput.value) || 0;
+            let markup = parseFloat(markupInput.value) || 0;
+            
+            if (field === 'cost') {
+                // Cost changed - recalculate price based on current markup
+                cost = parseFloat(value) || 0;
+                if (cost > 0) {
+                    price = cost * (1 + markup / 100);
+                    priceInput.value = price.toFixed(2);
+                }
+            } else if (field === 'price') {
+                // Price changed - recalculate markup
+                price = parseFloat(value) || 0;
+                if (cost > 0) {
+                    markup = ((price - cost) / cost) * 100;
+                    markupInput.value = Math.round(markup);
+                }
+            } else if (field === 'markup') {
+                // Markup changed - recalculate price
+                markup = parseFloat(value) || 0;
+                if (cost > 0) {
+                    price = cost * (1 + markup / 100);
+                    priceInput.value = price.toFixed(2);
+                }
+            }
+            
+            // Save to server (simulate)
+            console.log(`Product ${id}: cost=${cost}, price=${price.toFixed(2)}, markup=${markup.toFixed(0)}%`);
+            
+            // Show success indicator
+            let inputToHighlight;
+            if (field === 'cost') inputToHighlight = costInput;
+            else if (field === 'price') inputToHighlight = priceInput;
+            else inputToHighlight = markupInput;
+            
+            inputToHighlight.style.background = '#e8f5e9';
+            setTimeout(() => {
+                inputToHighlight.style.background = '';
+            }, 500);
+        }
+
+        function showMoney() { alert('Деньги'); }
+        function showStats() { alert('Статистика'); }
+        function showSettings() { alert('Настройки'); }
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

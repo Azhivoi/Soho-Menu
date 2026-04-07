@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Адреса доставки - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .addresses-page {
+            padding: 80px 16px 195px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .go-home-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .go-profile-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .footer-links-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            z-index: 90;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        .footer-links-bar a {
+            pointer-events: auto;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .address-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 2px solid transparent;
+        }
+        .address-card.default {
+            border-color: var(--accent-color);
+        }
+        .address-street {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .address-details {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        .address-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .address-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        .address-btn.primary {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+        .default-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+        .add-address-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .auth-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .auth-prompt .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .auth-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="addresses-page">
+        <div class="page-header">
+            <h1 class="page-title">Адреса доставки</h1>
+        </div>
+        <div id="addressesContent"></div>
+    </div>
+
+    <button class="go-home-btn" onclick="window.location.href='/'">🏠 В главное меню</button>
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+
+    <div class="footer-links-bar">
+        <a href="/about.html">О нас</a>
+        <a href="/delivery.html">Доставка</a>
+        <a href="/promotions.html">Акции</a>
+        <a href="/offer.html">Оферта</a>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('soho_user') || '{}');
+        const container = document.getElementById('addressesContent');
+        
+        if (!user.name) {
+            container.innerHTML = `
+                <div class="auth-prompt">
+                    <div class="icon">🔒</div>
+                    <h2>Войдите в аккаунт</h2>
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Чтобы управлять адресами доставки, необходимо авторизоваться</p>
+                    <a href="/login.html" class="auth-btn">Войти или зарегистрироваться</a>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <button class="add-address-btn" onclick="alert('Добавление адреса - в разработке')">➕ Добавить адрес</button>
+                <div class="address-card default">
+                    <span class="default-badge">По умолчанию</span>
+                    <div class="address-street">ул. Советская, 25</div>
+                    <div class="address-details">г. Жодино, кв. 42, подъезд 3, этаж 5</div>
+                    <div class="address-actions">
+                        <button class="address-btn" onclick="alert('Редактирование - в разработке')">Изменить</button>
+                        <button class="address-btn primary">Выбран</button>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

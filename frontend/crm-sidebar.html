@@ -1,0 +1,523 @@
+<!-- SOHO CRM Unified Sidebar Component -->
+<style>
+    :root {
+        --sidebar-width: 280px;
+        --sidebar-bg: #1a1a2e;
+        --sidebar-border: #2a2a40;
+        --text-primary: #ffffff;
+        --text-secondary: #a0a0b0;
+        --accent: #e94560;
+        --accent-hover: #ff6b6b;
+        --hover-bg: rgba(233, 69, 96, 0.1);
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0f0f1a;
+        color: var(--text-primary);
+    }
+    
+    /* Layout */
+    .crm-layout {
+        display: flex;
+        min-height: 100vh;
+    }
+    
+    /* Unified Sidebar */
+    .unified-sidebar {
+        width: var(--sidebar-width);
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--sidebar-border);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        overflow-y: auto;
+        z-index: 100;
+    }
+    
+    /* Logo */
+    .sidebar-logo {
+        padding: 24px 20px;
+        border-bottom: 1px solid var(--sidebar-border);
+    }
+    
+    .sidebar-logo h1 {
+        font-size: 22px;
+        font-weight: 800;
+    }
+    
+    .sidebar-logo h1 span {
+        color: var(--accent);
+    }
+    
+    /* Navigation */
+    .sidebar-nav {
+        flex: 1;
+        padding: 12px 0;
+    }
+    
+    /* Collapsible Section */
+    .nav-section {
+        border-bottom: 1px solid var(--sidebar-border);
+    }
+    
+    .nav-section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        cursor: pointer;
+        transition: all 0.2s;
+        user-select: none;
+    }
+    
+    .nav-section-header:hover {
+        background: var(--hover-bg);
+    }
+    
+    .nav-section-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .nav-section-icon {
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+    }
+    
+    .nav-section-arrow {
+        font-size: 12px;
+        color: var(--text-secondary);
+        transition: transform 0.3s;
+    }
+    
+    .nav-section.expanded .nav-section-arrow {
+        transform: rotate(90deg);
+    }
+    
+    /* Submenu */
+    .nav-submenu {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        background: rgba(0, 0, 0, 0.2);
+    }
+    
+    .nav-section.expanded .nav-submenu {
+        max-height: 500px;
+        transition: max-height 0.3s ease-in;
+    }
+    
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px 12px 56px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.2s;
+        border-left: 3px solid transparent;
+    }
+    
+    .nav-item:hover {
+        background: var(--hover-bg);
+        color: var(--text-primary);
+    }
+    
+    .nav-item.active {
+        background: var(--hover-bg);
+        color: var(--accent);
+        border-left-color: var(--accent);
+    }
+    
+    .nav-item-icon {
+        font-size: 16px;
+        width: 20px;
+        text-align: center;
+    }
+    
+    /* User Footer */
+    .sidebar-footer {
+        padding: 16px 20px;
+        border-top: 1px solid var(--sidebar-border);
+        margin-top: auto;
+    }
+    
+    .user-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .user-role {
+        font-size: 12px;
+        color: var(--text-secondary);
+    }
+    
+    /* Main Content */
+    .crm-main {
+        flex: 1;
+        margin-left: var(--sidebar-width);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    /* Top Bar */
+    .top-bar {
+        height: 64px;
+        background: var(--sidebar-bg);
+        border-bottom: 1px solid var(--sidebar-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+    
+    .top-bar h2 {
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    .top-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    /* Mobile Toggle */
+    .sidebar-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 200;
+        background: var(--accent);
+        border: none;
+        padding: 10px;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+    }
+    
+    /* Responsive */
+    @media (max-width: 1024px) {
+        .unified-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.3s;
+        }
+        
+        .unified-sidebar.open {
+            transform: translateX(0);
+        }
+        
+        .crm-main {
+            margin-left: 0;
+        }
+        
+        .sidebar-toggle {
+            display: block;
+        }
+    }
+    
+    /* Overlay for mobile */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+    }
+    
+    @media (max-width: 1024px) {
+        .sidebar-overlay.open {
+            display: block;
+        }
+    }
+</style>
+
+<!-- Unified Sidebar -->
+<aside class="unified-sidebar" id="sidebar">
+    <div class="sidebar-logo">
+        <h1><span>SOHO</span> Admin</h1>
+    </div>
+    
+    <nav class="sidebar-nav">
+        <!-- Orders Section -->
+        <div class="nav-section" data-section="orders">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">📝</span>
+                    <span>Заказы</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-orders.html" class="nav-item" data-page="orders">
+                    <span class="nav-item-icon">📋</span>
+                    <span>Все заказы</span>
+                </a>
+                <a href="crm-new-order.html" class="nav-item" data-page="new-order">
+                    <span class="nav-item-icon">➕</span>
+                    <span>Новый заказ</span>
+                </a>
+                <a href="crm-kds.html" class="nav-item" data-page="kds">
+                    <span class="nav-item-icon">👨‍🍳</span>
+                    <span>KDS Экран</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Catalog Section -->
+        <div class="nav-section" data-section="catalog">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">🍽️</span>
+                    <span>Каталог</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-menu-products.html" class="nav-item" data-page="products">
+                    <span class="nav-item-icon">🍕</span>
+                    <span>Товары</span>
+                </a>
+                <a href="crm-menu-categories.html" class="nav-item" data-page="categories">
+                    <span class="nav-item-icon">📁</span>
+                    <span>Категории</span>
+                </a>
+                <a href="crm-menu-ingredients.html" class="nav-item" data-page="ingredients">
+                    <span class="nav-item-icon">🥬</span>
+                    <span>Ингредиенты</span>
+                </a>
+                <a href="crm-recipes.html" class="nav-item" data-page="recipes">
+                    <span class="nav-item-icon">📖</span>
+                    <span>Рецепты</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Warehouse Section -->
+        <div class="nav-section" data-section="warehouse">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">📦</span>
+                    <span>Склад</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-warehouse.html" class="nav-item" data-page="warehouse-dashboard">
+                    <span class="nav-item-icon">📊</span>
+                    <span>Дашборд</span>
+                </a>
+                <a href="crm-inventory.html" class="nav-item" data-page="inventory">
+                    <span class="nav-item-icon">📋</span>
+                    <span>Остатки</span>
+                </a>
+                <a href="crm-warehouse-invoices.html" class="nav-item" data-page="invoices">
+                    <span class="nav-item-icon">📄</span>
+                    <span>Накладные</span>
+                </a>
+                <a href="crm-warehouse-suppliers.html" class="nav-item" data-page="suppliers">
+                    <span class="nav-item-icon">🏢</span>
+                    <span>Поставщики</span>
+                </a>
+                <a href="crm-warehouse-movements.html" class="nav-item" data-page="movements">
+                    <span class="nav-item-icon">🔄</span>
+                    <span>Движения</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Customers Section -->
+        <div class="nav-section" data-section="customers">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">👥</span>
+                    <span>Клиенты</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-customers.html" class="nav-item" data-page="customers">
+                    <span class="nav-item-icon">👤</span>
+                    <span>База клиентов</span>
+                </a>
+                <a href="crm-stats-customers.html" class="nav-item" data-page="customer-stats">
+                    <span class="nav-item-icon">📈</span>
+                    <span>Статистика</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Analytics Section -->
+        <div class="nav-section" data-section="analytics">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">📊</span>
+                    <span>Аналитика</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="crm-dashboard.html" class="nav-item" data-page="dashboard">
+                    <span class="nav-item-icon">📈</span>
+                    <span>Дашборд</span>
+                </a>
+                <a href="crm-stats.html" class="nav-item" data-page="stats">
+                    <span class="nav-item-icon">📉</span>
+                    <span>Отчёты</span>
+                </a>
+                <a href="crm-stats-sales.html" class="nav-item" data-page="sales-stats">
+                    <span class="nav-item-icon">💰</span>
+                    <span>Продажи</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Settings Section -->
+        <div class="nav-section" data-section="settings">
+            <div class="nav-section-header" onclick="toggleSection(this)">
+                <div class="nav-section-title">
+                    <span class="nav-section-icon">⚙️</span>
+                    <span>Настройки</span>
+                </div>
+                <span class="nav-section-arrow">▶</span>
+            </div>
+            <div class="nav-submenu">
+                <a href="admin-panel.html" class="nav-item" data-page="admin">
+                    <span class="nav-item-icon">🔧</span>
+                    <span>Панель управления</span>
+                </a>
+                <a href="crm-employees.html" class="nav-item" data-page="employees">
+                    <span class="nav-item-icon">👷</span>
+                    <span>Сотрудники</span>
+                </a>
+                <a href="crm-settings-marks.html" class="nav-item" data-page="marks">
+                    <span class="nav-item-icon">🏷️</span>
+                    <span>Метки заказов</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <div class="user-card">
+            <div class="user-avatar">АД</div>
+            <div class="user-info">
+                <div class="user-name">Админ</div>
+                <div class="user-role">SOHO Cafe</div>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<!-- Mobile Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Mobile Toggle Button -->
+<button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">☰</button>
+
+<script>
+    // Toggle section expand/collapse
+    function toggleSection(header) {
+        const section = header.parentElement;
+        section.classList.toggle('expanded');
+        
+        // Save state to localStorage
+        const sectionName = section.dataset.section;
+        const isExpanded = section.classList.contains('expanded');
+        localStorage.setItem(`sidebar_section_${sectionName}`, isExpanded);
+    }
+    
+    // Restore section states from localStorage
+    function restoreSectionStates() {
+        document.querySelectorAll('.nav-section').forEach(section => {
+            const sectionName = section.dataset.section;
+            const isExpanded = localStorage.getItem(`sidebar_section_${sectionName}`) === 'true';
+            if (isExpanded) {
+                section.classList.add('expanded');
+            }
+        });
+    }
+    
+    // Highlight current page
+    function highlightCurrentPage() {
+        const currentPath = window.location.pathname;
+        const currentPage = currentPath.split('/').pop().replace('.html', '');
+        
+        document.querySelectorAll('.nav-item').forEach(item => {
+            const itemPath = item.getAttribute('href');
+            if (itemPath && itemPath.includes(currentPage)) {
+                item.classList.add('active');
+                // Expand parent section
+                const section = item.closest('.nav-section');
+                if (section) {
+                    section.classList.add('expanded');
+                }
+            }
+        });
+    }
+    
+    // Mobile sidebar toggle
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+    }
+    
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        sidebar.classList.remove('open');
+        overlay.classList.remove('open');
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        restoreSectionStates();
+        highlightCurrentPage();
+    });
+</script>

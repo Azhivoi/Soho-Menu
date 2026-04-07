@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Категории - SOHO CRM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a2e;
+            border-right: 1px solid #333;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h1 { font-size: 24px; color: #e94560; margin-bottom: 5px; }
+        .sidebar-header span { font-size: 12px; color: #888; }
+        .nav-section { margin-bottom: 10px; }
+        .nav-section-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .nav-section-header:hover { background: #252538; color: #fff; }
+        .nav-section-header.active { background: #e94560; color: #fff; }
+        .nav-section-header .toggle-icon { font-size: 12px; transition: transform 0.2s; }
+        .nav-section-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .nav-section-items { display: block; }
+        .nav-section-items.collapsed { display: none; }
+        .nav-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: block;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: #252538; color: #fff; }
+        .nav-item.active { background: #252538; color: #e94560; border-left: 3px solid #e94560; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .page-header h2 { font-size: 28px; font-weight: 600; }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #fff; }
+        .tab.active { color: #e94560; border-bottom-color: #e94560; }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary { background: #e94560; color: #fff; }
+        .btn-primary:hover { background: #d63a54; }
+        .btn-secondary { background: #252538; color: #fff; border: 1px solid #444; }
+        .btn-secondary:hover { background: #333; }
+        .btn-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3); }
+        .btn-danger:hover { background: rgba(244, 67, 54, 0.3); }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        
+        /* Add Category Form */
+        .add-category-form {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border: 1px solid #333;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        .form-group {
+            flex: 1;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        
+        /* Categories List Table */
+        .categories-list {
+            background: #1a1a2e;
+            border-radius: 10px;
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+        .list-header {
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 100px 100px 100px 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            background: #252538;
+            border-bottom: 1px solid #333;
+            font-size: 13px;
+            font-weight: 600;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .category-row {
+            display: grid;
+            grid-template-columns: 60px 2fr 1fr 100px 100px 100px 120px;
+            gap: 15px;
+            padding: 15px 20px;
+            border-bottom: 1px solid #333;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .category-row:hover { background: #252538; }
+        .category-row:last-child { border-bottom: none; }
+        
+        .cat-id { color: #666; font-size: 13px; }
+        .cat-name { 
+            font-weight: 500; 
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .cat-desc { 
+            font-size: 13px; 
+            color: #888;
+            font-weight: normal;
+        }
+        .cat-sort input {
+            width: 60px;
+            padding: 6px 10px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        /* Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #444;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider {
+            background: #4CAF50;
+        }
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+        .toggle-switch input:disabled + .toggle-slider {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .actions { display: flex; gap: 8px; justify-content: flex-end; }
+        
+        /* Visibility badges */
+        .visibility-badges {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .badge-visible { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+        .badge-hidden { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
+        .empty-state h3 { font-size: 20px; margin-bottom: 10px; color: #fff; }
+        
+        /* Import Section */
+        .import-section {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 25px;
+            border: 1px dashed #555;
+        }
+        .import-section h4 {
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #fff;
+        }
+        .file-input-label:hover { background: #333; }
+        
+        /* Drag and Drop */
+        .category-row {
+            transition: all 0.2s;
+        }
+        .category-row.dragging {
+            opacity: 0.5;
+            background: #252538;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .category-row.drag-over {
+            border-top: 3px solid #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .drag-handle {
+            cursor: grab;
+            user-select: none;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SOHO</h1>
+                <span>CRM Система</span>
+            </div>
+            <div class="nav-section">
+                <div class="nav-section-header active" onclick="toggleSection(this)">
+                    <span>🍽️ Меню</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items">
+                    <a href="crm-menu.html" class="nav-item">Обзор</a>
+                    <a href="crm-menu-ingredients.html" class="nav-item">Ингредиенты</a>
+                    <a href="crm-menu-products.html" class="nav-item">Товары</a>
+                    <a href="crm-menu-categories.html" class="nav-item active">Категории</a>
+                    <a href="crm-menu-semi.html" class="nav-item">Полуфабрикаты</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h2>📂 Категории</h2>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('ingredients')">Категории ингредиентов</div>
+                <div class="tab" onclick="switchTab('products')">Категории товаров</div>
+            </div>
+
+            <!-- Add Category Form -->
+            <div class="add-category-form">
+                <div class="form-row">
+                    <div class="form-group" style="flex: 2;">
+                        <label>Название категории *</label>
+                        <input type="text" id="newCategoryName" placeholder="Например: Овощи">
+                    </div>
+                    <div class="form-group" style="flex: 3;">
+                        <label>Описание</label>
+                        <input type="text" id="newCategoryDesc" placeholder="Описание категории (необязательно)">
+                    </div>
+                    <button class="btn btn-primary" onclick="addCategory()">+ Добавить</button>
+                </div>
+            </div>
+
+            <!-- Categories List -->
+            <div class="categories-list">
+                <div class="list-header">
+                    <span>ID</span>
+                    <span>Название / Описание</span>
+                    <span style="text-align: center;">Порядок</span>
+                    <span style="text-align: center;">На сайте</span>
+                    <span style="text-align: center;">В меню</span>
+                    <span style="text-align: center;">Статус</span>
+                    <span style="text-align: right;">Действия</span>
+                </div>
+                <div id="categoriesList">
+                    <!-- Categories loaded here -->
+                </div>
+            </div>
+
+            <!-- Import Section -->
+            <div class="import-section">
+                <h4>📥 Импорт категорий из файла</h4>
+                <p style="color: #888; margin-bottom: 15px; font-size: 14px;">
+                    Загрузите CSV или Excel файл с категориями. Формат: название, описание (опционально)
+                </p>
+                <div class="file-input-wrapper">
+                    <input type="file" id="importFile" accept=".csv,.xlsx,.xls" onchange="importCategories()">
+                    <label for="importFile" class="file-input-label">Выбрать файл</label>
+                </div>
+                <span id="selectedFileName" style="margin-left: 15px; color: #888;"></span>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let currentTab = 'ingredients';
+        let ingredientCategories = [];
+        let productCategories = [];
+        let draggedCategoryId = null;
+        let isSavingOrder = false;
+
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            header.nextElementSibling.classList.toggle('collapsed');
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            updateHeader();
+            renderCategories();
+        }
+        
+        function updateHeader() {
+            const header = document.querySelector('.list-header');
+            if (currentTab === 'ingredients') {
+                header.innerHTML = `
+                    <span>ID</span>
+                    <span>Название / Описание</span>
+                    <span style="text-align: center;">—</span>
+                    <span style="text-align: center;">На сайте</span>
+                    <span style="text-align: center;">В меню</span>
+                    <span style="text-align: center;">Статус</span>
+                    <span style="text-align: right;">Действия</span>
+                `;
+            } else {
+                header.innerHTML = `
+                    <span>ID</span>
+                    <span>Название / Описание</span>
+                    <span style="text-align: center;">Порядок</span>
+                    <span style="text-align: center;">На сайте</span>
+                    <span style="text-align: center;">В меню</span>
+                    <span style="text-align: center;">Статус</span>
+                    <span style="text-align: right;">Действия</span>
+                `;
+            }
+        }
+
+        async function loadData() {
+            const [ingRes, prodRes] = await Promise.all([
+                fetch(`${API_URL}/menu/ingredient-categories`),
+                fetch(`${API_URL}/menu/product-categories`)
+            ]);
+            ingredientCategories = await ingRes.json();
+            productCategories = await prodRes.json();
+            renderCategories();
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesList');
+            const categories = currentTab === 'ingredients' ? ingredientCategories : productCategories;
+            
+            if (categories.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📂</div>
+                        <h3>Нет категорий</h3>
+                        <p>Добавьте первую категорию выше</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = categories.map((cat, index) => `
+                <div class="category-row" 
+                     draggable="true" 
+                     data-category-id="${cat.id}"
+                     ondragstart="handleCategoryDragStart(event, ${cat.id})"
+                     ondragover="handleCategoryDragOver(event)"
+                     ondrop="handleCategoryDrop(event, ${cat.id})"
+                     ondragend="handleCategoryDragEnd(event)"
+                     style="cursor: move;">
+                    <span class="cat-id">
+                        <span class="drag-handle" style="cursor: grab; color: #666; font-size: 16px; margin-right: 8px;">☰</span>
+                        #${cat.id}
+                    </span>
+                    <div class="cat-name">
+                        <span>${cat.name}</span>
+                        <span class="cat-desc">${cat.description || 'Нет описания'}</span>
+                    </div>
+                    ${currentTab === 'products' ? `
+                    <div class="cat-sort" style="text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                        <button class="btn btn-secondary btn-sm" onclick="moveCategory(${cat.id}, -1)" title="Вверх">↑</button>
+                        <span style="min-width: 30px; text-align: center;">${cat.sort_order || 0}</span>
+                        <button class="btn btn-secondary btn-sm" onclick="moveCategory(${cat.id}, 1)" title="Вниз">↓</button>
+                    </div>
+                    ` : '<span style="text-align: center; color: #666;">—</span>'}
+                    <div style="text-align: center;">
+                        <label class="toggle-switch" title="Видимость на сайте">
+                            <input type="checkbox" 
+                                   ${cat.is_visible_on_site !== false ? 'checked' : ''} 
+                                   onchange="toggleVisibility(${cat.id}, 'is_visible_on_site', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div style="text-align: center;">
+                        <label class="toggle-switch" title="Видимость в меню">
+                            <input type="checkbox" 
+                                   ${cat.is_visible_in_menu !== false ? 'checked' : ''} 
+                                   onchange="toggleVisibility(${cat.id}, 'is_visible_in_menu', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div style="text-align: center;">
+                        <label class="toggle-switch" title="Активна">
+                            <input type="checkbox" 
+                                   ${cat.is_active !== false ? 'checked' : ''} 
+                                   onchange="toggleVisibility(${cat.id}, 'is_active', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-secondary btn-sm" onclick="editCategory(${cat.id})" title="Редактировать">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})" title="Удалить">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('newCategoryName').value.trim();
+            const description = document.getElementById('newCategoryDesc').value.trim();
+            
+            if (!name) {
+                alert('Введите название категории');
+                return;
+            }
+            
+            const endpoint = currentTab === 'ingredients' 
+                ? 'ingredient-categories' 
+                : 'product-categories';
+            
+            const data = currentTab === 'ingredients' 
+                ? { name, description, is_visible_on_site: true, is_visible_in_menu: true }
+                : { name, description, sort_order: 0, is_visible_on_site: true, is_visible_in_menu: true };
+            
+            try {
+                const res = await fetch(`${API_URL}/menu/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    document.getElementById('newCategoryName').value = '';
+                    document.getElementById('newCategoryDesc').value = '';
+                    await loadData();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка создания');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ошибка соединения');
+            }
+        }
+
+        async function toggleVisibility(id, field, value) {
+            const endpoint = currentTab === 'ingredients' 
+                ? 'ingredient-categories' 
+                : 'product-categories';
+            
+            const data = { [field]: value };
+            
+            try {
+                const res = await fetch(`${API_URL}/menu/${endpoint}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка обновления');
+                    await loadData(); // Reload to reset toggle
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ошибка соединения');
+                await loadData();
+            }
+        }
+
+        async function moveCategory(id, direction) {
+            if (currentTab !== 'products') return;
+            
+            const categories = [...productCategories]; // Copy array
+            const idx = categories.findIndex(c => c.id === id);
+            if (idx === -1) return;
+            
+            const currentCat = categories[idx];
+            const currentOrder = currentCat.sort_order || 0;
+            
+            // Find category to swap with
+            let swapIdx = -1;
+            if (direction === -1 && idx > 0) {
+                // Move up - find category with closest lower sort_order
+                swapIdx = idx - 1;
+            } else if (direction === 1 && idx < categories.length - 1) {
+                // Move down - find category with closest higher sort_order
+                swapIdx = idx + 1;
+            }
+            
+            if (swapIdx === -1) return; // Can't move further
+            
+            const swapCat = categories[swapIdx];
+            const swapOrder = swapCat.sort_order || 0;
+            
+            // Swap sort orders
+            try {
+                const res1 = await fetch(`${API_URL}/menu/product-categories/${currentCat.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sort_order: swapOrder })
+                });
+                
+                const res2 = await fetch(`${API_URL}/menu/product-categories/${swapCat.id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sort_order: currentOrder })
+                });
+                
+                await loadData();
+            } catch (error) {
+                console.error('Error:', error);
+                await loadData();
+            }
+        }
+        
+        // Drag and Drop for categories
+        function handleCategoryDragStart(event, categoryId) {
+            console.log('Category drag start:', categoryId);
+            draggedCategoryId = categoryId;
+            event.target.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', categoryId);
+        }
+        
+        function handleCategoryDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const row = event.target.closest('.category-row');
+            if (row && !row.classList.contains('dragging')) {
+                row.classList.add('drag-over');
+            }
+        }
+        
+        function handleCategoryDragEnd(event) {
+            event.target.classList.remove('dragging');
+            document.querySelectorAll('.category-row').forEach(row => {
+                row.classList.remove('drag-over');
+            });
+        }
+        
+        async function handleCategoryDrop(event, targetCategoryId) {
+            event.preventDefault();
+            const row = event.target.closest('.category-row');
+            if (row) {
+                row.classList.remove('drag-over');
+            }
+            
+            if (!draggedCategoryId || draggedCategoryId === targetCategoryId) {
+                return;
+            }
+            
+            console.log('Category drop:', draggedCategoryId, '->', targetCategoryId);
+            await reorderCategories(draggedCategoryId, targetCategoryId);
+        }
+        
+        async function reorderCategories(draggedId, targetId) {
+            if (isSavingOrder) return; // Prevent simultaneous requests
+            
+            isSavingOrder = true;
+            
+            const categories = currentTab === 'ingredients' ? [...ingredientCategories] : [...productCategories];
+            
+            const draggedIdx = categories.findIndex(c => c.id === draggedId);
+            const targetIdx = categories.findIndex(c => c.id === targetId);
+            
+            if (draggedIdx === -1 || targetIdx === -1) {
+                isSavingOrder = false;
+                return;
+            }
+            
+            // Reorder array locally first
+            const [removed] = categories.splice(draggedIdx, 1);
+            categories.splice(targetIdx, 0, removed);
+            
+            // Update local state immediately
+            if (currentTab === 'ingredients') {
+                ingredientCategories = categories;
+            } else {
+                productCategories = categories;
+            }
+            renderCategories();
+            
+            // Update sort_order for all categories
+            const endpoint = currentTab === 'ingredients' ? 'ingredient-categories' : 'product-categories';
+            
+            setTimeout(async () => {
+                try {
+                    for (let i = 0; i < categories.length; i++) {
+                        const cat = categories[i];
+                        const res = await fetch(`${API_URL}/menu/${endpoint}/${cat.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sort_order: i * 10 })
+                        });
+                        if (!res.ok) {
+                            console.error('API error for category', cat.id, ':', await res.text());
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error saving sort order:', error);
+                } finally {
+                    isSavingOrder = false;
+                    await loadData();
+                }
+            }, 100);
+        }
+
+        async function updateSortOrder(id, value) {
+            if (currentTab !== 'products') return;
+            
+            try {
+                const res = await fetch(`${API_URL}/menu/product-categories/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ sort_order: parseInt(value) || 0 })
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка обновления');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Ошибка соединения');
+            }
+        }
+
+        async function editCategory(id) {
+            const categories = currentTab === 'ingredients' ? ingredientCategories : productCategories;
+            const cat = categories.find(c => c.id === id);
+            if (!cat) return;
+            
+            const newName = prompt('Новое название:', cat.name);
+            if (newName === null) return;
+            
+            const newDesc = prompt('Новое описание:', cat.description || '');
+            if (newDesc === null) return;
+            
+            const endpoint = currentTab === 'ingredients' 
+                ? 'ingredient-categories' 
+                : 'product-categories';
+            
+            const data = currentTab === 'ingredients' 
+                ? { name: newName, description: newDesc }
+                : { name: newName, description: newDesc, sort_order: cat.sort_order || 0 };
+            
+            try {
+                const res = await fetch(`${API_URL}/menu/${endpoint}/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    await loadData();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка обновления');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Удалить категорию?')) return;
+            
+            const endpoint = currentTab === 'ingredients' 
+                ? 'ingredient-categories' 
+                : 'product-categories';
+            
+            try {
+                const res = await fetch(`${API_URL}/menu/${endpoint}/${id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (res.ok) {
+                    await loadData();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Нельзя удалить категорию с элементами');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function importCategories() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if (file) {
+                document.getElementById('selectedFileName').textContent = file.name;
+                alert('Импорт будет реализован в следующем этапе');
+            }
+        }
+
+        loadData();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

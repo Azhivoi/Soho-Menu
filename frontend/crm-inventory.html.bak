@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Склад | SOHO CRM</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-orange: #f39c12;
+            --accent-blue: #3498db;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Layout */
+        .crm-layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .crm-sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-header h1 {
+            font-size: 24px;
+            font-weight: 800;
+        }
+        
+        .sidebar-header h1 span { color: var(--accent-red); }
+        
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 0;
+        }
+        
+        .nav-section { margin-bottom: 8px; }
+        
+        .nav-section-title {
+            padding: 12px 20px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: var(--bg-hover);
+            color: var(--text-primary);
+            border-left-color: var(--accent-red);
+        }
+        
+        .nav-item.active { color: var(--accent-red); }
+        .nav-item .icon { font-size: 20px; width: 24px; text-align: center; }
+        
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--accent-red);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .crm-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            height: 64px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        
+        .top-bar h2 { font-size: 20px; font-weight: 600; }
+        
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .search-box input {
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            width: 200px;
+        }
+        
+        .search-box input::placeholder { color: var(--text-secondary); }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        
+        .btn-primary {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .btn-primary:hover { background: #d63850; }
+        
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-secondary:hover { background: var(--bg-hover); }
+        
+        /* Content */
+        .inventory-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+        
+        /* Stats Cards */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .stat-card.warning { border-color: var(--accent-orange); }
+        .stat-card.danger { border-color: var(--accent-red); }
+        
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .stat-title {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .stat-icon.green { background: rgba(0, 217, 165, 0.15); color: var(--accent-green); }
+        .stat-icon.orange { background: rgba(243, 156, 18, 0.15); color: var(--accent-orange); }
+        .stat-icon.red { background: rgba(233, 69, 96, 0.15); color: var(--accent-red); }
+        .stat-icon.blue { background: rgba(52, 152, 219, 0.15); color: var(--accent-blue); }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .stat-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .filter-group label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .filter-group select {
+            padding: 8px 12px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+        }
+        
+        /* Table */
+        .inventory-table-container {
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .inventory-table th {
+            background: var(--bg-secondary);
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .inventory-table th.sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .inventory-table th.sortable:hover { color: var(--text-primary); }
+        
+        .inventory-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 14px;
+        }
+        
+        .inventory-table tr:hover { background: var(--bg-hover); }
+        .inventory-table tr:last-child td { border-bottom: none; }
+        
+        /* Product Cell */
+        .product-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .product-image {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: var(--bg-secondary);
+        }
+        
+        .product-info h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .product-info span {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* Stock Indicator */
+        .stock-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stock-bar {
+            width: 100px;
+            height: 6px;
+            background: var(--bg-secondary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .stock-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        .stock-fill.high { background: var(--accent-green); }
+        .stock-fill.medium { background: var(--accent-orange); }
+        .stock-fill.low { background: var(--accent-red); }
+        
+        .stock-value {
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 50px;
+        }
+        
+        /* Status Badge */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-badge.instock {
+            background: rgba(0, 217, 165, 0.15);
+            color: var(--accent-green);
+        }
+        
+        .status-badge.low {
+            background: rgba(243, 156, 18, 0.15);
+            color: var(--accent-orange);
+        }
+        
+        .status-badge.out {
+            background: rgba(233, 69, 96, 0.15);
+            color: var(--accent-red);
+        }
+        
+        /* Actions */
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .action-btn:hover {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+        
+        /* Low Stock Alert */
+        .alert-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 20px;
+            background: rgba(233, 69, 96, 0.1);
+            border: 1px solid var(--accent-red);
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .alert-banner .icon {
+            font-size: 24px;
+        }
+        
+        .alert-banner h4 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .alert-banner p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .crm-sidebar { display: none; }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .filters-bar { flex-wrap: wrap; }
+            .inventory-table th, .inventory-table td { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="crm-layout">
+        <!-- Sidebar -->
+        <aside class="crm-sidebar">
+            <div class="sidebar-header">
+                <h1><span>SOHO</span> CRM</h1>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Главное</div>
+                    <a href="crm-dashboard.html" class="nav-item">
+                        <span class="icon">📊</span>
+                        <span>Дашборд</span>
+                    </a>
+                    <a href="crm-orders.html" class="nav-item">
+                        <span class="icon">📝</span>
+                        <span>Заказы</span>
+                    </a>
+                    <a href="crm-order.html" class="nav-item">
+                        <span class="icon">➕</span>
+                        <span>Новый заказ</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Кухня</div>
+                    <a href="crm-kds.html" class="nav-item">
+                        <span class="icon">👨‍🍳</span>
+                        <span>KDS Экран</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Каталог</div>
+                    <a href="crm-products.html" class="nav-item">
+                        <span class="icon">🍽️</span>
+                        <span>Товары</span>
+                    </a>
+                    <a href="crm-inventory.html" class="nav-item active">
+                        <span class="icon">📦</span>
+                        <span>Склад</span>
+                    </a>
+                </div>
+                
+                <div class="nav-section">
+                    <div class="nav-section-title">Клиенты</div>
+                    <a href="crm-customers.html" class="nav-item">
+                        <span class="icon">👥</span>
+                        <span>База клиентов</span>
+                    </a>
+                </div>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">АД</div>
+                    <div>
+                        <div style="font-weight: 600;">Админ</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">SOHO Cafe</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="crm-main">
+            <!-- Top Bar -->
+            <header class="top-bar">
+                <h2>📦 Управление складом</h2>
+                <div class="top-actions">
+                    <div class="search-box">
+                        <span>🔍</span>
+                        <input type="text" id="searchInput" placeholder="Поиск по товарам..." oninput="filterProducts()">
+                    </div>
+                    <button class="btn btn-secondary" onclick="exportInventory()">📥 Экспорт</button>
+                    <button class="btn btn-primary" onclick="openStockModal()">+ Приход</button>
+                </div>
+            </header>
+            
+            <!-- Content -->
+            <div class="inventory-content">
+                <!-- Alert Banner -->
+                <div class="alert-banner" id="alertBanner" style="display: none;">
+                    <span class="icon">⚠️</span>
+                    <div>
+                        <h4>Внимание! Заканчиваются товары</h4>
+                        <p id="alertText">5 товаров ниже критического уровня запасов</p>
+                    </div>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">Всего позиций</span>
+                            <div class="stat-icon blue">📦</div>
+                        </div>
+                        <div class="stat-value" id="totalItems">0</div>
+                        <div class="stat-desc">На складе</div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">В наличии</span>
+                            <div class="stat-icon green">✅</div>
+                        </div>
+                        <div class="stat-value" id="inStock">0</div>
+                        <div class="stat-desc">Доступно для продажи</div>
+                    </div>
+                    
+                    <div class="stat-card warning">
+                        <div class="stat-header">
+                            <span class="stat-title">Заканчивается</span>
+                            <div class="stat-icon orange">⚠️</div>
+                        </div>
+                        <div class="stat-value" id="lowStock">0</div>
+                        <div class="stat-desc">Ниже минимального уровня</div>
+                    </div>
+                    
+                    <div class="stat-card danger">
+                        <div class="stat-header">
+                            <span class="stat-title">Нет в наличии</span>
+                            <div class="stat-icon red">❌</div>
+                        </div>
+                        <div class="stat-value" id="outOfStock">0</div>
+                        <div class="stat-desc">Требуется пополнение</div>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <label>Категория:</label>
+                        <select id="categoryFilter" onchange="filterProducts()">
+                            <option value="">Все категории</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Статус:</label>
+                        <select id="statusFilter" onchange="filterProducts()">
+                            <option value="">Все</option>
+                            <option value="instock">В наличии</option>
+                            <option value="low">Заканчивается</option>
+                            <option value="out">Нет в наличии</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Сортировка:</label>
+                        <select id="sortFilter" onchange="sortProducts()">
+                            <option value="name">По названию</option>
+                            <option value="stock">По остатку</option>
+                            <option value="category">По категории</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Table -->
+                <div class="inventory-table-container">
+                    <table class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Товар</th>
+                                <th>Категория</th>
+                                <th>Остаток</th>
+                                <th>Мин. уровень</th>
+                                <th>Статус</th>
+                                <th>Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                            <!-- Filled by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        // Mock inventory data (will be replaced with real API)
+        let inventory = [];
+        let categories = [];
+        
+        // Load data
+        async function loadInventory() {
+            try {
+                // Load categories and products
+                const catsResponse = await fetch('/api/menu/categories');
+                categories = await catsResponse.json();
+                
+                // Generate mock inventory for products
+                inventory = [];
+                categories.forEach(cat => {
+                    cat.products?.forEach(prod => {
+                        // Generate random stock levels
+                        const minLevel = Math.floor(Math.random() * 10) + 5;
+                        const currentStock = Math.floor(Math.random() * 30);
+                        
+                        inventory.push({
+                            id: prod.id,
+                            name: prod.name_ru,
+                            category: cat.name_ru,
+                            image: prod.image_url,
+                            currentStock: currentStock,
+                            minLevel: minLevel,
+                            unit: 'шт',
+                            lastUpdated: new Date().toISOString()
+                        });
+                    });
+                });
+                
+                // Populate category filter
+                const catSelect = document.getElementById('categoryFilter');
+                catSelect.innerHTML = '<option value="">Все категории</option>' +
+                    categories.map(c => `<option value="${c.name_ru}">${c.name_ru}</option>`).join('');
+                
+                updateStats();
+                renderTable();
+                checkAlerts();
+                
+            } catch (err) {
+                console.error('Inventory load error:', err);
+            }
+        }
+        
+        // Update stats
+        function updateStats() {
+            const total = inventory.length;
+            const inStock = inventory.filter(i => i.currentStock > i.minLevel).length;
+            const low = inventory.filter(i => i.currentStock > 0 && i.currentStock <= i.minLevel).length;
+            const out = inventory.filter(i => i.currentStock === 0).length;
+            
+            document.getElementById('totalItems').textContent = total;
+            document.getElementById('inStock').textContent = inStock;
+            document.getElementById('lowStock').textContent = low;
+            document.getElementById('outOfStock').textContent = out;
+        }
+        
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('inventoryTableBody');
+            const filtered = getFilteredProducts();
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                            Нет товаров для отображения
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(item => {
+                const percentage = Math.min(100, (item.currentStock / (item.minLevel * 2)) * 100);
+                let statusClass = 'high';
+                let statusBadge = 'instock';
+                let statusText = 'В наличии';
+                
+                if (item.currentStock === 0) {
+                    statusClass = 'low';
+                    statusBadge = 'out';
+                    statusText = 'Нет в наличии';
+                } else if (item.currentStock <= item.minLevel) {
+                    statusClass = 'medium';
+                    statusBadge = 'low';
+                    statusText = 'Заканчивается';
+                }
+                
+                return `
+                    <tr>
+                        <td>
+                            <div class="product-cell">
+                                <img src="${item.image || 'https://via.placeholder.com/48'}" class="product-image" alt="">
+                                <div class="product-info">
+                                    <h4>${item.name}</h4>
+                                    <span>ID: ${item.id}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${item.category}</td>
+                        <td>
+                            <div class="stock-indicator">
+                                <div class="stock-bar">
+                                    <div class="stock-fill ${statusClass}" style="width: ${percentage}%"></div>
+                                </div>
+                                <span class="stock-value">${item.currentStock} ${item.unit}</span>
+                            </div>
+                        </td>
+                        <td>${item.minLevel} ${item.unit}</td>
+                        <td><span class="status-badge ${statusBadge}">${statusText}</span></td>
+                        <td>
+                            <div class="action-btns">
+                                <button class="action-btn" onclick="adjustStock(${item.id}, 1)" title="Приход">+</button>
+                                <button class="action-btn" onclick="adjustStock(${item.id}, -1)" title="Расход">−</button>
+                                <button class="action-btn" onclick="editProduct(${item.id})" title="Редактировать">✏️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        // Get filtered products
+        function getFilteredProducts() {
+            let filtered = [...inventory];
+            
+            // Search filter
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            if (search) {
+                filtered = filtered.filter(i => i.name.toLowerCase().includes(search));
+            }
+            
+            // Category filter
+            const category = document.getElementById('categoryFilter').value;
+            if (category) {
+                filtered = filtered.filter(i => i.category === category);
+            }
+            
+            // Status filter
+            const status = document.getElementById('statusFilter').value;
+            if (status) {
+                if (status === 'instock') {
+                    filtered = filtered.filter(i => i.currentStock > i.minLevel);
+                } else if (status === 'low') {
+                    filtered = filtered.filter(i => i.currentStock > 0 && i.currentStock <= i.minLevel);
+                } else if (status === 'out') {
+                    filtered = filtered.filter(i => i.currentStock === 0);
+                }
+            }
+            
+            return filtered;
+        }
+        
+        // Filter products
+        function filterProducts() {
+            renderTable();
+        }
+        
+        // Sort products
+        function sortProducts() {
+            const sort = document.getElementById('sortFilter').value;
+            
+            if (sort === 'name') {
+                inventory.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (sort === 'stock') {
+                inventory.sort((a, b) => a.currentStock - b.currentStock);
+            } else if (sort === 'category') {
+                inventory.sort((a, b) => a.category.localeCompare(b.category));
+            }
+            
+            renderTable();
+        }
+        
+        // Check for low stock alerts
+        function checkAlerts() {
+            const lowStock = inventory.filter(i => i.currentStock <= i.minLevel && i.currentStock > 0);
+            const outOfStock = inventory.filter(i => i.currentStock === 0);
+            
+            const totalAlerts = lowStock.length + outOfStock.length;
+            
+            if (totalAlerts > 0) {
+                document.getElementById('alertBanner').style.display = 'flex';
+                document.getElementById('alertText').textContent = 
+                    `${outOfStock.length} товаров нет в наличии, ${lowStock.length} заканчивается`;
+            } else {
+                document.getElementById('alertBanner').style.display = 'none';
+            }
+        }
+        
+        // Adjust stock
+        function adjustStock(productId, delta) {
+            const item = inventory.find(i => i.id === productId);
+            if (!item) return;
+            
+            const newStock = item.currentStock + delta;
+            if (newStock < 0) {
+                alert('Остаток не может быть отрицательным!');
+                return;
+            }
+            
+            item.currentStock = newStock;
+            item.lastUpdated = new Date().toISOString();
+            
+            updateStats();
+            renderTable();
+            checkAlerts();
+        }
+        
+        // Edit product
+        function editProduct(productId) {
+            const item = inventory.find(i => i.id === productId);
+            if (!item) return;
+            
+            const newMin = prompt(`Минимальный уровень для "${item.name}":`, item.minLevel);
+            if (newMin !== null && !isNaN(newMin)) {
+                item.minLevel = parseInt(newMin);
+                renderTable();
+                checkAlerts();
+            }
+        }
+        
+        // Open stock modal
+        function openStockModal() {
+            alert('Функция прихода товара будет добавлена позже');
+        }
+        
+        // Export inventory
+        function exportInventory() {
+            const csv = [
+                ['ID', 'Название', 'Категория', 'Остаток', 'Мин. уровень', 'Ед. изм.'].join(';'),
+                ...inventory.map(i => [i.id, i.name, i.category, i.currentStock, i.minLevel, i.unit].join(';'))
+            ].join('\n');
+            
+            const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inventory_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+        
+        // Auto refresh every 30 seconds
+        setInterval(loadInventory, 30000);
+        
+        // Initial load
+        loadInventory();
+    </script>
+</body>
+</html>

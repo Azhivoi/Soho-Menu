@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление контентом Меню - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            background: #0f0f1a; 
+            color: #fff; 
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a2a40;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #e94560;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #d63550;
+        }
+        
+        .btn-secondary {
+            background: #252538;
+            color: #fff;
+            border: 1px solid #3a3a50;
+        }
+        
+        .btn-secondary:hover {
+            background: #353548;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        @media (max-width: 1200px) {
+            .grid { grid-template-columns: 1fr; }
+        }
+        
+        .panel {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #2a2a40;
+        }
+        
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #e94560;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0b0;
+            font-size: 14px;
+        }
+        
+        .color-input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        input[type="color"] {
+            width: 60px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: transparent;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            background: #0f0f1a;
+            border: 1px solid #3a3a50;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .preview-section {
+            margin-top: 30px;
+        }
+        
+        .preview-section h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #e94560;
+        }
+        
+        .preview-container {
+            background: #0f0f1a;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2a40;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .preview-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* PWA Preview Styles */
+        .pwa-preview {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        
+        .pwa-top-nav {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .pwa-parent-cats {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .pwa-parent-cat {
+            padding: 8px 16px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .pwa-parent-cat.active {
+            border-bottom-width: 2px;
+        }
+        
+        .pwa-cart-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .pwa-main-area {
+            display: flex;
+            height: 300px;
+        }
+        
+        .pwa-sidebar {
+            width: 160px;
+            padding: 15px 0;
+        }
+        
+        .pwa-child-cat {
+            padding: 10px 15px;
+            font-size: 12px;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+        
+        .pwa-child-cat.active {
+            border-left-width: 3px;
+        }
+        
+        .pwa-product-area {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+        
+        .pwa-product-card {
+            border-radius: 8px;
+            padding: 12px;
+        }
+        
+        .pwa-product-image {
+            width: 100%;
+            height: 80px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .pwa-product-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .pwa-product-price {
+            font-size: 14px;
+            font-weight: 700;
+        }
+        
+        .pwa-right-panel {
+            width: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .pwa-large-image {
+            width: 100%;
+            height: 200px;
+            border-radius: 8px;
+        }
+        
+        .status-message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            animation: slideIn 0.3s ease;
+            z-index: 1000;
+        }
+        
+        .status-message.success {
+            background: #28a745;
+            color: #fff;
+        }
+        
+        .status-message.error {
+            background: #dc3545;
+            color: #fff;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .help-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 Управление контентом Планшетного Меню</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="resetToDefaults()">↩️ Сбросить</button>
+            <button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить</button>
+        </div>
+    </div>
+    
+    <div class="grid">
+        <div class="panel">
+            <h2>🎨 Основные цвета</h2>
+            
+            <div class="form-group">
+                <label>Фон приложения</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="bgColor" value="#0f0f1a" onchange="updatePreview()">
+                    <input type="text" id="bgColorText" value="#0f0f1a" onchange="updateColorFromText('bgColor', this.value)">
+                </div>
+                <div class="help-text">Основной фон всего приложения</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет акцента (кнопки, выделение)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="accentColor" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="accentColorText" value="#e94560" onchange="updateColorFromText('accentColor', this.value)">
+                </div>
+                <div class="help-text">Кнопки, активные элементы, цена</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Фон карточек и панелей</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="cardBgColor" value="#1a1a2e" onchange="updatePreview()">
+                    <input type="text" id="cardBgColorText" value="#1a1a2e" onchange="updateColorFromText('cardBgColor', this.value)">
+                </div>
+                <div class="help-text">Фон карточек товаров, боковых панелей</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет текста</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="textColor" value="#ffffff" onchange="updatePreview()">
+                    <input type="text" id="textColorText" value="#ffffff" onchange="updateColorFromText('textColor', this.value)">
+                </div>
+                <div class="help-text">Основной цвет текста</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет вторичного текста</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="textSecondaryColor" value="#a0a0b8" onchange="updatePreview()">
+                    <input type="text" id="textSecondaryColorText" value="#a0a0b8" onchange="updateColorFromText('textSecondaryColor', this.value)">
+                </div>
+                <div class="help-text">Описание, вспомогательный текст</div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🎯 Навигация</h2>
+            
+            <div class="form-group">
+                <label>Цвет родительских категорий (неактивные)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="parentCatColor" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="parentCatColorText" value="#e94560" onchange="updateColorFromText('parentCatColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет родительских категорий (активные)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="parentCatActiveColor" value="#ffffff" onchange="updatePreview()">
+                    <input type="text" id="parentCatActiveColorText" value="#ffffff" onchange="updateColorFromText('parentCatActiveColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет дочерних категорий (неактивные)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="childCatColor" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="childCatColorText" value="#e94560" onchange="updateColorFromText('childCatColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет дочерних категорий (активные)</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="childCatActiveColor" value="#ffffff" onchange="updatePreview()">
+                    <input type="text" id="childCatActiveColorText" value="#ffffff" onchange="updateColorFromText('childCatActiveColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Фон активной дочерней категории</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="childCatActiveBg" value="rgba(233, 69, 96, 0.15)" onchange="updatePreview()">
+                    <input type="text" id="childCatActiveBgText" value="rgba(233, 69, 96, 0.15)" onchange="updateColorFromText('childCatActiveBg', this.value)">
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🛒 Товары и кнопки</h2>
+            
+            <div class="form-group">
+                <label>Цвет кнопки "Добавить в корзину"</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="addButtonColor" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="addButtonColorText" value="#e94560" onchange="updateColorFromText('addButtonColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет рамки активного товара</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="productActiveBorder" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="productActiveBorderText" value="#e94560" onchange="updateColorFromText('productActiveBorder', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет текста активного товара</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="productActiveTextColor" value="#ffffff" onchange="updatePreview()">
+                    <input type="text" id="productActiveTextColorText" value="#ffffff" onchange="updateColorFromText('productActiveTextColor', this.value)">
+                </div>
+                <div class="help-text">Цвет названия и описания выбранного товара</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цена товара</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="priceColor" value="#e94560" onchange="updatePreview()">
+                    <input type="text" id="priceColorText" value="#e94560" onchange="updateColorFromText('priceColor', this.value)">
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 Дополнительно</h2>
+            
+            <div class="form-group">
+                <label>Цвет нижней панели</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="bottomBarColor" value="#1a1a2e" onchange="updatePreview()">
+                    <input type="text" id="bottomBarColorText" value="#1a1a2e" onchange="updateColorFromText('bottomBarColor', this.value)">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Цвет границ</label>
+                <div class="color-input-wrapper">
+                    <input type="color" id="borderColor" value="#333333" onchange="updatePreview()">
+                    <input type="text" id="borderColorText" value="#333333" onchange="updateColorFromText('borderColor', this.value)">
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🖼️ Изображения</h2>
+            
+            <div class="form-group">
+                <label>Фоновое изображение (Welcome Screen)</label>
+                <div style="background: #252538; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div id="heroImagePreview" style="width: 100%; height: 150px; background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; background-size: cover; background-position: center;">
+                        Нет изображения
+                    </div>
+                    <input type="file" id="heroImageInput" accept="image/*" style="display: none;" onchange="handleHeroImageUpload(event)">
+                    <button class="btn btn-secondary" onclick="document.getElementById('heroImageInput').click()" style="margin-right: 10px;">📁 Выбрать файл</button>
+                    <button class="btn btn-danger" onclick="removeHeroImage()" id="removeHeroBtn" style="display: none;">🗑️ Удалить</button>
+                </div>
+                <div class="help-text">Рекомендуемый размер: 1920x1080px или 16:9</div>
+            </div>
+            
+            <div class="form-group">
+                <label>Placeholder изображение (для товаров без фото)</label>
+                <div style="background: #252538; padding: 20px; border-radius: 8px; text-align: center;">
+                    <div id="placeholderImagePreview" style="width: 100%; height: 100px; background: linear-gradient(135deg, #1a1a2e, #0f0f1a); border-radius: 8px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; color: #666; font-size: 14px; background-size: cover; background-position: center;">
+                        Нет изображения
+                    </div>
+                    <input type="file" id="placeholderImageInput" accept="image/*" style="display: none;" onchange="handlePlaceholderImageUpload(event)">
+                    <button class="btn btn-secondary" onclick="document.getElementById('placeholderImageInput').click()" style="margin-right: 10px;">📁 Выбрать файл</button>
+                    <button class="btn btn-danger" onclick="removePlaceholderImage()" id="removePlaceholderBtn" style="display: none;">🗑️ Удалить</button>
+                </div>
+                <div class="help-text">Показывается когда у товара нет фото</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="preview-section">
+        <h2>👁️ Превью планшетного меню</h2>
+        <div class="preview-container">
+            <div class="preview-label">Так будет выглядеть меню на планшете</div>
+            
+            <div class="pwa-preview" id="pwaPreview">
+                <!-- Top Navigation -->
+                <div class="pwa-top-nav" id="previewTopNav">
+                    <div class="pwa-parent-cats">
+                        <div class="pwa-parent-cat active" id="previewParentCat1">ОСНОВНОЕ МЕНЮ</div>
+                        <div class="pwa-parent-cat" id="previewParentCat2">НАПИТКИ</div>
+                        <div class="pwa-parent-cat" id="previewParentCat3">ДЕСЕРТЫ</div>
+                    </div>
+                    <div class="pwa-cart-btn" id="previewCartBtn">🛒</div>
+                </div>
+                
+                <!-- Main Area -->
+                <div class="pwa-main-area">
+                    <!-- Left Sidebar -->
+                    <div class="pwa-sidebar" id="previewSidebar">
+                        <div class="pwa-child-cat active" id="previewChildCat1">Пицца</div>
+                        <div class="pwa-child-cat" id="previewChildCat2">Суши</div>
+                        <div class="pwa-child-cat" id="previewChildCat3">Бургеры</div>
+                        <div class="pwa-child-cat" id="previewChildCat4">Салаты</div>
+                    </div>
+                    
+                    <!-- Product Area -->
+                    <div class="pwa-product-area" id="previewProductArea">
+                        <div class="pwa-product-card" id="previewProduct1">
+                            <div class="pwa-product-image" style="background: linear-gradient(135deg, #444, #666);"></div>
+                            <div class="pwa-product-name" id="previewProductName1">Маргарита</div>
+                            <div class="pwa-product-price" id="previewProductPrice1">25.00 BYN</div>
+                        </div>
+                        <div class="pwa-product-card" id="previewProduct2">
+                            <div class="pwa-product-image" style="background: linear-gradient(135deg, #444, #666);"></div>
+                            <div class="pwa-product-name" id="previewProductName2">Пепперони</div>
+                            <div class="pwa-product-price" id="previewProductPrice2">28.00 BYN</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Panel -->
+                    <div class="pwa-right-panel" id="previewRightPanel">
+                        <div class="pwa-large-image" style="background: linear-gradient(135deg, #444, #666);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Default colors
+        const defaultColors = {
+            bgColor: '#0f0f1a',
+            accentColor: '#e94560',
+            cardBgColor: '#1a1a2e',
+            textColor: '#ffffff',
+            textSecondaryColor: '#a0a0b8',
+            parentCatColor: '#e94560',
+            parentCatActiveColor: '#ffffff',
+            childCatColor: '#e94560',
+            childCatActiveColor: '#ffffff',
+            childCatActiveBg: 'rgba(233, 69, 96, 0.15)',
+            addButtonColor: '#e94560',
+            productActiveBorder: '#e94560',
+            productActiveTextColor: '#ffffff',
+            priceColor: '#e94560',
+            bottomBarColor: '#1a1a2e',
+            borderColor: '#333333'
+        };
+        
+        // Load saved settings
+        async function loadSettings() {
+            // Try to load from server first
+            try {
+                const res = await fetch('/api/menu/pwa/settings');
+                if (res.ok) {
+                    const serverColors = await res.json();
+                    // Save to localStorage for sync
+                    localStorage.setItem('pwaMenuColors', JSON.stringify(serverColors));
+                    if (serverColors.heroImage) localStorage.setItem('pwaHeroImage', serverColors.heroImage);
+                    if (serverColors.placeholderImage) localStorage.setItem('pwaPlaceholderImage', serverColors.placeholderImage);
+                    
+                    // Apply to inputs
+                    Object.keys(serverColors).forEach(key => {
+                        if (key === 'heroImage' || key === 'placeholderImage') return;
+                        const input = document.getElementById(key);
+                        const textInput = document.getElementById(key + 'Text');
+                        if (input && serverColors[key]) input.value = serverColors[key];
+                        if (textInput && serverColors[key]) textInput.value = serverColors[key];
+                    });
+                    
+                    updatePreview();
+                    loadSavedImages();
+                    return;
+                }
+            } catch (err) {
+                console.log('Server not available, loading from localStorage');
+            }
+            
+            // Fallback to localStorage
+            const saved = localStorage.getItem('pwaMenuColors');
+            if (saved) {
+                const colors = JSON.parse(saved);
+                Object.keys(colors).forEach(key => {
+                    if (key === 'heroImage' || key === 'placeholderImage') return;
+                    const input = document.getElementById(key);
+                    const textInput = document.getElementById(key + 'Text');
+                    if (input) input.value = colors[key];
+                    if (textInput) textInput.value = colors[key];
+                });
+            }
+            updatePreview();
+            loadSavedImages();
+        }
+        
+        // Update text input when color picker changes
+        function updatePreview() {
+            const colors = {};
+            Object.keys(defaultColors).forEach(key => {
+                const input = document.getElementById(key);
+                const textInput = document.getElementById(key + 'Text');
+                if (input) {
+                    colors[key] = input.value;
+                    if (textInput) textInput.value = input.value;
+                }
+            });
+            
+            // Apply to preview
+            const preview = document.getElementById('pwaPreview');
+            preview.style.background = colors.bgColor;
+            
+            // Top nav
+            document.getElementById('previewTopNav').style.background = colors.cardBgColor;
+            document.getElementById('previewTopNav').style.borderBottom = `2px solid ${colors.accentColor}`;
+            
+            // Parent categories
+            document.getElementById('previewParentCat1').style.color = colors.parentCatActiveColor;
+            document.getElementById('previewParentCat1').style.borderBottomColor = colors.accentColor;
+            document.getElementById('previewParentCat2').style.color = colors.parentCatColor;
+            document.getElementById('previewParentCat3').style.color = colors.parentCatColor;
+            
+            // Cart button
+            const cartBtn = document.getElementById('previewCartBtn');
+            cartBtn.style.background = 'transparent';
+            cartBtn.style.border = `2px solid ${colors.accentColor}`;
+            cartBtn.style.color = colors.accentColor;
+            
+            // Sidebar
+            document.getElementById('previewSidebar').style.background = colors.cardBgColor;
+            document.getElementById('previewSidebar').style.borderLeft = `1px solid ${colors.borderColor}`;
+            
+            // Child categories
+            document.getElementById('previewChildCat1').style.color = colors.childCatActiveColor;
+            document.getElementById('previewChildCat1').style.borderLeftColor = colors.accentColor;
+            document.getElementById('previewChildCat1').style.background = colors.childCatActiveBg;
+            document.getElementById('previewChildCat2').style.color = colors.childCatColor;
+            document.getElementById('previewChildCat3').style.color = colors.childCatColor;
+            document.getElementById('previewChildCat4').style.color = colors.childCatColor;
+            
+            // Product area
+            document.getElementById('previewProductArea').style.background = colors.bgColor;
+            
+            // Product cards
+            ['previewProduct1', 'previewProduct2'].forEach((id, idx) => {
+                const card = document.getElementById(id);
+                card.style.background = colors.cardBgColor;
+                card.style.border = `2px solid ${colors.productActiveBorder}`;
+                // Apply active text color to first product (simulating selected state)
+                const nameEl = document.getElementById('previewProductName' + (idx + 1));
+                if (nameEl) {
+                    nameEl.style.color = idx === 0 ? colors.productActiveTextColor : colors.textColor;
+                }
+            });
+            
+            // Product prices
+            document.getElementById('previewProductPrice1').style.color = colors.priceColor;
+            document.getElementById('previewProductPrice2').style.color = colors.priceColor;
+            
+            // Right panel
+            document.getElementById('previewRightPanel').style.background = colors.bgColor;
+        }
+        
+        // Update color picker when text input changes
+        function updateColorFromText(colorId, value) {
+            const colorInput = document.getElementById(colorId);
+            if (colorInput) {
+                // Convert rgba to hex for color input if needed
+                colorInput.value = value;
+            }
+            updatePreview();
+        }
+        
+        // Save settings
+        async function saveSettings() {
+            const colors = {};
+            Object.keys(defaultColors).forEach(key => {
+                const input = document.getElementById(key);
+                if (input) colors[key] = input.value;
+            });
+            
+            // Get images from localStorage
+            colors.heroImage = localStorage.getItem('pwaHeroImage');
+            colors.placeholderImage = localStorage.getItem('pwaPlaceholderImage');
+            
+            // Save to localStorage for immediate use
+            localStorage.setItem('pwaMenuColors', JSON.stringify(colors));
+            
+            // Send to backend API
+            try {
+                const res = await fetch('/api/menu/pwa/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(colors)
+                });
+                
+                if (res.ok) {
+                    showStatus('✅ Настройки сохранены на сервере!', 'success');
+                } else {
+                    showStatus('⚠️ Сохранено локально, ошибка сервера', 'error');
+                }
+            } catch (err) {
+                console.error('Error saving settings:', err);
+                showStatus('⚠️ Сохранено локально, нет связи с сервером', 'error');
+            }
+        }
+        
+        // Reset to defaults
+        function resetToDefaults() {
+            if (!confirm('Сбросить все цвета к значениям по умолчанию?')) return;
+            
+            Object.keys(defaultColors).forEach(key => {
+                const input = document.getElementById(key);
+                const textInput = document.getElementById(key + 'Text');
+                if (input) input.value = defaultColors[key];
+                if (textInput) textInput.value = defaultColors[key];
+            });
+            
+            updatePreview();
+            showStatus('✅ Цвета сброшены', 'success');
+        }
+        
+        // Show status message
+        function showStatus(message, type) {
+            const existing = document.querySelector('.status-message');
+            if (existing) existing.remove();
+            
+            const div = document.createElement('div');
+            div.className = `status-message ${type}`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            
+            setTimeout(() => div.remove(), 3000);
+        }
+        
+        // Initialize
+        loadSettings();
+        
+        // Image upload handlers
+        function handleHeroImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                document.getElementById('heroImagePreview').style.backgroundImage = `url(${imageData})`;
+                document.getElementById('heroImagePreview').textContent = '';
+                document.getElementById('removeHeroBtn').style.display = 'inline-block';
+                
+                // Save to localStorage
+                localStorage.setItem('pwaHeroImage', imageData);
+                showStatus('✅ Фоновое изображение загружено', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removeHeroImage() {
+            document.getElementById('heroImagePreview').style.backgroundImage = '';
+            document.getElementById('heroImagePreview').textContent = 'Нет изображения';
+            document.getElementById('removeHeroBtn').style.display = 'none';
+            document.getElementById('heroImageInput').value = '';
+            localStorage.removeItem('pwaHeroImage');
+            showStatus('✅ Изображение удалено', 'success');
+        }
+        
+        function handlePlaceholderImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+                document.getElementById('placeholderImagePreview').style.backgroundImage = `url(${imageData})`;
+                document.getElementById('placeholderImagePreview').textContent = '';
+                document.getElementById('removePlaceholderBtn').style.display = 'inline-block';
+                
+                // Save to localStorage
+                localStorage.setItem('pwaPlaceholderImage', imageData);
+                showStatus('✅ Placeholder изображение загружено', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removePlaceholderImage() {
+            document.getElementById('placeholderImagePreview').style.backgroundImage = '';
+            document.getElementById('placeholderImagePreview').textContent = 'Нет изображения';
+            document.getElementById('removePlaceholderBtn').style.display = 'none';
+            document.getElementById('placeholderImageInput').value = '';
+            localStorage.removeItem('pwaPlaceholderImage');
+            showStatus('✅ Изображение удалено', 'success');
+        }
+        
+        // Load saved images on init
+        function loadSavedImages() {
+            const heroImage = localStorage.getItem('pwaHeroImage');
+            if (heroImage) {
+                document.getElementById('heroImagePreview').style.backgroundImage = `url(${heroImage})`;
+                document.getElementById('heroImagePreview').textContent = '';
+                document.getElementById('removeHeroBtn').style.display = 'inline-block';
+            }
+            
+            const placeholderImage = localStorage.getItem('pwaPlaceholderImage');
+            if (placeholderImage) {
+                document.getElementById('placeholderImagePreview').style.backgroundImage = `url(${placeholderImage})`;
+                document.getElementById('placeholderImagePreview').textContent = '';
+                document.getElementById('removePlaceholderBtn').style.display = 'inline-block';
+            }
+        }
+        
+        loadSavedImages();
+    </script>
+</body>
+</html>

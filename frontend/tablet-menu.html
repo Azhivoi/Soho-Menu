@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Меню | SOHO Cafe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #252538;
+            --accent: #e94560;
+            --accent-green: #00d9a5;
+            --text: #ffffff;
+            --text-muted: #a0a0b8;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+        
+        /* Landscape tablet layout */
+        .tablet-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        /* Left: Categories */
+        .categories-sidebar {
+            width: 200px;
+            background: var(--bg-card);
+            border-right: 1px solid #33334d;
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            text-align: center;
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #33334d;
+            margin-bottom: 20px;
+        }
+        
+        .logo h1 { font-size: 24px; }
+        .logo h1 span { color: var(--accent); }
+        
+        .category-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .category-btn .icon { font-size: 24px; }
+        
+        /* Center: Products */
+        .products-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .products-header {
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #33334d;
+        }
+        
+        .products-header h2 { font-size: 28px; }
+        
+        .table-info {
+            background: var(--bg-card);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .table-info span { color: var(--accent); font-weight: 600; }
+        
+        .products-grid {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            align-content: start;
+        }
+        
+        .product-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+        
+        .product-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+        
+        .product-image {
+            height: 140px;
+            background: linear-gradient(135deg, #2d2d45 0%, #1a1a2e 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+        }
+        
+        .product-info {
+            padding: 15px;
+        }
+        
+        .product-name {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .product-desc {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .product-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .product-price {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        
+        .add-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Right: Cart */
+        .cart-panel {
+            width: 350px;
+            background: var(--bg-card);
+            border-left: 1px solid #33334d;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-header {
+            padding: 20px;
+            border-bottom: 1px solid #33334d;
+        }
+        
+        .cart-header h3 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+        
+        .cart-count {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #33334d;
+        }
+        
+        .cart-item-info { flex: 1; }
+        
+        .cart-item-name {
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        
+        .cart-item-price {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .qty-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid #33334d;
+            background: transparent;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .cart-footer {
+            padding: 20px;
+            border-top: 2px solid var(--accent);
+        }
+        
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .order-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        
+        .order-btn:hover { opacity: 0.9; }
+        
+        .empty-cart {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+        }
+        
+        /* Language selector */
+        .lang-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .lang-btn {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid #33334d;
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .lang-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        /* QR Code */
+        .qr-section {
+            padding: 15px;
+            text-align: center;
+            border-top: 1px solid #33334d;
+        }
+        
+        .qr-placeholder {
+            width: 120px;
+            height: 120px;
+            background: white;
+            margin: 10px auto;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #333;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="tablet-container">
+        <!-- Left: Categories -->
+        <aside class="categories-sidebar">
+            <div class="logo">
+                <h1><span>SOHO</span> MENU</h1>
+            </div>
+            
+            <button class="category-btn active" data-cat="popular">
+                <span class="icon">🔥</span>
+                <span>Популярное</span>
+            </button>
+            <button class="category-btn" data-cat="pizza">
+                <span class="icon">🍕</span>
+                <span>Пицца</span>
+            </button>
+            <button class="category-btn" data-cat="sushi">
+                <span class="icon">🍣</span>
+                <span>Суши</span>
+            </button>
+            <button class="category-btn" data-cat="wok">
+                <span class="icon">🍜</span>
+                <span>Wok</span>
+            </button>
+            <button class="category-btn" data-cat="burgers">
+                <span class="icon">🍔</span>
+                <span>Бургеры</span>
+            </button>
+            <button class="category-btn" data-cat="salads">
+                <span class="icon">🥗</span>
+                <span>Салаты</span>
+            </button>
+            <button class="category-btn" data-cat="drinks">
+                <span class="icon">🥤</span>
+                <span>Напитки</span>
+            </button>
+        </aside>
+        
+        <!-- Center: Products -->
+        <section class="products-area">
+            <div class="products-header">
+                <h2>🔥 Популярные блюда</h2>
+                <div class="table-info">
+                    Стол: <span>№ 5</span> | Гостей: <span>4</span>
+                </div>
+            </div>
+            
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be loaded here -->
+                <div class="product-card" onclick="addToCart('Пицца 4 сыра', 30)">
+                    <div class="product-image">🍕</div>
+                    <div class="product-info">
+                        <div class="product-name">Пицца 4 сыра</div>
+                        <div class="product-desc">Моцарелла, пармезан, горгонзола, чеддер</div>
+                        <div class="product-footer">
+                            <div class="product-price">30.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card" onclick="addToCart('Филадельфия', 25)">
+                    <div class="product-image">🍣</div>
+                    <div class="product-info">
+                        <div class="product-name">Ролл Филадельфия</div>
+                        <div class="product-desc">Лосось, сливочный сыр, огурец, авокадо</div>
+                        <div class="product-footer">
+                            <div class="product-price">25.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card" onclick="addToCart('Wok с курицей', 22)">
+                    <div class="product-image">🍜</div>
+                    <div class="product-info">
+                        <div class="product-name">Wok с курицей</div>
+                        <div class="product-desc">Курица, овощи, соус терияки</div>
+                        <div class="product-footer">
+                            <div class="product-price">22.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card" onclick="addToCart('Бургер классик', 20)">
+                    <div class="product-image">🍔</div>
+                    <div class="product-info">
+                        <div class="product-name">Классический бургер</div>
+                        <div class="product-desc">Говядина, сыр, томаты, салат</div>
+                        <div class="product-footer">
+                            <div class="product-price">20.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card" onclick="addToCart('Цезарь', 18)">
+                    <div class="product-image">🥗</div>
+                    <div class="product-info">
+                        <div class="product-name">Салат Цезарь</div>
+                        <div class="product-desc">Курица, пармезан, сухарики, соус</div>
+                        <div class="product-footer">
+                            <div class="product-price">18.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="product-card" onclick="addToCart('Кола 0.5л', 8)">
+                    <div class="product-image">🥤</div>
+                    <div class="product-info">
+                        <div class="product-name">Coca-Cola 0.5л</div>
+                        <div class="product-desc">Холодный газированный напиток</div>
+                        <div class="product-footer">
+                            <div class="product-price">8.00 Br</div>
+                            <button class="add-btn">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Right: Cart -->
+        <aside class="cart-panel">
+            <div class="cart-header">
+                <h3>🛒 Ваш заказ</h3>
+                <div class="cart-count">Товаров: <span id="cartCount">0</span></div>
+            </div>
+            
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">
+                    Выберите блюда из меню<br>
+                    Нажмите + чтобы добавить
+                </div>
+            </div>
+            
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>Итого:</span>
+                    <span id="cartTotal">0.00 Br</span>
+                </div>
+                <button class="order-btn" onclick="submitOrder()">
+                    ✓ Оформить заказ
+                </button>
+            </div>
+            
+            <div class="qr-section">
+                <div style="font-size: 12px; color: var(--text-muted);">Оплата по QR</div>
+                <div class="qr-placeholder">QR</div>
+            </div>
+        </aside>
+    </div>
+    
+    <script>
+        let cart = [];
+        
+        // Category switching
+        document.querySelectorAll('.category-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // TODO: Load products for category
+            });
+        });
+        
+        function addToCart(name, price) {
+            const existing = cart.find(item => item.name === name);
+            if (existing) {
+                existing.qty++;
+            } else {
+                cart.push({name, price, qty: 1});
+            }
+            renderCart();
+        }
+        
+        function updateQty(index, delta) {
+            cart[index].qty += delta;
+            if (cart[index].qty <= 0) {
+                cart.splice(index, 1);
+            }
+            renderCart();
+        }
+        
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            const countEl = document.getElementById('cartCount');
+            const totalEl = document.getElementById('cartTotal');
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-cart">
+                        Выберите блюда из меню<br>
+                        Нажмите + чтобы добавить
+                    </div>
+                `;
+                countEl.textContent = '0';
+                totalEl.textContent = '0.00 Br';
+                return;
+            }
+            
+            let total = 0;
+            let count = 0;
+            
+            container.innerHTML = cart.map((item, i) => {
+                const sum = item.price * item.qty;
+                total += sum;
+                count += item.qty;
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${item.price.toFixed(2)} Br × ${item.qty}</div>
+                        </div>
+                        <div class="cart-item-qty">
+                            <button class="qty-btn" onclick="updateQty(${i}, -1)">−</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn" onclick="updateQty(${i}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            countEl.textContent = count;
+            totalEl.textContent = total.toFixed(2) + ' Br';
+        }
+        
+        function submitOrder() {
+            if (cart.length === 0) {
+                alert('Выберите блюда');
+                return;
+            }
+            // TODO: Send to CRM API
+            alert('Заказ отправлен на кухню!');
+            cart = [];
+            renderCart();
+        }
+    </script>
+</body>
+</html>

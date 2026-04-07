@@ -1,0 +1,2690 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказы | SOHO CRM</title>
+    <script src="js/printer-webserial.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f0f0; color: #333; min-height: 100vh; overflow-y: auto; }
+        
+        /* Header - 65px */
+        .header { 
+            height: 65px; 
+            background: linear-gradient(135deg, #1c00bc 0%, #2d00e0 100%); 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .header-left { display: flex; align-items: center; gap: 30px; }
+        .logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+        .header-right { display: flex; align-items: center; gap: 15px; }
+        
+        /* Header Buttons - 110px */
+        .header-btn { 
+            width: 110px; 
+            height: 40px; 
+            background: rgba(255,255,255,0.15); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            color: white; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 13px; 
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .header-btn:hover { background: rgba(255,255,255,0.25); }
+        .header-btn.primary { background: #4caf50; border-color: #4caf50; }
+        .header-btn.primary:hover { background: #45a049; }
+        
+        /* Time */
+        .header-time { 
+            font-size: 18px; 
+            font-weight: 600; 
+            font-family: 'Courier New', monospace;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+        }
+        
+        /* PZ Indicator */
+        .pz-indicator { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 12px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        .pz-dot { width: 10px; height: 10px; border-radius: 50%; background: #f44336; }
+        .pz-dot.connected { background: #4caf50; box-shadow: 0 0 8px #4caf50; }
+        
+        /* User */
+        .user-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px;
+            background: rgba(0,0,0,0.2);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .user-avatar { width: 28px; height: 28px; background: #52e3ed; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #1c00bc; }
+        
+        /* Orders Tabs */
+        .orders-tabs { 
+            background: white; 
+            padding: 12px 20px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+        }
+        .stats-left { display: flex; gap: 30px; }
+        .stat-box { 
+            display: flex; 
+            flex-direction: column; 
+            padding: 8px 16px; 
+            background: #f8f8f8; 
+            border-radius: 8px; 
+            min-width: 120px;
+        }
+        .stat-label { font-size: 11px; color: #888; text-transform: uppercase; }
+        .stat-value { font-size: 18px; font-weight: 700; color: #1c00bc; }
+        .tabs-right { display: flex; gap: 10px; }
+        .icon-btn { 
+            width: 40px; 
+            height: 40px; 
+            background: #f0f0f0; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .icon-btn:hover { background: #e0e0e0; }
+        
+        /* Filters Bar */
+        .filters-bar {
+            background: white;
+            padding: 10px 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            border-bottom: 1px solid #ddd;
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+        .filter-cell.date-filter {
+            margin-right: 200px;
+        }
+        .filter-cell { 
+            display: flex; 
+            flex-direction: column; 
+            min-width: 80px;
+        }
+        .filter-label { font-size: 10px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
+        .filter-select, .filter-input { 
+            padding: 6px 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            background: white;
+        }
+        .filter-select { cursor: pointer; min-width: 90px; }
+        #deliveryFilter { min-width: 80px; }
+        #discountFilter { min-width: 80px; }
+        .filter-value { 
+            padding: 6px 10px; 
+            background: #f0f0f0; 
+            border-radius: 4px; 
+            font-size: 12px; 
+            font-weight: 600;
+            text-align: center;
+        }
+        .client-card-cell { 
+            display: flex; 
+            align-items: center; 
+            gap: 5px;
+            cursor: pointer;
+        }
+        .card-icon { 
+            width: 24px; 
+            height: 24px; 
+            background: #1c00bc; 
+            color: white; 
+            border-radius: 4px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 12px;
+        }
+        
+        /* Orders List */
+        .orders-container { 
+            flex: 1; 
+            overflow-y: auto; 
+            background: #f0f0f0;
+            padding: 10px 20px;
+        }
+        
+        /* Order Card */
+        .order-card { 
+            background: white; 
+            border-radius: 8px; 
+            margin-bottom: 10px; 
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            cursor: pointer;
+        }
+        .order-card.collapsed {
+            /* Collapsed state handled by JS */
+        }
+        
+        /* Order Header - 37px */
+        .order-header { 
+            height: 37px; 
+            background: #f8f8f8; 
+            display: flex; 
+            align-items: center; 
+            padding: 0 15px;
+            gap: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        .order-datetime { 
+            font-weight: 600; 
+            color: #1c00bc; 
+            font-size: 14px;
+            min-width: 120px;
+        }
+        .order-btn { 
+            padding: 4px 10px; 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 11px;
+        }
+        .order-btn:hover { background: #f0f0f0; }
+        .order-select { 
+            padding: 4px 8px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 11px;
+            background: white;
+        }
+        
+        /* Order Body */
+        .order-body {
+            display: flex;
+            padding: 12px 15px;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            flex-wrap: wrap;
+        }
+        .order-left {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+        }
+        .order-left > * {
+            border-right: 1px solid #e0e0e0;
+            padding-right: 12px;
+        }
+        .order-left > *:last-child {
+            border-right: none;
+        }
+        .order-right {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+        .order-right > * {
+            border-right: 1px solid #e0e0e0;
+            padding-right: 12px;
+        }
+        .order-right > *:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+        .order-products {
+            width: 310px;
+            min-width: 310px;
+        }
+        .product-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            font-size: 13px;
+        }
+        .order-body .product-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .order-body .product-qty,
+        .order-body .product-price,
+        .order-body .order-discount,
+        .order-body .delivery-type,
+        .order-body .order-address,
+        .order-body .phone-number {
+            font-size: 13px;
+        }
+        .product-name { flex: 1; }
+        .product-qty { width: 40px; text-align: center; color: #666; }
+        .product-price { width: 60px; text-align: right; font-weight: 600; }
+        .order-total-center { 
+            font-size: 20px; 
+            font-weight: 700; 
+            color: #1c00bc;
+            text-align: center;
+            min-width: 100px;
+        }
+        .order-discount {
+            color: #4caf50;
+            font-weight: 600;
+            min-width: 60px;
+        }
+        .order-discount-section {
+            min-width: 30px;
+            text-align: center;
+            font-size: 13px;
+        }
+        .client-info-small {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 30px;
+        }
+        .delivery-type { 
+            padding: 4px 10px; 
+            background: #e3f2fd; 
+            color: #1565c0;
+            border-radius: 4px; 
+            font-size: 11px; 
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .order-address {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+            flex: 1;
+        }
+        .order-phone {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+            padding: 3px;
+        }
+        .phone-number { font-size: 14px; }
+        .call-btn { 
+            width: 32px; 
+            height: 32px; 
+            background: #4caf50; 
+            color: white; 
+            border: none; 
+            border-radius: 50%; 
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .call-btn:hover { background: #45a049; }
+        .delete-btn {
+            width: 32px;
+            height: 32px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        .delete-btn:hover { background: #d32f2f; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 40px; color: #888; }
+        .empty { text-align: center; padding: 60px; color: #888; }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        
+        /* Prevent wrap until 1280px - compact layout for POS terminals */
+        @media (max-width: 1400px) {
+            .order-body {
+                flex-wrap: nowrap !important;
+            }
+            .order-address {
+                max-width: 180px;
+                min-width: 80px;
+            }
+            .order-total-center {
+                min-width: 80px;
+                font-size: 16px;
+            }
+            .order-discount-section {
+                min-width: 25px;
+            }
+            .client-info-small {
+                min-width: 25px;
+            }
+        }
+
+        @media (max-width: 1280px) {
+            .order-address {
+                max-width: 120px;
+                min-width: 60px;
+            }
+            .phone-number {
+                font-size: 12px;
+            }
+            .order-payment select {
+                font-size: 11px;
+                padding: 2px 4px;
+            }
+        }
+
+        /* Mobile Adaptation - only below 740px for small POS terminals */
+        @media (max-width: 740px) {
+            .header { height: auto; padding: 10px; flex-direction: column; gap: 10px; }
+            .header-left { flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .header-right { flex-wrap: wrap; justify-content: center; }
+            .header-btn { width: auto; padding: 8px 12px; font-size: 12px; }
+            .logo { font-size: 18px; }
+            
+            .orders-tabs { flex-direction: column; padding: 10px; gap: 10px; }
+            .stats-left { flex-wrap: wrap; justify-content: center; }
+            .stat-box { min-width: auto; padding: 6px 10px; }
+            .stat-value { font-size: 14px; }
+            
+            .filters-bar { flex-wrap: wrap; padding: 10px; gap: 8px; }
+            .filter-cell { min-width: calc(50% - 4px); }
+            
+            .order-header { height: auto; flex-wrap: wrap; padding: 8px; gap: 8px; }
+            .order-header > div { margin-left: 0 !important; width: 100%; }
+            .order-select { font-size: 11px; }
+            
+            .order-body { flex-direction: column; padding: 10px; }
+            .order-left, .order-right { flex-direction: column; width: 100%; gap: 8px; }
+            .order-left > *, .order-right > * { border-right: none; border-bottom: 1px solid #e0e0e0; padding-bottom: 8px; padding-right: 0; width: 100% !important; min-width: auto !important; }
+            .order-products { width: 100% !important; }
+            .order-address { width: 100% !important; }
+            .order-phone { width: 100% !important; }
+            .order-total-center { text-align: left; }
+            
+            .delete-btn { align-self: flex-end; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-left">
+            <div class="logo">SOHO CRM</div>
+            <button class="header-btn primary" onclick="window.location.href='crm-new-order.html'">+ Новый заказ</button>
+            <button class="header-btn" onclick="window.location.href='crm-operator-workplace.html'">📋 Заказы</button>
+            <!-- <button class="header-btn" onclick="showHandbookModal()">📚 Справочники</button> -->
+            <button class="header-btn" onclick="toggleShift()">🕐 Смена</button>
+            <button class="header-btn" onclick="openCashDrawer()" title="Открыть денежный ящик">💰 Касса</button>
+            <button class="header-btn" onclick="openPrintAgent()" title="Агент печати">🖨️ Агент</button>
+        </div>
+        <div class="header-right">
+            <div style="display:flex;flex-direction:column;align-items:flex-end;margin-right:15px;">
+                <div class="header-time" id="currentTime">00:00</div>
+                <div id="currentDate" style="font-size:12px;color:#666;"></div>
+            </div>
+            <div class="pz-indicator">
+                <div class="pz-dot" id="pzStatus"></div>
+                <span>ПЗ</span>
+            </div>
+            <button class="header-btn" onclick="goToTerminal()">🖥️ Терминал</button>
+            <div class="user-info">
+                <div class="user-avatar">👤</div>
+                <span id="userName">...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Handbook Modal -->
+    <div id="handbookModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1a1a2e; padding: 24px; border-radius: 12px; max-width: 400px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="color: #fff; margin: 0;">📚 Справочники</h3>
+                <button onclick="closeHandbookModal()" style="background: none; border: none; color: #888; font-size: 20px; cursor: pointer;">×</button>
+            </div>
+            <div id="handbookLinks" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Links will be populated based on permissions -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Orders Tabs -->
+    <div class="orders-tabs">
+        <div class="stats-left">
+            <div class="stat-box">
+                <span class="stat-label">Заказов</span>
+                <span class="stat-value" id="orderCount">0</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Средний чек</span>
+                <span class="stat-value" id="avgCheck">0 BYN</span>
+            </div>
+            <div class="stat-box">
+                <span class="stat-label">Выручка</span>
+                <span class="stat-value" id="totalRevenue">0 BYN</span>
+            </div>
+        </div>
+        <div class="tabs-right">
+            <button type="button" class="icon-btn" onclick="showStopList()" title="Стоп-лист" style="font-size: 18px;">🚫</button>
+            <button type="button" class="icon-btn" onclick="showMap()" title="Карта">🗺️</button>
+            <button type="button" class="icon-btn" onclick="window.print()" title="Печать">🖨️</button>
+            <button type="button" class="icon-btn" onclick="searchOrder()" title="Поиск">🔍</button>
+        </div>
+    </div>
+    
+    <!-- Filters - ordered to match order sections -->
+    <div class="filters-bar">
+        <div class="filter-cell date-filter">
+            <span class="filter-label">Дата</span>
+            <select class="filter-select" id="dateFilter" onchange="filterOrders()">
+                <option value="today">Сегодня</option>
+                <option value="tomorrow">Завтра</option>
+                <option value="yesterday">Вчера</option>
+                <option value="week">Неделя</option>
+                <option value="month">Месяц</option>
+                <option value="period">Период...</option>
+            </select>
+        </div>
+        <div class="filter-cell">
+            <div class="filter-value" style="margin-top:18px;">СУММА</div>
+        </div>
+        <div class="filter-cell">
+            <span class="filter-label">Скидка</span>
+            <select class="filter-select" id="discountFilter" onchange="filterOrders()">
+                <option value="">Все</option>
+                <option value="0">0%</option>
+                <option value="5">5%</option>
+                <option value="10">10%</option>
+                <option value="15">15%</option>
+            </select>
+        </div>
+        <div class="filter-cell">
+            <span class="filter-label">Получение</span>
+            <select class="filter-select" id="deliveryFilter" onchange="filterOrders()">
+                <option value="">Все</option>
+                <option value="delivery">Доставка</option>
+                <option value="pickup">Самовывоз</option>
+                <option value="dine_in">Стол</option>
+                <option value="none">Не указан</option>
+            </select>
+        </div>
+        <div class="filter-cell">
+            <span class="filter-label">Карта</span>
+            <div class="client-card-cell" onclick="showClientStats()">
+                <div class="card-icon">💳</div>
+            </div>
+        </div>
+        <div class="filter-cell">
+            <span class="filter-label">Оплата</span>
+            <select class="filter-select" id="paymentFilter" onchange="filterOrders()">
+                <option value="">Все</option>
+                <option value="cash">💵 Наличные</option>
+                <option value="card">💳 Картой</option>
+                <option value="online">🌐 Онлайн</option>
+                <option value="bonus">🎁 Бонусы</option>
+            </select>
+        </div>
+        <div style="margin-left:auto;margin-right:20px;display:flex;gap:10px;">
+            <div class="filter-cell">
+                <span class="filter-label">Сотрудник</span>
+                <select class="filter-select" id="employeeFilter" onchange="filterOrders()">
+                    <option value="">Все</option>
+                </select>
+            </div>
+            <div class="filter-cell">
+                <span class="filter-label">Статус</span>
+                <select class="filter-select" id="statusFilter" onchange="filterOrders()">
+                    <option value="">Все</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Orders Container -->
+    <div class="orders-container" id="ordersContainer">
+        <div class="loading">Загрузка заказов...</div>
+    </div>
+    
+    <script>
+        let orders = [];
+        let employees = [];
+        let orderStatuses = [];
+        let marks = [];
+        let pzExtensions = [];
+        let currentUser = null;
+        let kitchens = [];
+        let categories = [];
+        
+        // Authentication check - DISABLED for direct access
+        async function checkAuth() {
+            // Auth disabled - allow direct access
+            currentUser = { username: 'operator', role: 'operator', name: 'Оператор' };
+            applyPermissions();
+            return true;
+        }
+        
+        // Apply permissions - hide buttons based on role
+        function applyPermissions() {
+            if (!currentUser) return;
+            
+            // Hide delete buttons for non-admins
+            if (currentUser.role !== 'admin') {
+                document.querySelectorAll('.delete-btn, .btn-delete').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+            
+            // Kitchen role - only view, no edit
+            if (currentUser.role === 'kitchen') {
+                document.querySelectorAll('.edit-btn, .btn-edit, .new-order-btn').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+            
+            // Accountant - read only
+            if (currentUser.role === 'accountant') {
+                document.querySelectorAll('.edit-btn, .btn-edit, .new-order-btn, .status-select').forEach(btn => {
+                    btn.style.display = 'none';
+                });
+            }
+        }
+        
+        // Run auth check on load
+        checkAuth();
+        
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+            const dateStr = now.toLocaleDateString('ru-RU', {day: 'numeric', month: 'long'});
+            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentDate').textContent = dateStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Update date filter options with actual dates
+        function updateDateFilterOptions() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            const formatDate = (date) => {
+                return date.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'});
+            };
+            
+            const dateFilter = document.getElementById('dateFilter');
+            dateFilter.options[0].text = `Сегодня ${formatDate(today)}`;
+            dateFilter.options[1].text = `Завтра ${formatDate(tomorrow)}`;
+            dateFilter.options[2].text = `Вчера ${formatDate(yesterday)}`;
+        }
+        updateDateFilterOptions();
+        
+        function toggleShift() {
+            alert('Открытие/закрытие смены');
+        }
+
+        async function openCashDrawer() {
+            if (!confirm('Открыть денежный ящик?')) return;
+            
+            // Try Web Serial first if available
+            if (window.webSerialPrinter && window.webSerialPrinter.isSupported() && window.webSerialPrinter.isConnected('receipt')) {
+                try {
+                    await window.webSerialPrinter.openCashDrawer();
+                    showNotification('✅ Денежный ящик открыт (USB)', 'success');
+                    return;
+                } catch (err) {
+                    console.log('Web Serial drawer failed, trying API:', err);
+                }
+            }
+            
+            // Fallback to API
+            fetch('/api/printer/open-drawer', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showNotification('✅ Денежный ящик открыт', 'success');
+                } else {
+                    showNotification('❌ Ошибка: ' + data.error, 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Cash drawer error:', err);
+                showNotification('❌ Не удалось открыть ящик', 'error');
+            });
+        }
+
+        function showNotification(message, type) {
+            // Simple notification - can be enhanced
+            const notif = document.createElement('div');
+            notif.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 16px 24px;
+                background: ${type === 'success' ? '#00d9a5' : '#e94560'};
+                color: #fff;
+                border-radius: 8px;
+                z-index: 9999;
+                font-weight: 600;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            `;
+            notif.textContent = message;
+            document.body.appendChild(notif);
+            setTimeout(() => notif.remove(), 3000);
+        }
+        
+        function showMap() {
+            alert('Карта заказов');
+        }
+        
+        function searchOrder() {
+            const num = prompt('Введите номер заказа:');
+            if (num) {
+                alert('Поиск заказа #' + num);
+            }
+        }
+        
+        // Stop List Functions
+        let stopListProducts = [];
+        let stopListCategories = [];
+        
+        async function showStopList() {
+            document.getElementById('stopListModal').classList.add('active');
+            await loadStopList();
+        }
+        
+        function closeStopList() {
+            document.getElementById('stopListModal').classList.remove('active');
+        }
+        
+        async function loadStopList() {
+            try {
+                // Load products with categories
+                const [productsRes, categoriesRes] = await Promise.all([
+                    fetch('/api/menu/products?include_all=true'),
+                    fetch('/api/menu/product-categories')
+                ]);
+                
+                stopListProducts = await productsRes.json();
+                stopListCategories = await categoriesRes.json();
+                
+                renderStopList();
+            } catch (error) {
+                console.error('Error loading stop list:', error);
+            }
+        }
+        
+        function renderStopList() {
+            const container = document.getElementById('stopListCategories');
+            
+            // Group products by category
+            const productsByCategory = {};
+            stopListCategories.forEach(cat => {
+                productsByCategory[cat.id] = {
+                    name: cat.name,
+                    products: stopListProducts.filter(p => p.category_id === cat.id)
+                };
+            });
+            
+            // Add uncategorized
+            const uncategorized = stopListProducts.filter(p => !p.category_id);
+            if (uncategorized.length > 0) {
+                productsByCategory['uncategorized'] = {
+                    name: 'Без категории',
+                    products: uncategorized
+                };
+            }
+            
+            // Render
+            let html = '';
+            for (const [catId, catData] of Object.entries(productsByCategory)) {
+                if (catData.products.length === 0) continue;
+                
+                html += `
+                    <div class="stop-category">
+                        <div class="stop-category-title">${catData.name}</div>
+                        ${catData.products.map(p => `
+                            <div class="stop-item">
+                                ${p.image_url 
+                                    ? `<img src="${p.image_url}" alt="${p.name}">` 
+                                    : `<div class="stop-item-placeholder">📷</div>`
+                                }
+                                <div class="stop-item-name">${p.name}</div>
+                                <div class="stop-item-toggle">
+                                    <span>${p.is_active ? 'Активен' : 'На стопе'}</span>
+                                    <label class="toggle-switch" style="width: 44px; height: 24px;">
+                                        <input type="checkbox" ${p.is_active ? 'checked' : ''} 
+                                            onchange="toggleStopListProduct(${p.id}, this.checked)">
+                                        <span class="toggle-slider" style="width: 44px; height: 24px; border-radius: 12px;"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html || '<p style="color: #888; text-align: center;">Нет товаров</p>';
+        }
+        
+        async function toggleStopListProduct(productId, isActive) {
+            try {
+                const res = await fetch(`/api/menu/products/${productId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_active: isActive })
+                });
+                
+                if (res.ok) {
+                    // Update local data
+                    const product = stopListProducts.find(p => p.id === productId);
+                    if (product) {
+                        product.is_active = isActive;
+                    }
+                    renderStopList();
+                    console.log(isActive ? 'Товар активирован' : 'Товар на стопе');
+                } else {
+                    alert('Ошибка обновления статуса');
+                    renderStopList();
+                }
+            } catch (error) {
+                console.error('Error toggling product:', error);
+                alert('Ошибка обновления статуса');
+                renderStopList();
+            }
+        }
+        
+        function showClientStats() {
+            alert('Статистика клиента:\n\nОбщая сумма покупок: 1,250 BYN\nКоличество заказов: 15\nПредпочтения: Пицца, Роллы');
+        }
+        
+        // WebSocket for Prostie Zvonki notifications
+        let pzSocket = null;
+        
+        function connectPZWebSocket() {
+            const wsUrl = window.location.protocol === 'https:' 
+                ? `wss://${window.location.host}/ws/pz/calls`
+                : `ws://${window.location.host}/ws/pz/calls`;
+            
+            pzSocket = new WebSocket(wsUrl);
+            
+            pzSocket.onopen = function() {
+                console.log('PZ WebSocket connected');
+                document.getElementById('pzStatus').classList.add('connected');
+            };
+            
+            pzSocket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('PZ notification:', data);
+                
+                if (data.type === 'call_started' || data.type === 'incoming_call') {
+                    showCallNotification(data.data);
+                }
+            };
+            
+            pzSocket.onclose = function() {
+                console.log('PZ WebSocket disconnected');
+                document.getElementById('pzStatus').classList.remove('connected');
+                // Reconnect after 5 seconds
+                setTimeout(connectPZWebSocket, 5000);
+            };
+            
+            pzSocket.onerror = function(err) {
+                console.error('PZ WebSocket error:', err);
+            };
+        }
+        
+        function showCallNotification(callData) {
+            const phone = callData.phone;
+            const extension = callData.extension;
+            const customer = callData.customer;
+            const eventType = (callData.event_type || 'INCOMING').toUpperCase();
+            
+            console.log('showCallNotification called:', {phone, extension, eventType, customer, fullData: callData});
+            
+            // Не показывать окно для исходящих звонков
+            if (eventType === 'OUTGOING') {
+                console.log('Outgoing call, skipping notification');
+                return;
+            }
+            
+            // Check if test mode is enabled
+            const testMode = window.pzTestMode !== false; // default true
+            
+            // Check if extension is configured in CRM
+            const configuredExtensions = pzExtensions.map(e => e.extension);
+            if (!testMode && extension && configuredExtensions.length > 0 && !configuredExtensions.includes(extension)) {
+                console.log('Extension not configured in CRM, ignoring call:', extension);
+                return; // Ignore calls from unknown extensions (only when test_mode is off)
+            }
+            
+            // Create notification popup - bottom right corner
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 350px;
+                background: #1a1a2e;
+                border: 2px solid #00d9a5;
+                border-radius: 12px;
+                padding: 20px;
+                z-index: 99999;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            `;
+            
+            const customerName = customer ? customer.name : 'Неизвестный клиент';
+            const customerInfo = customer 
+                ? `<p style="color: #888; font-size: 13px; margin: 5px 0;">Заказов: ${customer.orders_count || 0}</p>`
+                : '';
+            
+            popup.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+                    <span style="font-size: 24px;">📞</span>
+                    <div>
+                        <h4 style="margin: 0; color: #00d9a5;">Входящий звонок!</h4>
+                        <p style="margin: 4px 0; font-size: 18px; font-weight: 600;">${phone}</p>
+                    </div>
+                </div>
+                <div style="background: #252538; padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                    <p style="margin: 0; font-weight: 600;">${customerName}</p>
+                    ${customerInfo}
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="openNewOrderWithPhone('${phone}')" style="flex: 1; padding: 10px; background: #00d9a5; color: #000; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">📝 Новый заказ</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="padding: 10px 16px; background: #444; color: white; border: none; border-radius: 6px; cursor: pointer;">✕</button>
+                </div>
+            `;
+            
+            document.body.appendChild(popup);
+            
+            // Play sound
+            const audio = new Audio('/static/ringtone.mp3');
+            audio.play().catch(e => console.log('Audio play failed:', e));
+            
+            // Auto remove after 30 seconds
+            setTimeout(() => {
+                popup.remove();
+            }, 30000);
+        }
+        
+        function openNewOrderWithPhone(phone) {
+            window.open(`crm-new-order.html?phone=${phone}`, '_blank');
+        }
+        
+        async function loadPZExtensions() {
+            try {
+                const response = await fetch('/api/pz/extensions');
+                if (response.ok) {
+                    pzExtensions = await response.json();
+                    console.log('PZ extensions loaded:', pzExtensions);
+                }
+                // Also load settings to get test_mode
+                const settingsResponse = await fetch('/api/pz/settings');
+                if (settingsResponse.ok) {
+                    const settings = await settingsResponse.json();
+                    window.pzTestMode = settings.test_mode !== false; // default true
+                    console.log('PZ test mode:', window.pzTestMode);
+                }
+            } catch (err) {
+                console.error('Error loading PZ extensions:', err);
+            }
+        }
+
+        // Load kitchens and categories for kitchen runner printing
+        async function loadKitchens() {
+            try {
+                // Load kitchens
+                const kitchensResponse = await fetch('/api/kitchens');
+                if (kitchensResponse.ok) {
+                    kitchens = await kitchensResponse.json();
+                } else {
+                    // Default kitchens if API not ready
+                    kitchens = [
+                        {kitchen_id: 'pizza', name: 'Пицца', icon: '🍕', color: '#ff6b35', print_runner: true},
+                        {kitchen_id: 'sushi', name: 'Суши', icon: '🍣', color: '#00d9a5', print_runner: true},
+                        {kitchen_id: 'hot', name: 'Горячий цех', icon: '🔥', color: '#e94560', print_runner: true},
+                        {kitchen_id: 'bar', name: 'Бар', icon: '🍺', color: '#2196f3', print_runner: true}
+                    ];
+                }
+                
+                // Load categories with kitchen_id
+                const categoriesResponse = await fetch('/api/categories');
+                if (categoriesResponse.ok) {
+                    categories = await categoriesResponse.json();
+                    console.log('Categories with kitchens:', categories.filter(c => c.kitchen_id).map(c => `${c.name} -> ${c.kitchen_id}`));
+                }
+                
+                console.log('Kitchens loaded:', kitchens);
+                console.log('Categories loaded:', categories);
+            } catch (err) {
+                console.error('Error loading kitchens:', err);
+                // Default kitchens
+                kitchens = [
+                    {kitchen_id: 'pizza', name: 'Пицца', icon: '🍕', color: '#ff6b35', print_runner: true},
+                    {kitchen_id: 'sushi', name: 'Суши', icon: '🍣', color: '#00d9a5', print_runner: true},
+                    {kitchen_id: 'hot', name: 'Горячий цех', icon: '🔥', color: '#e94560', print_runner: true},
+                    {kitchen_id: 'bar', name: 'Бар', icon: '🍺', color: '#2196f3', print_runner: true}
+                ];
+            }
+        }
+
+        // Get kitchen for a product/item
+        function getItemKitchen(item) {
+            // Try to find by product_id -> category -> kitchen
+            const productId = item.product_id || item.id;
+            const categoryId = item.category_id;
+            
+            if (categoryId) {
+                const category = categories.find(c => c.category_id === categoryId || c.id === categoryId || c.id === parseInt(categoryId));
+                if (category && category.kitchen_id) {
+                    return kitchens.find(k => k.kitchen_id === category.kitchen_id);
+                }
+            }
+            
+            // Try to guess by name keywords (fallback)
+            const name = (item.name || item.product_name || '').toLowerCase();
+            
+            // Pizza keywords
+            if (name.includes('пицц') || name.includes('борт')) {
+                return kitchens.find(k => k.kitchen_id === 'pizza');
+            }
+            
+            // Sushi keywords
+            if (name.includes('суши') || name.includes('ролл') || name.includes('маки') || 
+                name.includes('поке') || name.includes('урамаки') || name.includes('хосо') ||
+                name.includes('таки') || name.includes('форель') || name.includes('лосось')) {
+                return kitchens.find(k => k.kitchen_id === 'sushi');
+            }
+            
+            // Bar keywords (drinks)
+            if (name.includes('вода') || name.includes('сок') || name.includes('кофе') || 
+                name.includes('чай') || name.includes('пиво') || name.includes('кола') || 
+                name.includes('бонаква') || name.includes('лимонад') || name.includes('морс') ||
+                name.includes('газированн')) {
+                return kitchens.find(k => k.kitchen_id === 'bar');
+            }
+            
+            // Hot kitchen (everything else food-related)
+            if (name.includes('бургер') || name.includes('салат') || name.includes('цезарь') ||
+                name.includes('суп') || name.includes('фри') || name.includes('драник') ||
+                name.includes('мясной') || name.includes('куриц') || name.includes('цыпленок') ||
+                name.includes('чикен') || name.includes('баварск')) {
+                return kitchens.find(k => k.kitchen_id === 'hot');
+            }
+            
+            return null;
+        }
+
+        // Group order items by kitchen
+        function groupItemsByKitchen(items) {
+            const groups = {};
+            
+            items.forEach(item => {
+                const kitchen = getItemKitchen(item);
+                const kitchenId = kitchen ? kitchen.kitchen_id : 'other';
+                
+                if (!groups[kitchenId]) {
+                    groups[kitchenId] = {
+                        kitchen: kitchen || {name: 'Другие', icon: '📦', color: '#888'},
+                        items: []
+                    };
+                }
+                groups[kitchenId].items.push(item);
+            });
+            
+            return groups;
+        }
+
+        // Print kitchen runners by kitchen
+        async function printKitchenRunners(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order || !order.items || order.items.length === 0) {
+                alert('Нет товаров для печати');
+                return;
+            }
+            
+            const groups = groupItemsByKitchen(order.items);
+            const kitchenIds = Object.keys(groups).filter(kid => {
+                const kitchen = kitchens.find(k => k.kitchen_id === kid);
+                return !kitchen || kitchen.print_runner !== false;
+            });
+            
+            if (kitchenIds.length === 0) {
+                alert('Нет цехов для печати');
+                return;
+            }
+            
+            // Show selection dialog for all kitchens (even single one for confirmation)
+            showKitchenPrintDialog(order, groups);
+        }
+
+        // Show kitchen print selection dialog
+        function showKitchenPrintDialog(order, groups) {
+            // Remove existing dialog
+            const existing = document.getElementById('kitchenPrintDialog');
+            if (existing) existing.remove();
+            
+            const dialog = document.createElement('div');
+            dialog.id = 'kitchenPrintDialog';
+            dialog.style.cssText = `
+                position: fixed;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.7);
+                z-index: 99999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            const kitchenIds = Object.keys(groups);
+            
+            dialog.innerHTML = `
+                <div style="background: #1a1a2e; padding: 24px; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 8px 32px rgba(0,0,0,0.4);">
+                    <h3 style="margin-bottom: 16px; color: #fff;">🖨️ Печать бегунков заказа #${order.id}</h3>
+                    <p style="color: #888; margin-bottom: 16px; font-size: 14px;">Выберите цеха для печати (будет напечатано столько бегунков, сколько цехов выбрано):</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                        ${kitchenIds.map(kid => {
+                            const group = groups[kid];
+                            const itemsList = group.items.map(item => {
+                                const qty = item.quantity || item.qty || 1;
+                                const name = item.name || item.product_name || 'Товар';
+                                return `<div style="font-size: 12px; color: #aaa; margin-left: 20px; padding: 2px 0;">• ${name} (${qty}шт)</div>`;
+                            }).join('');
+                            
+                            return `<label style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #252538; border-radius: 8px; cursor: pointer; border: 2px solid transparent;" onmouseover="this.style.borderColor='${group.kitchen.color}'" onmouseout="this.style.borderColor='transparent'">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <input type="checkbox" class="kitchen-print-check" value="${kid}" checked style="width: 20px; height: 20px;">
+                                    <span style="font-size: 24px;">${group.kitchen.icon}</span>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: ${group.kitchen.color};">${group.kitchen.name}</div>
+                                        <div style="font-size: 12px; color: #888;">${group.items.length} позиций</div>
+                                    </div>
+                                </div>
+                                <div style="margin-top: 4px;">${itemsList}</div>
+                            </label>`;
+                        }).join('')}
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="this.closest('#kitchenPrintDialog').remove()" style="flex: 1; padding: 12px; background: #666; color: white; border: none; border-radius: 8px; cursor: pointer;">Отмена</button>
+                        <button onclick="executeKitchenPrint(${order.id})" style="flex: 1; padding: 12px; background: #00d9a5; color: #000; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">🖨️ Печать выбранных</button>
+                    </div>
+                </div>
+            `;
+            
+            // Store groups for execute function
+            dialog.dataset.groups = JSON.stringify(Object.keys(groups));
+            window._kitchenPrintGroups = groups;
+            window._kitchenPrintOrder = order;
+            
+            document.body.appendChild(dialog);
+        }
+
+        // Execute kitchen print from dialog
+        async function executeKitchenPrint(orderId) {
+            const groups = window._kitchenPrintGroups;
+            const order = window._kitchenPrintOrder;
+            
+            if (!groups || !order) {
+                document.getElementById('kitchenPrintDialog')?.remove();
+                return;
+            }
+            
+            // GLOBAL LOCK: Prevent any duplicate print dialog executions
+            if (window._kitchenPrintExecuting) {
+                console.log('Kitchen print already executing, ignoring duplicate');
+                return;
+            }
+            window._kitchenPrintExecuting = true;
+            
+            const checkboxes = document.querySelectorAll('.kitchen-print-check:checked');
+            const selectedKitchens = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedKitchens.length === 0) {
+                alert('Выберите хотя бы один цех');
+                window._kitchenPrintExecuting = false;
+                return;
+            }
+            
+            document.getElementById('kitchenPrintDialog')?.remove();
+            
+            try {
+                // Print for each selected kitchen
+                for (const kitchenId of selectedKitchens) {
+                    const group = groups[kitchenId];
+                    if (group) {
+                        await printKitchenRunnerForGroup(order, group);
+                        // Small delay between prints
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                }
+                
+                showNotification(`✅ Напечатано бегунков: ${selectedKitchens.length}`, 'success');
+            } finally {
+                // Release global lock after 5 seconds
+                setTimeout(() => {
+                    window._kitchenPrintExecuting = false;
+                }, 5000);
+            }
+        }
+
+        // Print single kitchen runner with protection
+        async function printKitchenRunnerForGroup(order, group) {
+            const kitchen = group.kitchen;
+            const items = group.items;
+            const kitchenId = kitchen.id || kitchen.name;
+            
+            // Check protection
+            const check = await printProtection.checkBeforePrint(order.id, 'kitchen', kitchenId);
+            if (!check.can_print) {
+                console.log(`Print blocked for kitchen ${kitchenId}: ${check.message}`);
+                return;
+            }
+
+            if (check.warning) {
+                const confirmReprint = confirm(`⚠️ Бегунок для ${kitchen.name} уже печатался.\nПерепечатать?`);
+                if (!confirmReprint) return;
+            }
+            
+            // CRITICAL: Set lock BEFORE printing to prevent duplicates
+            const lockKey = `${order.id}_kitchen_${kitchenId}`;
+            if (printProtection.printingLocks.has(lockKey)) {
+                console.log(`Print already in progress for ${lockKey}`);
+                return;
+            }
+            printProtection.printingLocks.set(lockKey, Date.now());
+            
+            const runnerData = {
+                id: order.id,
+                time: order.time,
+                typeLabel: order.typeLabel,
+                kitchenName: kitchen.name,
+                kitchenIcon: kitchen.icon,
+                kitchenColor: kitchen.color,
+                items: items,
+                comment: order.comment
+            };
+            
+            try {
+                // Try local agent first
+                const result = await PrintSystem.printKitchenRunnerViaAgent(runnerData);
+                
+                if (!result.success) {
+                    // Fallback to browser
+                    await printKitchenRunnerViaBrowser(runnerData);
+                }
+                
+                // Register print via API
+                await printProtection.executePrint(order.id, 'kitchen', runnerData, kitchenId);
+            } finally {
+                // Release lock after 10 seconds
+                setTimeout(() => {
+                    printProtection.printingLocks.delete(lockKey);
+                }, 10000);
+            }
+        }
+
+        // Browser print for kitchen runner
+        async function printKitchenRunnerViaBrowser(runnerData) {
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                alert('Блокировщик всплывающих окон');
+                return;
+            }
+            
+            const widthMm = '80mm';
+            const kitchen = runnerData.kitchen || {};
+            const kitchenName = runnerData.kitchenName || kitchen.name || 'Кухня';
+            const kitchenIcon = runnerData.kitchenIcon || kitchen.icon || '🍽️';
+            const kitchenColor = runnerData.kitchenColor || kitchen.color || '#ff6b35';
+            
+            // Format items - each on new line with quantity
+            const itemsHtml = runnerData.items.map(item => {
+                const qty = item.quantity || item.qty || 1;
+                const name = item.name || item.product_name || 'Товар';
+                // Check for modifiers/options in name
+                const hasPlus = name.includes('+');
+                return `<div style="margin: 4px 0; font-size: 18px; font-weight: bold; line-height: 1.4;">${name} <span style="color: #666; font-size: 14px;">(${qty}шт)</span></div>`;
+            }).join('');
+            
+            const html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        @page { size: ${widthMm} auto; margin: 0; }
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            width: ${widthMm};
+                            margin: 0;
+                            padding: 4mm;
+                            padding-top: 25mm;
+                            font-family: 'Courier New', 'Consolas', monospace;
+                            font-size: 16px;
+                            line-height: 1.3;
+                            color: #000;
+                            font-weight: 700;
+                        }
+                        .order-num { 
+                            text-align: center; 
+                            font-size: 42px; 
+                            font-weight: 900; 
+                            margin: 4mm 0; 
+                            -webkit-text-stroke: 0.5px black;
+                        }
+                        .kitchen-name { 
+                            text-align: center; 
+                            font-size: 28px; 
+                            font-weight: 900; 
+                            color: ${kitchenColor}; 
+                            margin: 3mm 0;
+                            padding: 2mm;
+                            border: 3px solid ${kitchenColor};
+                            border-radius: 4px;
+                        }
+                        .kitchen-icon { font-size: 32px; }
+                        .type-label {
+                            text-align: center;
+                            font-size: 20px;
+                            font-weight: bold;
+                            margin: 2mm 0;
+                            color: #333;
+                        }
+                        .time-section {
+                            text-align: center;
+                            font-size: 16px;
+                            margin: 3mm 0;
+                            color: #666;
+                        }
+                        .line { 
+                            border-top: 2px dashed #000; 
+                            margin: 4mm 0; 
+                        }
+                        .items { margin: 4mm 0; }
+                        .comment { 
+                            margin-top: 4mm; 
+                            padding: 3mm; 
+                            background: #f5f5f5; 
+                            border: 2px solid #000; 
+                            font-weight: 700;
+                            font-size: 16px;
+                        }
+                        .comment-label { 
+                            font-size: 14px; 
+                            color: #666; 
+                            margin-bottom: 2mm;
+                            font-weight: bold;
+                        }
+                        @media print {
+                            body { width: ${widthMm} !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="order-num">#${runnerData.id}</div>
+                    <div class="kitchen-name">
+                        <span class="kitchen-icon">${kitchenIcon}</span> ${kitchenName}
+                    </div>
+                    <div class="type-label">${runnerData.typeLabel || 'Заказ'}</div>
+                    <div class="time-section">
+                        <div>Время: ${runnerData.time}</div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="items">
+                        ${itemsHtml}
+                    </div>
+                    ${runnerData.comment ? `
+                    <div class="line"></div>
+                    <div class="comment">
+                        <div class="comment-label">💬 КОММЕНТАРИЙ:</div>
+                        <div>${runnerData.comment}</div>
+                    </div>
+                    ` : ''}
+                    <div style="margin-top: 10mm;"></div>
+                    <script>
+                        window.onload = function() { 
+                            setTimeout(function() { 
+                                window.print(); 
+                                setTimeout(function() { window.close(); }, 500);
+                            }, 250); 
+                        };
+                    <\/script>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+        
+        function loadCurrentUser() {
+            const auth = JSON.parse(localStorage.getItem('soho_auth') || '{}');
+            if (auth.employee) {
+                document.getElementById('userName').textContent = auth.employee.name;
+            }
+        }
+        
+        async function endShift() {
+            if (!confirm('Выйти? Смена останется открытой.')) return;
+
+            // Just redirect to terminal without closing session
+            window.location.href = '/terminal.html';
+        }
+
+        // Handbook modal functions
+        function showHandbookModal() {
+            const modal = document.getElementById('handbookModal');
+            const linksContainer = document.getElementById('handbookLinks');
+            
+            // Get user permissions from auth data
+            const auth = JSON.parse(localStorage.getItem('soho_auth') || '{}');
+            const role = auth.employee?.role_name || auth.role || '';
+            const permissions = auth.employee?.role_permissions || {};
+            
+            // Define available links based on role/permissions
+            const links = [];
+            
+            // All roles can access
+            links.push({ url: '/admin-panel.html', title: '📊 Админ-панель', icon: '📊' });
+            
+            // Admin/Manager only
+            if (['Администратор', 'Менеджер', 'admin', 'manager'].includes(role)) {
+                links.push({ url: '/admin-panel.html#my-profile', title: '👤 Мой профиль', icon: '👤' });
+                links.push({ url: '/admin-panel.html#employees', title: '👥 Сотрудники', icon: '👥' });
+                links.push({ url: '/admin-panel.html#marketing', title: '📢 Маркетинг', icon: '📢' });
+                links.push({ url: '/admin-panel.html#content', title: '📝 Контент', icon: '📝' });
+            }
+            
+            // Kitchen staff
+            if (['Повар', 'Кухня', 'kitchen'].includes(role)) {
+                links.push({ url: '/crm-kitchen.html', title: '👨‍🍳 Кухня', icon: '👨‍🍳' });
+            }
+            
+            // Generate HTML
+            linksContainer.innerHTML = links.map(link => `
+                <a href="${link.url}" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #252538; border-radius: 8px; color: #fff; text-decoration: none; transition: all 0.2s;" onmouseover="this.style.background='#2d2d45'" onmouseout="this.style.background='#252538'">
+                    <span style="font-size: 20px;">${link.icon}</span>
+                    <span style="font-size: 14px;">${link.title}</span>
+                </a>
+            `).join('');
+            
+            modal.style.display = 'flex';
+        }
+        
+        function closeHandbookModal() {
+            document.getElementById('handbookModal').style.display = 'none';
+        }
+        
+        // Close modal on outside click
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('handbookModal');
+            if (e.target === modal) {
+                closeHandbookModal();
+            }
+        });
+
+        function goToTerminal() {
+            // Quick exit to terminal without confirmation
+            window.location.href = '/terminal.html';
+        }
+        
+        function openPrintAgent() {
+            // Open print agent in popup window
+            const width = 800;
+            const height = 600;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+            
+            const agentWindow = window.open(
+                '/print-agent.html',
+                'PrintAgent',
+                `width=${width},height=${height},left=${left},top=${top},resizable=yes,scrollbars=yes`
+            );
+            
+            if (agentWindow) {
+                agentWindow.focus();
+            } else {
+                showNotification('Разрешите всплывающие окна для агента печати', 'error');
+            }
+        }
+
+        async function closeShiftAndExit() {
+            if (!confirm('Закрыть смену и выйти?')) return;
+
+            const auth = JSON.parse(localStorage.getItem('soho_auth') || '{}');
+            if (auth.employee) {
+                try {
+                    // End work session
+                    const response = await fetch('/api/auth/employee/session/end', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({employee_id: auth.employee.id})
+                    });
+
+                    if (response.ok) {
+                        const data = await response.json();
+                        alert(`✅ Смена закрыта!\nОтработано: ${data.total_hours} часов`);
+                    }
+                } catch (err) {
+                    console.error('Error ending session:', err);
+                }
+            }
+
+            // Clear auth and redirect
+            localStorage.removeItem('soho_auth');
+            window.location.href = '/terminal.html';
+        }
+        
+        async function init() {
+            // Load current user
+            loadCurrentUser();
+            
+            await loadEmployees();
+            await loadOrderTypes();
+            await loadOrderStatuses();
+            await loadMarks();
+            await loadOrders();
+            await loadPZExtensions();
+            await loadKitchens();
+            checkPZConnection();
+            connectPZWebSocket();
+
+            // Auto-refresh orders every 30 seconds
+            setInterval(() => {
+                loadOrders();
+                updateStats();
+            }, 30000);
+        }
+        
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees/employees');
+                if (response.ok) {
+                    employees = await response.json();
+                    const select = document.getElementById('employeeFilter');
+                    employees.forEach(emp => {
+                        select.innerHTML += `<option value="${emp.employee_id}">${emp.name}</option>`;
+                    });
+                }
+            } catch (err) {
+                console.error('Error loading employees:', err);
+            }
+        }
+        
+        let orderTypes = [];
+
+        function getOrderTypeLabel(typeId) {
+            if (!typeId) return 'Доставка';
+            const type = orderTypes.find(t => t.type_id === typeId);
+            if (type) return type.name;
+            // Fallback labels
+            if (typeId === 'pickup') return 'Самовывоз';
+            if (typeId === 'dine_in' || typeId === 'inside') return 'В зале';
+            return 'Доставка';
+        }
+        
+        function formatAddress(address, orderType) {
+            if (!address) return '-';
+            // For dine-in orders, format nicely
+            if (orderType === 'inside' || orderType === 'dine_in') {
+                // Check if address starts with "Столик" or contains table info
+                if (address.includes('Столик') || address.includes('стол')) {
+                    return '🪑 ' + address;
+                }
+            }
+            return address;
+        }
+
+        async function loadOrderTypes() {
+            try {
+                const response = await fetch('/api/crm-settings/order-types');
+                if (response.ok) {
+                    orderTypes = await response.json();
+                    console.log('Loaded order types:', orderTypes);
+                    // Update filter dropdown
+                    const select = document.getElementById('deliveryFilter');
+                    if (select && orderTypes.length > 0) {
+                        select.innerHTML = '<option value="">Все</option>' +
+                            orderTypes.map(t => `<option value="${t.type_id}">${t.name}</option>`).join('') +
+                            '<option value="none">Не указан</option>';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading order types:', err);
+            }
+        }
+
+        async function loadOrderStatuses() {
+            try {
+                const response = await fetch('/api/crm-settings/statuses');
+                if (response.ok) {
+                    orderStatuses = await response.json();
+                    console.log('Loaded statuses:', orderStatuses);
+                    const select = document.getElementById('statusFilter');
+                    orderStatuses.forEach(s => {
+                        select.innerHTML += `<option value="${s.status_id}">${s.name}</option>`;
+                    });
+                    // Force re-render all orders with new status colors
+                    renderOrders();
+                    updateStats();
+                }
+            } catch (err) {
+                console.error('Error loading statuses:', err);
+            }
+        }
+        
+        async function loadMarks() {
+            try {
+                const response = await fetch('/api/marks');
+                if (response.ok) {
+                    marks = await response.json();
+                }
+            } catch (err) {
+                console.error('Error loading marks:', err);
+            }
+        }
+        
+        function checkPZConnection() {
+            const dot = document.getElementById('pzStatus');
+            // Simulate PZ check
+            setTimeout(() => {
+                dot.classList.add('connected');
+            }, 2000);
+        }
+        
+        // Helper for authenticated requests - DISABLED (no token required)
+        async function authFetch(url, options = {}) {
+            // Auth disabled - proceed without token
+            options.headers = {
+                ...options.headers
+            };
+            
+            return fetch(url, options);
+        }
+        
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders/list?limit=50');
+                const data = await response.json();
+                orders = (Array.isArray(data) ? data : data.orders || []).map(order => ({
+                    id: order.id,
+                    datetime: new Date(order.created_at),
+                    time: new Date(order.created_at).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'}),
+                    date: new Date(order.created_at).toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'}),
+                    type: order.order_type || 'delivery',
+                    typeLabel: getOrderTypeLabel(order.order_type),
+                    customer: order.customer_name || order.delivery_name || 'Гость',
+                    phone: order.delivery_phone || order.customer_phone || '-',
+                    address: formatAddress(order.delivery_address, order.order_type),
+                    items: Array.isArray(order.items) ? order.items : (typeof order.items === 'string' ? JSON.parse(order.items || '[]') : []),
+                    itemsText: order.items ? (typeof order.items === 'string' ? JSON.parse(order.items) : order.items).map(i => `${i.quantity || i.qty}× ${i.name || 'Товар'}`).join(', ') : '',
+                    total: parseFloat(order.total_amount || order.total || 0),
+                    totalStr: parseFloat(order.total_amount || order.total || 0).toFixed(2),
+                    marks: order.marks || [],
+                    status: order.status || 'new',
+                    payment_type: order.payment_type || 'cash',
+                    comment: order.comment || '',
+                    discount: order.discount || 0,
+                    promo_discount: order.promo_discount || 0,
+                    promo_code: order.promo_code || '',
+                    employee_id: order.employee_id || ''
+                }));
+                renderOrders();
+                updateStats();
+            } catch (err) {
+                document.getElementById('ordersContainer').innerHTML = '<div class="empty">Ошибка загрузки заказов</div>';
+            }
+        }
+        
+        function updateStats() {
+            // Get filtered orders based on dateFilter selection
+            const dateFilter = document.getElementById('dateFilter').value;
+            const now = new Date();
+            let filteredOrders = orders;
+            
+            if (dateFilter) {
+                const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                
+                filteredOrders = orders.filter(o => {
+                    const orderDate = new Date(o.datetime);
+                    if (dateFilter === 'today') {
+                        return orderDate >= today && orderDate < tomorrow;
+                    } else if (dateFilter === 'tomorrow') {
+                        return orderDate >= tomorrow && orderDate < new Date(tomorrow.getTime() + 86400000);
+                    } else if (dateFilter === 'yesterday') {
+                        return orderDate >= yesterday && orderDate < today;
+                    } else if (dateFilter === 'week') {
+                        const weekAgo = new Date(today);
+                        weekAgo.setDate(weekAgo.getDate() - 7);
+                        return orderDate >= weekAgo && orderDate < tomorrow;
+                    } else if (dateFilter === 'month') {
+                        const monthAgo = new Date(today);
+                        monthAgo.setMonth(monthAgo.getMonth() - 1);
+                        return orderDate >= monthAgo && orderDate < tomorrow;
+                    }
+                    return true;
+                });
+            }
+            
+            const count = filteredOrders.length;
+            const revenue = filteredOrders.reduce((sum, o) => sum + o.total, 0);
+            const avg = count > 0 ? (revenue / count) : 0;
+            
+            document.getElementById('orderCount').textContent = count;
+            document.getElementById('avgCheck').textContent = avg.toFixed(2) + ' BYN';
+            document.getElementById('totalRevenue').textContent = revenue.toFixed(2) + ' BYN';
+        }
+        
+        function filterOrders() {
+            updateStats();
+            renderOrders();
+        }
+        
+        function getFilteredOrders() {
+            const dateFilter = document.getElementById('dateFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const deliveryFilter = document.getElementById('deliveryFilter').value;
+            const employeeFilter = document.getElementById('employeeFilter').value;
+            const discountFilter = document.getElementById('discountFilter').value;
+            const paymentFilter = document.getElementById('paymentFilter').value;
+            
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+            const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+            const weekAgo = new Date(today); weekAgo.setDate(weekAgo.getDate() - 7);
+            const monthAgo = new Date(today); monthAgo.setMonth(monthAgo.getMonth() - 1);
+            
+            return orders.filter(order => {
+                // Date filter
+                if (dateFilter) {
+                    const orderDate = new Date(order.datetime);
+                    if (dateFilter === 'today') {
+                        if (orderDate < today || orderDate >= tomorrow) return false;
+                    } else if (dateFilter === 'tomorrow') {
+                        if (orderDate < tomorrow || orderDate >= new Date(tomorrow.getTime() + 86400000)) return false;
+                    } else if (dateFilter === 'yesterday') {
+                        if (orderDate < yesterday || orderDate >= today) return false;
+                    } else if (dateFilter === 'week') {
+                        if (orderDate < weekAgo || orderDate >= tomorrow) return false;
+                    } else if (dateFilter === 'month') {
+                        if (orderDate < monthAgo || orderDate >= tomorrow) return false;
+                    }
+                }
+                
+                if (statusFilter && order.status !== statusFilter) return false;
+                if (deliveryFilter && order.type !== deliveryFilter) return false;
+                if (employeeFilter && order.employee_id !== employeeFilter) return false;
+                if (discountFilter && order.discount !== parseInt(discountFilter)) return false;
+                if (paymentFilter && order.payment_type !== paymentFilter) return false;
+
+                return true;
+            }).sort((a, b) => {
+                // Preorders first, sorted by scheduled_time (latest first)
+                const aPreorder = a.scheduled_time ? new Date(a.scheduled_time) : null;
+                const bPreorder = b.scheduled_time ? new Date(b.scheduled_time) : null;
+                
+                if (aPreorder && bPreorder) {
+                    return bPreorder - aPreorder; // Latest first
+                }
+                if (aPreorder) return -1; // a is preorder, comes first
+                if (bPreorder) return 1;  // b is preorder, comes first
+                
+                // Neither is preorder, sort by created_at (newest first)
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+        }
+        
+        function renderOrders() {
+            const container = document.getElementById('ordersContainer');
+            const filtered = getFilteredOrders();
+            
+            if (filtered.length === 0) {
+                container.innerHTML = '<div class="empty">Нет заказов</div>';
+                return;
+            }
+            
+            container.innerHTML = filtered.map(order => {
+                const hasPreorder = order.scheduled_time;
+                const datetimeStyle = hasPreorder ? 'color:#ff9800;' : '';
+                
+                // Get status color and background from API (FIRST!)
+                const statusObj = orderStatuses.find(s => s.status_id === order.status);
+                const statusColor = statusObj ? statusObj.color : '#888888';
+                const statusName = statusObj ? statusObj.name : order.status;
+                
+                const preorderTimeStr = hasPreorder ? new Date(order.scheduled_time).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}) : null;
+                const preorderDateStr = hasPreorder ? new Date(order.scheduled_time).toLocaleDateString('ru-RU', {day:'2-digit', month:'2-digit'}) : null;
+                
+                const datetimeStr = `
+                    <span style="font-size:15px;font-weight:600;${datetimeStyle}">${order.time}</span>
+                    <span style="font-size:11px;color:#888;${datetimeStyle}">${order.date}</span>
+                    <span style="font-size:13px;${datetimeStyle}">#${order.id}</span>
+                    ${hasPreorder ? `<span style="margin-left:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:#ff9800;color:white;">📅 ${preorderTimeStr} ${preorderDateStr}</span>` : ''}
+                    <span style="margin-left:8px;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;background:${statusColor};color:white;">${statusName}</span>
+                `;
+                
+                // Background color based on status (light version of status color or default)
+                const statusBgColors = {
+                    'new': '#E3F2FD',        // Light blue
+                    'confirmed': '#E8F5E9',  // Light green
+                    'cooking': '#FFF3E0',    // Light orange
+                    'ready': '#F3E5F5',      // Light purple
+                    'delivering': '#E0F7FA', // Light cyan
+                    'delivered': '#E8E8E8',  // Light gray
+                    'cancelled': '#FFEBEE'   // Light red
+                };
+                const statusBg = statusBgColors[order.status] || '#FFFFFF';
+                
+                // Get order marks
+                const orderMarks = order.marks || [];
+                const marksHtml = orderMarks.map(m => {
+                    const markObj = marks.find(mark => mark.id === m || mark.mark_id === m);
+                    return markObj ? `<span style="background:${markObj.color};color:white;padding:2px 6px;border-radius:3px;font-size:11px;margin-right:4px;">${markObj.icon} ${markObj.name}</span>` : '';
+                }).join('');
+                
+                // Convert hex to rgba for background with opacity
+                const hexToRgba = (hex, alpha) => {
+                    const r = parseInt(hex.slice(1,3), 16);
+                    const g = parseInt(hex.slice(3,5), 16);
+                    const b = parseInt(hex.slice(5,7), 16);
+                    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                };
+                const statusBgRgba = hexToRgba(statusColor, 0.65);
+                
+                // Determine if order should be collapsed by default
+                // Only 'new' and 'cooking' are expanded, all others are collapsed
+                const expandedStatuses = ['new', 'cooking'];
+                const isCollapsed = !expandedStatuses.includes(order.status);
+                
+                // Payment type label
+                const paymentLabels = {cash: '💵 Наличные', card: '💳 Картой', online: '🌐 Онлайн', bonus: '🎁 Бонусы'};
+                const paymentLabel = paymentLabels[order.payment_type] || '💵 Наличные';
+                
+                return `
+                <div class="order-card ${isCollapsed ? 'collapsed' : ''}" data-order-id="${order.id}" style="border-left:4px solid ${statusColor};background:${statusBgRgba};" onclick="if(event.target.closest('button, select, input')) return; toggleOrderCollapse(${order.id})">
+                    <!-- Collapsed view (shown when collapsed) -->
+                    <div class="order-collapsed-view" style="display:${isCollapsed ? 'flex' : 'none'};padding:8px 15px;align-items:center;gap:15px;">
+                        <span class="order-datetime">${datetimeStr}</span>
+                        <span style="font-size:12px;font-weight:600;color:#333;">${order.totalStr} BYN</span>
+                        <span style="font-size:11px;color:#666;">${order.typeLabel}</span>
+                        <span style="font-size:11px;color:#666;">${paymentLabel}</span>
+                        <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+                            <select class="order-select" onchange="assignEmployee(${order.id}, this.value)" style="font-size:11px;padding:2px 6px;">
+                                <option value="">👤</option>
+                                ${employees.map(e => `<option value="${e.employee_id}" ${order.employee_id === e.employee_id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                            </select>
+                            <select class="order-select" onchange="updateStatus(${order.id}, this.value)" style="font-size:11px;padding:2px 6px;">
+                                ${orderStatuses.map(s => `<option value="${s.status_id}" ${order.status === s.status_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>
+                    <!-- End collapsed view -->
+                    <div class="order-header" style="display:${isCollapsed ? 'none' : 'flex'};">
+                        <span class="order-datetime">${datetimeStr}</span>
+                        <button class="order-btn" onclick="editOrder(${order.id})">✏️ Изменить</button>
+                        <button class="order-btn" onclick="printReceipt(${order.id})" id="printBtn_${order.id}">🧾 Чек</button>
+                        <span id="printStatus_${order.id}" style="font-size:11px;color:#888;"></span>
+                        <div style="margin-left:auto;display:flex;gap:10px;align-items:center;">
+                            <select class="order-select" onchange="assignEmployee(${order.id}, this.value)">
+                                <option value="">👤 Сотрудник</option>
+                                ${employees.map(e => `<option value="${e.employee_id}" ${order.employee_id === e.employee_id ? 'selected' : ''}>${e.name}</option>`).join('')}
+                            </select>
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="width:12px;height:12px;border-radius:50%;background:${statusColor};display:inline-block;box-shadow:0 0 4px ${statusColor};"></span>
+                                <select class="order-select" onchange="updateStatus(${order.id}, this.value)">
+                                    ${orderStatuses.map(s => `<option value="${s.status_id}" ${order.status === s.status_id ? 'selected' : ''}>${s.name}</option>`).join('')}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-body" style="display:${isCollapsed ? 'none' : 'flex'};">
+                        <div class="order-left">
+                            <div class="order-products">
+                                ${order.items.map((item, idx) => {
+                                    const name = item.name || item.product_name || 'Товар #' + (item.product_id || idx);
+                                    const qty = item.quantity || item.qty || 1;
+                                    const price = parseFloat(item.price || item.total_price || 0).toFixed(2);
+                                    return `<div class="product-row">
+                                        <span class="product-name">${name}</span>
+                                        <span class="product-qty">${qty}×</span>
+                                        <span class="product-price">${price}</span>
+                                    </div>`;
+                                }).join('')}
+                            </div>
+                            <div class="order-total-center">${order.totalStr} BYN</div>
+                            <div class="order-discount-section">
+                                ${order.promo_discount > 0 ? `<span style="color:#e94560;font-weight:600">-${order.promo_discount.toFixed(2)} BYN</span>` : order.discount > 0 ? `<span style="color:#4caf50;font-weight:600">-${order.discount}%</span>` : '<span style="color:#ccc">-</span>'}
+                            </div>
+                            <div class="delivery-type">${order.typeLabel}</div>
+                            <div class="client-info-small">
+                                <div class="card-icon" onclick="showClientCard(${order.id})">💳</div>
+                            </div>
+                            <div class="order-marks-row" style="margin-top:6px;display:flex;flex-direction:column;align-items:flex-start;gap:4px;">
+                                ${order.promo_code ? `<span style="background:#e94560;color:white;padding:3px 10px;border-radius:12px;font-size:11px;white-space:nowrap;">🎁 ${order.promo_code}</span>` : ''}
+                                ${order.marks && order.marks.length > 0 ? order.marks.map(m => {
+                                    const markObj = marks.find(mark => mark.mark_id === m);
+                                    return markObj ? `<span style="background:${markObj.color};color:white;padding:3px 10px;border-radius:12px;font-size:11px;white-space:nowrap;">${markObj.icon} ${markObj.name}</span>` : '';
+                                }).join('') : (order.promo_code ? '' : '<span style="color:#888;font-size:11px;">Нет отметок</span>')}
+                                <button onclick="openOrderMarksModal(${order.id})" style="background:none;border:none;color:#2196f3;font-size:11px;cursor:pointer;padding:2px 0;">+ Добавить</button>
+                            </div>
+                            <div class="order-payment" style="margin-top:8px;font-size:13px;">
+                                <select onchange="updatePaymentType(${order.id}, this.value)" style="background:#fff;border:1px solid #ddd;border-radius:6px;color:#333;padding:4px 8px;font-size:13px;cursor:pointer;">
+                                    <option value="cash" ${order.payment_type === 'cash' ? 'selected' : ''}>💵 Наличные</option>
+                                    <option value="card" ${order.payment_type === 'card' ? 'selected' : ''}>💳 Картой</option>
+                                    <option value="online" ${order.payment_type === 'online' ? 'selected' : ''}>🌐 Онлайн</option>
+                                    <option value="bonus" ${order.payment_type === 'bonus' ? 'selected' : ''}>🎁 Бонусы</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="order-right" style="display:flex;flex-direction:column;gap:4px;align-items:flex-start;flex:1;min-width:150px;">
+                            <div style="display:flex;gap:8px;align-items:center;width:100%;">
+                                <div class="order-address" title="${order.address}" style="flex:1;font-size:12px;color:#666;">${order.address}</div>
+                                ${order.phone && order.phone !== '-' && order.phone !== '+375' ? `
+                                <div class="order-phone" style="flex-shrink:0;display:flex;align-items:center;gap:6px;">
+                                    <span class="phone-number" style="font-size:13px;">${order.phone}</span>
+                                    <button class="call-btn" onclick="callClient('${order.phone}')">📞</button>
+                                </div>` : ''}
+                                <button class="delete-btn" onclick="deleteOrder(${order.id})" title="Удалить заказ" style="flex-shrink:0;">🗑️</button>
+                            </div>
+                            ${order.comment ? `<div style="font-size:11px;color:#888;background:#f9f9f9;padding:4px 8px;border-radius:4px;border-left:3px solid #ddd;width:100%;">💬 ${order.comment}</div>` : ''}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+        
+        function toggleOrderCollapse(orderId) {
+            const card = document.querySelector(`[data-order-id="${orderId}"]`);
+            if (card) {
+                const isCollapsed = card.classList.toggle('collapsed');
+                const header = card.querySelector('.order-header');
+                const body = card.querySelector('.order-body');
+                const collapsedView = card.querySelector('.order-collapsed-view');
+                
+                if (header) header.style.display = isCollapsed ? 'none' : 'flex';
+                if (body) body.style.display = isCollapsed ? 'none' : 'flex';
+                if (collapsedView) collapsedView.style.display = isCollapsed ? 'flex' : 'none';
+            }
+        }
+        
+        function showClientCard(orderId) {
+            alert('Карта клиента для заказа #' + orderId);
+        }
+        
+        async function updateStatus(orderId, newStatus) {
+            try {
+                console.log(`[updateStatus] Starting update for order ${orderId} to status ${newStatus}`);
+                const response = await fetch(`/api/orders/${orderId}/status`, {
+                    method: "PATCH",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({status: newStatus})
+                });
+                console.log(`[updateStatus] Response status: ${response.status}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`[updateStatus] Response not OK: ${response.status}`, errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                const result = await response.json();
+                console.log(`[updateStatus] Response body:`, result);
+                if (result.status !== 'ok') {
+                    throw new Error(result.error || 'Unknown error');
+                }
+                console.log(`[updateStatus] Success!`);
+                // Обновляем локально статус заказа и перерисовываем
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = newStatus;
+                    renderOrders();
+                    updateStats();
+                }
+            } catch (err) {
+                console.error('[updateStatus] Error:', err);
+                alert('Ошибка обновления статуса: ' + err.message);
+                loadOrders();
+            }
+        }
+        
+        async function updatePaymentType(orderId, paymentType) {
+            try {
+                console.log(`[updatePaymentType] Starting update for order ${orderId} to ${paymentType}`);
+                const response = await fetch(`/api/orders/${orderId}/payment?payment_type=${paymentType}`, {
+                    method: 'PATCH'
+                });
+                console.log(`[updatePaymentType] Response status: ${response.status}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error(`[updatePaymentType] Response not OK: ${response.status}`, errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
+                }
+                const result = await response.json();
+                console.log(`[updatePaymentType] Success!`, result);
+                // Обновляем локально
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.payment_type = paymentType;
+                }
+            } catch (err) {
+                console.error('[updatePaymentType] Error:', err);
+                alert('Ошибка обновления оплаты: ' + err.message);
+                loadOrders();
+            }
+        }
+
+        async function assignEmployee(orderId, employeeId) {
+            console.log('Assign employee', orderId, employeeId);
+        }
+        
+        function editOrder(orderId) {
+            window.location.href = `crm-new-order.html?order=${orderId}`;
+        }
+        
+        // Current print settings (loaded from API)
+        let printSettings = {
+            mode: 'browser', // browser, local_agent, webserial
+            browser: { template: 'default', silent: false },
+            localAgent: { wsUrl: 'ws://localhost:8765', connected: false },
+            webSerial: { enabled: false }
+        };
+        
+        // Local agent WebSocket
+        let agentWs = null;
+        
+        // Load print settings from API
+        async function loadPrintSettings() {
+            try {
+                const response = await fetch('/api/config/crm/settings');
+                if (response.ok) {
+                    const settings = await response.json();
+                    if (settings.printMode) {
+                        printSettings = { ...printSettings, ...settings.printMode };
+                        
+                        // Connect to local agent if needed
+                        if (printSettings.mode === 'local_agent' && printSettings.localAgent?.wsUrl) {
+                            connectLocalAgent();
+                        }
+                    }
+                }
+            } catch (err) {
+                console.log('Could not load print settings:', err);
+            }
+        }
+        
+        // Connect to local print agent
+        function connectLocalAgent() {
+            if (agentWs) {
+                agentWs.close();
+            }
+            
+            const wsUrl = printSettings.localAgent?.wsUrl || 'ws://localhost:8765';
+            
+            try {
+                agentWs = new WebSocket(wsUrl);
+                
+                agentWs.onopen = () => {
+                    console.log('Connected to local print agent');
+                    printSettings.localAgent.connected = true;
+                    
+                    // Update UI button if exists
+                    const btn = document.getElementById('btnAgentStatus');
+                    if (btn) {
+                        btn.style.background = '#4caf50';
+                        btn.textContent = '🖥️ Агент ✓';
+                    }
+                };
+                
+                agentWs.onclose = () => {
+                    console.log('Local agent disconnected');
+                    printSettings.localAgent.connected = false;
+                    
+                    const btn = document.getElementById('btnAgentStatus');
+                    if (btn) {
+                        btn.style.background = '#f44336';
+                        btn.textContent = '🖥️ Агент ✗';
+                    }
+                    
+                    // Reconnect after 5 seconds
+                    setTimeout(connectLocalAgent, 5000);
+                };
+                
+                agentWs.onerror = (err) => {
+                    console.error('Local agent error:', err);
+                    printSettings.localAgent.connected = false;
+                };
+                
+            } catch (err) {
+                console.error('Could not connect to local agent:', err);
+            }
+        }
+        
+        // Print via local agent
+        async function printViaAgent(type, orderData) {
+            if (!agentWs || agentWs.readyState !== WebSocket.OPEN) {
+                throw new Error('Агент не подключен');
+            }
+            
+            return new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                    reject(new Error('Таймаут печати'));
+                }, 10000);
+                
+                const handler = (event) => {
+                    const response = JSON.parse(event.data);
+                    if (response.success) {
+                        clearTimeout(timeout);
+                        agentWs.removeEventListener('message', handler);
+                        resolve(response);
+                    } else if (response.error) {
+                        clearTimeout(timeout);
+                        agentWs.removeEventListener('message', handler);
+                        reject(new Error(response.error));
+                    }
+                };
+                
+                agentWs.addEventListener('message', handler);
+                
+                const action = type === 'receipt' ? 'print_receipt' : 'print_kitchen_runner';
+                agentWs.send(JSON.stringify({
+                    action: action,
+                    data: orderData
+                }));
+            });
+        }
+        
+        // Print via browser (window.print)
+        async function printViaBrowser(type, order) {
+            const isKitchen = type === 'kitchen';
+            
+            // Get receipt width from settings (default 80mm)
+            const receiptWidth = printSettings.browser?.width || '80';
+            const widthMm = receiptWidth + 'mm';
+            const fontSize = receiptWidth === '58' ? '14px' : '16px';
+            const headerSize = receiptWidth === '58' ? '20px' : '24px';
+            const itemSize = receiptWidth === '58' ? '14px' : '16px';
+            
+            const printWindow = window.open('', '_blank');
+            if (!printWindow) {
+                throw new Error('Блокировщик всплывающих окон');
+            }
+            
+            let html = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <style>
+                        @page { size: ${widthMm} auto; margin: 0; }
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        body {
+                            width: ${widthMm};
+                            margin: 0;
+                            padding: 4mm;
+                            font-family: 'Courier New', 'Consolas', 'Lucida Console', monospace;
+                            font-size: ${fontSize};
+                            line-height: 1.3;
+                            color: #000;
+                            font-weight: 700;
+                        }
+                        .header { text-align: center; font-size: ${headerSize}; font-weight: 900; margin-bottom: 4mm; -webkit-text-stroke: 0.3px black; }
+                        .order-num { text-align: center; font-size: ${isKitchen ? '32px' : headerSize}; font-weight: 900; margin: 3mm 0; -webkit-text-stroke: 0.3px black; }
+                        .line { border-top: 2px dashed #000; margin: 3mm 0; }
+                        .center { text-align: center; }
+                        .right { text-align: right; }
+                        .bold { font-weight: 900; -webkit-text-stroke: 0.2px black; }
+                        .large { font-size: ${headerSize}; font-weight: 900; }
+                        .item { display: flex; justify-content: space-between; margin: 2mm 0; font-size: ${itemSize}; font-weight: 700; }
+                        .item-name { flex: 1; padding-right: 2mm; }
+                        .item-price { text-align: right; white-space: nowrap; }
+                        .total { text-align: right; font-weight: 900; font-size: ${headerSize}; margin-top: 3mm; -webkit-text-stroke: 0.3px black; }
+                        .info-row { display: flex; justify-content: space-between; margin: 1mm 0; font-weight: 700; }
+                        .margin-top { margin-top: ${isKitchen ? '30mm' : '0'}; }
+                        .comment { margin-top: 3mm; padding: 2mm; background: #f5f5f5; border-left: 3px solid #000; font-weight: 700; }
+                        @media print {
+                            body { width: ${widthMm} !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; font-weight: 700 !important; }
+                            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="margin-top">
+            `;
+            
+            if (isKitchen) {
+                // Kitchen runner
+                const isPreorder = order.scheduled_time && order.scheduled_time !== order.time;
+                html += `
+                    <div class="order-num">#${order.id}</div>
+                    <div class="center bold large">${order.typeLabel}</div>
+                    <div class="center" style="font-size: 14px;">
+                        ${isPreorder ? `⏰ Предзаказ на ${order.scheduled_time}` : order.time}
+                    </div>
+                    <div class="line"></div>
+                `;
+                
+                order.items.forEach(item => {
+                    const qty = item.quantity || item.qty || 1;
+                    const name = item.name || 'Товар';
+                    html += `<div class="item bold"><span>${qty}x ${name}</span></div>`;
+                });
+                
+                if (order.comment) {
+                    html += `<div class="line"></div><div class="comment">💬 ${order.comment}</div>`;
+                }
+            } else {
+                // Receipt
+                html += `
+                    <div class="header">SOHO Cafe</div>
+                    <div class="line"></div>
+                    <div class="info-row"><span>Чек №</span><span>${order.id}</span></div>
+                    <div class="info-row"><span>Дата:</span><span>${order.date}</span></div>
+                    <div class="info-row"><span>Время:</span><span>${order.time}</span></div>
+                    <div class="line"></div>
+                    <div class="info-row"><span>Клиент:</span><span>${order.customer}</span></div>
+                    <div class="info-row"><span>Тел:</span><span>${order.phone}</span></div>
+                    <div class="line"></div>
+                `;
+                
+                order.items.forEach(item => {
+                    const qty = item.quantity || item.qty || 1;
+                    const name = item.name || 'Товар';
+                    const price = parseFloat(item.price) || 0;
+                    html += `
+                        <div class="item">
+                            <span class="item-name">${qty} x ${name}</span>
+                            <span class="item-price">${price.toFixed(2)}</span>
+                        </div>
+                    `;
+                });
+                
+                html += `
+                    <div class="line"></div>
+                    <div class="total">ИТОГО: ${order.totalStr} BYN</div>
+                `;
+                
+                if (order.comment) {
+                    html += `<div class="line"></div><div class="comment">💬 ${order.comment}</div>`;
+                }
+            }
+            
+            html += `
+                        <div style="margin-top: 5mm;"></div>
+                    </div>
+                    <script>
+window.onload = function() { 
+    setTimeout(function() { 
+        window.print(); 
+    }, 250); 
+};
+<\/script>
+                
+</body>
+                </html>
+            `;
+            
+            printWindow.document.write(html);
+            printWindow.document.close();
+            printWindow.focus();
+            
+            return { success: true, mode: 'browser' };
+        }
+        
+        // Print Protection Manager
+        class PrintProtection {
+            constructor() {
+                this.printingLocks = new Map(); // orderId -> timestamp
+            }
+
+            // Check if printing is locked (recent print in progress)
+            isLocked(orderId, printType) {
+                const key = `${orderId}_${printType}`;
+                const lockTime = this.printingLocks.get(key);
+                if (!lockTime) return false;
+                
+                // Lock expires after 10 seconds
+                if (Date.now() - lockTime > 10000) {
+                    this.printingLocks.delete(key);
+                    return false;
+                }
+                return true;
+            }
+
+            // Set lock for order/print type
+            setLock(orderId, printType) {
+                const key = `${orderId}_${printType}`;
+                this.printingLocks.set(key, Date.now());
+            }
+
+            // Check before print via API
+            async checkBeforePrint(orderId, printType, kitchenId = null) {
+                try {
+                    const params = new URLSearchParams({
+                        order_id: orderId,
+                        print_type: printType
+                    });
+                    if (kitchenId) params.append('kitchen_id', kitchenId);
+
+                    const response = await fetch(`/api/print/check-before-print?${params}`);
+                    if (!response.ok) throw new Error('Check failed');
+                    
+                    return await response.json();
+                } catch (err) {
+                    console.error('Print check error:', err);
+                    // Allow print on error (fail open)
+                    return { can_print: true, warning: false };
+                }
+            }
+
+            // Execute print with protection
+            async executePrint(orderId, printType, printData, kitchenId = null) {
+                // 1. Check local lock
+                if (this.isLocked(orderId, printType)) {
+                    alert('⏳ Печать уже выполняется, подождите...');
+                    return { success: false, reason: 'locked' };
+                }
+
+                // 2. Check via API
+                const check = await this.checkBeforePrint(orderId, printType, kitchenId);
+                
+                if (!check.can_print) {
+                    alert(check.message || 'Нельзя печатать сейчас');
+                    return { success: false, reason: check.reason };
+                }
+
+                // 3. Warning for reprints
+                if (check.warning) {
+                    const confirmReprint = confirm(`⚠️ ${check.message}\n\nПерепечатать?`);
+                    if (!confirmReprint) {
+                        return { success: false, reason: 'cancelled' };
+                    }
+                }
+
+                // 4. Set lock and execute
+                this.setLock(orderId, printType);
+
+                try {
+                    const response = await fetch('/api/print/execute', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            order_id: orderId,
+                            print_type: printType,
+                            kitchen_id: kitchenId,
+                            data: printData,
+                            is_reprint: check.warning || false,
+                            reprint_reason: check.warning ? 'Перепечатка по запросу' : null
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.detail || 'Print failed');
+                    }
+
+                    const result = await response.json();
+                    return { success: true, job_id: result.job_id };
+
+                } catch (err) {
+                    console.error('Print execute error:', err);
+                    // Continue with local print even if API fails
+                    return { success: true, mode: 'local' };
+                } finally {
+                    // Release lock after 5 seconds
+                    setTimeout(() => {
+                        this.printingLocks.delete(`${orderId}_${printType}`);
+                    }, 5000);
+                }
+            }
+        }
+
+        // Global print protection instance
+        const printProtection = new PrintProtection();
+
+        // Update print status indicators in UI
+        async function updatePrintStatusIndicators() {
+            const visibleOrders = document.querySelectorAll('[id^="printStatus_"]');
+            
+            for (const el of visibleOrders) {
+                const orderId = el.id.replace('printStatus_', '');
+                
+                try {
+                    const response = await fetch(`/api/print/status/${orderId}`);
+                    
+                    // 404 means no print status yet - hide indicator
+                    if (response.status === 404) {
+                        el.textContent = '';
+                        continue;
+                    }
+                    
+                    if (!response.ok) continue;
+                    
+                    const status = await response.json();
+                    
+                    // Update receipt button
+                    const printBtn = document.getElementById(`printBtn_${orderId}`);
+                    if (printBtn && status.receipt_printed) {
+                        printBtn.innerHTML = '🧾 Чек ✓';
+                        printBtn.style.background = '#e8f5e9';
+                        printBtn.style.color = '#2e7d32';
+                    }
+                    
+                    // Show pending indicator
+                    if (status.pending_jobs && status.pending_jobs.length > 0) {
+                        el.textContent = '⏳ Печать...';
+                        el.style.color = '#ff9800';
+                    } else if (status.receipt_printed) {
+                        el.textContent = '✓ Напечатано';
+                        el.style.color = '#4caf50';
+                    } else {
+                        el.textContent = '';
+                    }
+                } catch (err) {
+                    // Silent fail - don't spam console
+                }
+            }
+        }
+
+        // Poll print status every 30 seconds (not 5)
+        setInterval(updatePrintStatusIndicators, 30000);
+        
+        // Also update on order load
+        document.addEventListener('ordersLoaded', updatePrintStatusIndicators);
+
+        // Universal print function with protection
+        async function printReceipt(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            // Check protection first
+            const check = await printProtection.checkBeforePrint(orderId, 'receipt');
+            if (!check.can_print) {
+                alert(check.message || 'Нельзя печатать сейчас');
+                return;
+            }
+
+            if (check.warning) {
+                const confirmReprint = confirm(`⚠️ ${check.message}\n\nПерепечатать?`);
+                if (!confirmReprint) return;
+            }
+
+            // Try local agent first, fallback to browser
+            await PrintSystem.printReceiptViaAgent(order);
+            
+            // Register print via API (async, don't wait)
+            printProtection.executePrint(orderId, 'receipt', order).catch(console.error);
+        }
+        async function callClient(phone) {
+            if (!phone || phone === '-') return;
+            
+            const cleanPhone = phone.replace(/\s/g, '');
+            console.log('Initiating call to:', cleanPhone);
+            
+            // Get employee's internal number from PZ settings
+            let internalNumber = '100'; // default
+            try {
+                const extResponse = await fetch('/api/pz/extensions');
+                if (extResponse.ok) {
+                    const extensions = await extResponse.json();
+                    // Use first active extension or find by current user
+                    if (extensions.length > 0) {
+                        internalNumber = extensions[0].extension;
+                    }
+                }
+            } catch (e) {
+                console.log('Could not load extensions, using default');
+            }
+            
+            // Try PZ click-to-call first
+            try {
+                console.log('Sending request to /api/pz/call with user:', internalNumber);
+                const response = await fetch('/api/pz/call', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({phone: cleanPhone, user: internalNumber})
+                });
+                
+                console.log('Response status:', response.status);
+                
+                // Добавлена обработка ответа
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    console.error('Ошибка вызова:', result.error);
+                    alert('Ошибка: ' + (result.error || 'Не удалось совершить вызов'));
+                    return;
+                }
+                
+                console.log('Вызов инициирован:', result);
+                showNotification(result.message || 'Звонок через ПЗ: ' + cleanPhone);
+                
+            } catch (err) {
+                console.error('PZ request failed:', err);
+                alert('ПЗ недоступен. Пробуем обычный звонок...');
+                // Fallback to tel: protocol
+                window.open(`tel:${cleanPhone}`, '_self');
+            }
+        }
+        
+        async function deleteOrder(orderId) {
+            if (!confirm('Удалить заказ #' + orderId + '?')) return;
+            try {
+                const response = await fetch(`/api/orders/${orderId}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    loadOrders();
+                } else {
+                    alert('Ошибка удаления заказа');
+                }
+            } catch (err) {
+                console.error('Error deleting order:', err);
+                alert('Ошибка удаления заказа');
+            }
+        }
+        
+        let editingOrderMarksId = null;
+
+        function openOrderMarksModal(orderId) {
+            editingOrderMarksId = orderId;
+            const order = orders.find(o => o.id === orderId);
+            if (!order) return;
+
+            const currentMarks = order.marks || [];
+            const modal = document.getElementById('orderMarksModal');
+            const container = document.getElementById('orderMarksList');
+
+            container.innerHTML = marks.map(m => {
+                const isSelected = currentMarks.includes(m.mark_id);
+                return `<button onclick="toggleOrderMark('${m.mark_id}')" id="mark-btn-${m.mark_id}" style="
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    border: 2px solid ${isSelected ? m.color : '#ddd'};
+                    background: ${isSelected ? m.color + '20' : '#fff'};
+                    color: ${isSelected ? m.color : '#333'};
+                    font-weight: ${isSelected ? '600' : '400'};
+                    cursor: pointer;
+                    font-size: 14px;
+                " data-selected="${isSelected}">
+                    <span style="font-size: 16px;">${m.icon}</span> ${m.name}
+                </button>`;
+            }).join('');
+
+            modal.classList.add('active');
+        }
+
+        function closeOrderMarksModal() {
+            document.getElementById('orderMarksModal').classList.remove('active');
+            editingOrderMarksId = null;
+        }
+
+        function toggleOrderMark(markId) {
+            const btn = document.getElementById(`mark-btn-${markId}`);
+            if (!btn) return;
+
+            const isSelected = btn.getAttribute('data-selected') === 'true';
+            const mark = marks.find(m => m.mark_id === markId);
+            if (!mark) return;
+
+            btn.setAttribute('data-selected', !isSelected);
+            btn.style.borderColor = !isSelected ? mark.color : '#ddd';
+            btn.style.background = !isSelected ? mark.color + '20' : '#fff';
+            btn.style.color = !isSelected ? mark.color : '#333';
+            btn.style.fontWeight = !isSelected ? '600' : '400';
+        }
+
+        async function saveOrderMarks() {
+            if (!editingOrderMarksId) return;
+
+            const selectedMarks = [];
+            document.querySelectorAll('#orderMarksList button').forEach(btn => {
+                if (btn.getAttribute('data-selected') === 'true') {
+                    const markId = btn.id.replace('mark-btn-', '');
+                    selectedMarks.push(markId);
+                }
+            });
+
+            try {
+                const response = await fetch(`/api/orders/${editingOrderMarksId}/marks`, {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({marks: selectedMarks})
+                });
+
+                if (response.ok) {
+                    // Update local order data
+                    const order = orders.find(o => o.id === editingOrderMarksId);
+                    if (order) {
+                        order.marks = selectedMarks;
+                    }
+                    renderOrders();
+                    closeOrderMarksModal();
+                } else {
+                    alert('Ошибка сохранения отметок');
+                }
+            } catch (err) {
+                console.error('Error saving marks:', err);
+                alert('Ошибка сохранения отметок');
+            }
+        }
+
+        // Web Serial Printer connection
+        async function connectWebSerialPrinter() {
+            if (!window.webSerialPrinter) {
+                showNotification('❌ Web Serial не поддерживается', 'error');
+                return;
+            }
+            
+            if (!window.webSerialPrinter.isSupported()) {
+                showNotification('❌ Используйте Chrome или Edge', 'error');
+                return;
+            }
+            
+            try {
+                const connected = await window.webSerialPrinter.connect('receipt');
+                if (connected) {
+                    showNotification('✅ Принтер подключен', 'success');
+                    document.getElementById('btnWebSerial').style.background = '#4caf50';
+                    document.getElementById('btnWebSerial').textContent = '🖨️ USB ✓';
+                }
+            } catch (err) {
+                showNotification('❌ ' + err.message, 'error');
+            }
+        }
+
+        // Load print settings on init
+        loadPrintSettings();
+        
+        init();
+    </script>
+
+    <!-- Order Marks Modal -->
+    <div id="orderMarksModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: #1a1a2e; padding: 24px; border-radius: 12px; max-width: 500px; width: 90%; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <h3 style="margin-bottom: 16px; color: #fff;">🏷️ Отметки заказа</h3>
+            <div id="orderMarksList" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button onclick="closeOrderMarksModal()" style="padding: 10px 20px; background: #666; color: white; border: none; border-radius: 6px; cursor: pointer;">Отмена</button>
+                <button onclick="saveOrderMarks()" style="padding: 10px 20px; background: #4caf50; color: white; border: none; border-radius: 6px; cursor: pointer;">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stop List Modal -->
+    <div class="modal" id="stopListModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div class="modal-content" style="background: #1a1a2e; border-radius: 12px; width: 90%; max-width: 1200px; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+            <div class="modal-header" style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="color: #fff; margin: 0;">🚫 Стоп-лист</h2>
+                <button onclick="closeStopList()" style="background: none; border: none; color: #fff; font-size: 24px; cursor: pointer;">×</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; overflow-y: auto; flex: 1;">
+                <div id="stopListCategories" style="margin-bottom: 20px;">
+                    <!-- Categories loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        #orderMarksModal.active { display: flex !important; }
+        #stopListModal.active { display: flex !important; }
+        .stop-category { margin-bottom: 20px; }
+        .stop-category-title { color: #e94560; font-size: 16px; font-weight: bold; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e94560; }
+        .stop-item { display: flex; align-items: center; gap: 15px; padding: 10px; background: #252538; border-radius: 8px; margin-bottom: 8px; }
+        .stop-item img { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; }
+        .stop-item-placeholder { width: 50px; height: 50px; border-radius: 6px; background: #333; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .stop-item-name { flex: 1; color: #fff; }
+        .stop-item-toggle { display: flex; align-items: center; gap: 10px; }
+        .stop-item-toggle span { color: #888; font-size: 12px; }
+        .toggle-switch { position: relative; display: inline-block; cursor: pointer; }
+        .toggle-switch input { display: none; }
+        .toggle-slider { background: #444; transition: background 0.3s; position: relative; }
+        .toggle-slider::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: transform 0.3s; }
+        .toggle-switch input:checked + .toggle-slider { background: #4CAF50; }
+        .toggle-switch input:checked + .toggle-slider::after { transform: translateX(20px); }
+    </style>
+<script src="js/iframe-helper.js"></script>
+
+<script src="js/print-system.js"></script>
+</body>
+</html>

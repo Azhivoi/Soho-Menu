@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Меню - SOHO CRM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a2e;
+            border-right: 1px solid #333;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h1 {
+            font-size: 24px;
+            color: #e94560;
+            margin-bottom: 5px;
+        }
+        .sidebar-header span {
+            font-size: 12px;
+            color: #888;
+        }
+        .nav-section { margin-bottom: 10px; }
+        .nav-section-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .nav-section-header:hover { background: #252538; color: #fff; }
+        .nav-section-header.active { background: #e94560; color: #fff; }
+        .nav-section-header .toggle-icon { font-size: 12px; transition: transform 0.2s; }
+        .nav-section-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .nav-section-items { display: block; }
+        .nav-section-items.collapsed { display: none; }
+        .nav-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: block;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: #252538; color: #fff; }
+        .nav-item.active { background: #252538; color: #e94560; border-left: 3px solid #e94560; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .page-header h2 { font-size: 28px; font-weight: 600; }
+        
+        /* Menu Sections Grid */
+        .menu-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        .menu-card {
+            background: #1a1a2e;
+            border-radius: 12px;
+            padding: 25px;
+            border: 1px solid #333;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .menu-card:hover {
+            border-color: #e94560;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(233, 69, 96, 0.1);
+        }
+        .menu-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .menu-card-icon {
+            width: 50px;
+            height: 50px;
+            background: #252538;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        .menu-card-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .menu-card-desc {
+            color: #888;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+        .menu-card-stats {
+            display: flex;
+            gap: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+        }
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #e94560;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+        .menu-card-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #d63a54; }
+        .btn-secondary {
+            background: #252538;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .btn-secondary:hover { background: #333; }
+        
+        /* Submenu Navigation */
+        .submenu-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            padding: 10px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+        .submenu-item {
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+        .submenu-item:hover { background: #252538; color: #fff; }
+        .submenu-item.active { background: #e94560; color: #fff; }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .data-table th {
+            background: #252538;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+        }
+        .data-table tr:hover { background: #252538; }
+        .data-table td { font-size: 14px; }
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-success { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+        .badge-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        .badge-warning { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+        
+        /* Search and Filters */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .filter-select {
+            padding: 12px 15px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Checkbox */
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+        }
+        
+        /* Composition Builder */
+        .composition-list {
+            background: #252538;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .composition-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px;
+            background: #1a1a2e;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .composition-item:last-child { margin-bottom: 0; }
+        .composition-item select,
+        .composition-item input {
+            padding: 8px 12px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #fff;
+        }
+        .composition-item select { min-width: 200px; }
+        .composition-item input { width: 100px; }
+        .composition-item .btn-remove {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-add-item {
+            width: 100%;
+            padding: 12px;
+            background: #252538;
+            border: 1px dashed #555;
+            border-radius: 6px;
+            color: #888;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-add-item:hover {
+            border-color: #e94560;
+            color: #e94560;
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SOHO</h1>
+                <span>CRM Система</span>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>📊 Статистика</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-stats.html" class="nav-item">Продажи</a>
+                    <a href="crm-stats-customers.html" class="nav-item">Клиенты</a>
+                    <a href="crm-stats-departments.html" class="nav-item">Отделы</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>📦 Склад</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-warehouse.html" class="nav-item">Остатки</a>
+                    <a href="crm-warehouse-invoices.html" class="nav-item">Накладные</a>
+                    <a href="crm-warehouse-suppliers.html" class="nav-item">Поставщики</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header active" onclick="toggleSection(this)">
+                    <span>🍽️ Меню</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items">
+                    <a href="crm-menu.html" class="nav-item active">Обзор</a>
+                    <a href="crm-menu-ingredients.html" class="nav-item">Ингредиенты</a>
+                    <a href="crm-menu-products.html" class="nav-item">Товары</a>
+                    <a href="crm-menu-categories.html" class="nav-item">Категории</a>
+                    <a href="crm-menu-semi.html" class="nav-item">Полуфабрикаты</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>⚙️ Управление</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-orders.html" class="nav-item">Заказы</a>
+                    <a href="crm-settings.html" class="nav-item">Настройки</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h2>🍽️ Меню</h2>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="importFromCSV()">📥 Импорт из CSV</button>
+                    <button class="btn btn-primary" onclick="openProductModal()">+ Новый товар</button>
+                </div>
+            </div>
+
+            <!-- Menu Sections Grid -->
+            <div class="menu-sections">
+                <!-- Ingredient Categories -->
+                <div class="menu-card" onclick="location.href='crm-menu-categories.html?tab=ingredients'">
+                    <div class="menu-card-header">
+                        <div class="menu-card-icon">🥩</div>
+                        <div class="menu-card-title">Категории ингредиентов</div>
+                    </div>
+                    <div class="menu-card-desc">
+                        Управление категориями сырья: мясо, молочные продукты, овощи, фрукты и другие группы ингредиентов.
+                    </div>
+                    <div class="menu-card-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="ingredient-cat-count">0</span>
+                            <span class="stat-label">категорий</span>
+                        </div>
+                    </div>
+                    <div class="menu-card-actions">
+                        <button class="btn btn-secondary">Управление</button>
+                    </div>
+                </div>
+
+                <!-- Product Categories -->
+                <div class="menu-card" onclick="location.href='crm-menu-categories.html?tab=products'">
+                    <div class="menu-card-header">
+                        <div class="menu-card-icon">📂</div>
+                        <div class="menu-card-title">Категории товаров</div>
+                    </div>
+                    <div class="menu-card-desc">
+                        Категории меню для сайта и приложения: пицца, суши, бургеры, напитки и другие разделы.
+                    </div>
+                    <div class="menu-card-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="product-cat-count">0</span>
+                            <span class="stat-label">категорий</span>
+                        </div>
+                    </div>
+                    <div class="menu-card-actions">
+                        <button class="btn btn-secondary">Управление</button>
+                    </div>
+                </div>
+
+                <!-- Ingredients -->
+                <div class="menu-card" onclick="location.href='crm-menu-ingredients.html'">
+                    <div class="menu-card-header">
+                        <div class="menu-card-icon">🥕</div>
+                        <div class="menu-card-title">Ингредиенты</div>
+                    </div>
+                    <div class="menu-card-desc">
+                        Справочник ингредиентов с указанием категории, единицы измерения и потерь при обработке.
+                    </div>
+                    <div class="menu-card-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="ingredient-count">0</span>
+                            <span class="stat-label">ингредиентов</span>
+                        </div>
+                    </div>
+                    <div class="menu-card-actions">
+                        <button class="btn btn-secondary">Управление</button>
+                    </div>
+                </div>
+
+                <!-- Semi-finished Products -->
+                <div class="menu-card" onclick="location.href='crm-menu-semi.html'">
+                    <div class="menu-card-header">
+                        <div class="menu-card-icon">⚙️</div>
+                        <div class="menu-card-title">Полуфабрикаты</div>
+                    </div>
+                    <div class="menu-card-desc">
+                        Составные ингредиенты для упрощения создания технологических карт (соусы, заготовки и т.д.).
+                    </div>
+                    <div class="menu-card-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="semi-count">0</span>
+                            <span class="stat-label">полуфабрикатов</span>
+                        </div>
+                    </div>
+                    <div class="menu-card-actions">
+                        <button class="btn btn-secondary">Управление</button>
+                    </div>
+                </div>
+
+                <!-- Products -->
+                <div class="menu-card" onclick="location.href='crm-menu-products.html'">
+                    <div class="menu-card-header">
+                        <div class="menu-card-icon">🍕</div>
+                        <div class="menu-card-title">Товары</div>
+                    </div>
+                    <div class="menu-card-desc">
+                        Товары для продажи с технологическими картами, фото, ценами и настройками видимости.
+                    </div>
+                    <div class="menu-card-stats">
+                        <div class="stat">
+                            <span class="stat-value" id="product-count">0</span>
+                            <span class="stat-label">товаров</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-value" id="product-active-count">0</span>
+                            <span class="stat-label">активных</span>
+                        </div>
+                    </div>
+                    <div class="menu-card-actions">
+                        <button class="btn btn-secondary">Управление</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Products -->
+            <div style="margin-top: 40px;">
+                <h3 style="margin-bottom: 20px;">Последние изменения</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Товар</th>
+                            <th>Изменение</th>
+                            <th>Старое значение</th>
+                            <th>Новое значение</th>
+                            <th>Дата</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-changes">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 30px; color: #888;">
+                                Загрузка...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            const items = header.nextElementSibling;
+            items.classList.toggle('collapsed');
+        }
+        
+        async function loadStats() {
+            try {
+                // Load ingredient categories
+                const ingCatRes = await fetch(`${API_URL}/menu/ingredient-categories`);
+                const ingCats = await ingCatRes.json();
+                document.getElementById('ingredient-cat-count').textContent = ingCats.length;
+                
+                // Load product categories
+                const prodCatRes = await fetch(`${API_URL}/menu/product-categories`);
+                const prodCats = await prodCatRes.json();
+                document.getElementById('product-cat-count').textContent = prodCats.length;
+                
+                // Load ingredients
+                const ingRes = await fetch(`${API_URL}/menu/ingredients`);
+                const ingredients = await ingRes.json();
+                document.getElementById('ingredient-count').textContent = ingredients.length;
+                
+                // Load semi-finished
+                const semiRes = await fetch(`${API_URL}/menu/semi-finished`);
+                const semi = await semiRes.json();
+                document.getElementById('semi-count').textContent = semi.length;
+                
+                // Load products
+                const prodRes = await fetch(`${API_URL}/menu/products`);
+                const products = await prodRes.json();
+                document.getElementById('product-count').textContent = products.length;
+                document.getElementById('product-active-count').textContent = 
+                    products.filter(p => p.is_active).length;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        function importFromCSV() {
+            alert('Импорт из CSV будет реализован в следующем этапе');
+        }
+        
+        function openProductModal() {
+            location.href = 'crm-menu-products.html?action=new';
+        }
+        
+        // Load stats on page load
+        loadStats();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

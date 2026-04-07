@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки меток | SOHO CRM</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16162a;
+            --accent: #e94560;
+            --accent-hover: #ff6b6b;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border: #2a2a40;
+            --success: #4caf50;
+            --warning: #ff9800;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: var(--bg-secondary);
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 20px; }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid var(--border);
+        }
+        
+        .card h2 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--accent-hover); }
+        .btn-secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--accent); }
+        .btn-danger {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+        }
+        .btn-danger:hover { background: var(--accent); color: white; }
+        
+        .marks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .mark-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .mark-item:hover { border-color: var(--accent); }
+        
+        .mark-info { flex: 1; }
+        .mark-name { font-weight: 600; }
+        .mark-type {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .mark-actions { display: flex; gap: 8px; }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .option-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .option-row input {
+            flex: 1;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 48px;
+            color: var(--text-secondary);
+        }
+        
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-bottom: 16px;
+        }
+        .nav-back:hover { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🏷️ Настройки меток заказов</h1>
+        <button class="btn btn-primary" onclick="openModal()">+ Добавить метку</button>
+    </div>
+    
+    <div class="container">
+        <a href="crm-dashboard.html" class="nav-back">← Назад в панель</a>
+        
+        <div class="card">
+            <h2>Активные метки</h2>
+            <div class="marks-list" id="marksList">
+                <div class="empty-state">Загрузка...</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>О метках</h2>
+            <p style="color: var(--text-secondary); line-height: 1.6;">
+                Метки позволяют добавлять дополнительную информацию к заказам.<br><br>
+                <strong>Типы меток:</strong><br>
+                • <strong>Чекбокс</strong> — да/нет (например: "Срочно", "VIP клиент")<br>
+                • <strong>Текст</strong> — свободный ввод (например: "Номер столика")<br>
+                • <strong>Список</strong> — выбор из вариантов (например: "Источник заказа")<br>
+                • <strong>Время</strong> — выбор времени (например: "Предзаказ на время")
+            </p>
+        </div>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal" id="markModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Новая метка</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="markForm" onsubmit="saveMark(event)">
+                <input type="hidden" id="markId">
+                <div class="form-group">
+                    <label>Название метки</label>
+                    <input type="text" id="markName" required placeholder="Например: Срочно">
+                </div>
+                <div class="form-group">
+                    <label>Тип метки</label>
+                    <select id="markType" onchange="onTypeChange()">
+                        <option value="checkbox">Чекбокс (да/нет)</option>
+                        <option value="text">Текст (свободный ввод)</option>
+                        <option value="select">Список (выбор из вариантов)</option>
+                        <option value="time">Время (выбор времени)</option>
+                    </select>
+                </div>
+                <div class="form-group" id="optionsGroup" style="display: none;">
+                    <label>Варианты списка</label>
+                    <div class="options-list" id="optionsList">
+                        <div class="option-row">
+                            <input type="text" placeholder="Вариант 1" class="option-input">
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)">✕</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary" onclick="addOption()" style="margin-top: 8px;">+ Добавить вариант</button>
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="markRequired" style="width: auto; margin-right: 8px;">
+                        Обязательная метка
+                    </label>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let marks = [];
+        
+        document.addEventListener('DOMContentLoaded', loadMarks);
+        
+        async function loadMarks() {
+            try {
+                const res = await fetch(`${API_URL}/orders/marks`);
+                marks = await res.json();
+                renderMarks();
+            } catch (e) {
+                document.getElementById('marksList').innerHTML = 
+                    '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        }
+        
+        function renderMarks() {
+            const container = document.getElementById('marksList');
+            if (marks.length === 0) {
+                container.innerHTML = '<div class="empty-state">Нет меток. Добавьте первую!</div>';
+                return;
+            }
+            
+            container.innerHTML = marks.map(mark => `
+                <div class="mark-item">
+                    <div class="mark-info">
+                        <div class="mark-name">${mark.name}</div>
+                        <div class="mark-type">${getTypeText(mark.type)} ${mark.is_required ? '• Обязательная' : ''}</div>
+                    </div>
+                    <div class="mark-actions">
+                        <button class="btn btn-secondary" onclick="editMark(${mark.id})">✏️</button>
+                        <button class="btn btn-danger" onclick="deleteMark(${mark.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function getTypeText(type) {
+            const map = {
+                checkbox: 'Чекбокс',
+                text: 'Текст',
+                select: 'Список',
+                time: 'Время'
+            };
+            return map[type] || type;
+        }
+        
+        function openModal(mark = null) {
+            document.getElementById('markModal').classList.add('active');
+            document.getElementById('modalTitle').textContent = mark ? 'Редактировать метку' : 'Новая метка';
+            document.getElementById('markForm').reset();
+            document.getElementById('markId').value = mark?.id || '';
+            
+            if (mark) {
+                document.getElementById('markName').value = mark.name;
+                document.getElementById('markType').value = mark.type;
+                document.getElementById('markRequired').checked = mark.is_required;
+                
+                if (mark.type === 'select' && mark.options) {
+                    const optionsList = document.getElementById('optionsList');
+                    optionsList.innerHTML = mark.options.map(opt => `
+                        <div class="option-row">
+                            <input type="text" value="${opt}" class="option-input">
+                            <button type="button" class="btn btn-danger" onclick="removeOption(this)">✕</button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                document.getElementById('optionsList').innerHTML = `
+                    <div class="option-row">
+                        <input type="text" placeholder="Вариант 1" class="option-input">
+                        <button type="button" class="btn btn-danger" onclick="removeOption(this)">✕</button>
+                    </div>
+                `;
+            }
+            onTypeChange();
+        }
+        
+        function closeModal() {
+            document.getElementById('markModal').classList.remove('active');
+        }
+        
+        function onTypeChange() {
+            const type = document.getElementById('markType').value;
+            document.getElementById('optionsGroup').style.display = type === 'select' ? 'block' : 'none';
+        }
+        
+        function addOption() {
+            const row = document.createElement('div');
+            row.className = 'option-row';
+            row.innerHTML = `
+                <input type="text" placeholder="Вариант" class="option-input">
+                <button type="button" class="btn btn-danger" onclick="removeOption(this)">✕</button>
+            `;
+            document.getElementById('optionsList').appendChild(row);
+        }
+        
+        function removeOption(btn) {
+            btn.closest('.option-row').remove();
+        }
+        
+        async function saveMark(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('markId').value;
+            const type = document.getElementById('markType').value;
+            
+            const data = {
+                name: document.getElementById('markName').value,
+                type: type,
+                is_required: document.getElementById('markRequired').checked
+            };
+            
+            if (type === 'select') {
+                const inputs = document.querySelectorAll('.option-input');
+                data.options = Array.from(inputs).map(i => i.value).filter(v => v);
+            }
+            
+            try {
+                const url = id ? `${API_URL}/orders/marks/${id}` : `${API_URL}/orders/marks`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (res.ok) {
+                    closeModal();
+                    loadMarks();
+                } else {
+                    alert('Ошибка сохранения');
+                }
+            } catch (e) {
+                alert('Ошибка соединения');
+            }
+        }
+        
+        function editMark(id) {
+            const mark = marks.find(m => m.id === id);
+            if (mark) openModal(mark);
+        }
+        
+        async function deleteMark(id) {
+            if (!confirm('Удалить метку?')) return;
+            
+            try {
+                const res = await fetch(`${API_URL}/orders/marks/${id}`, { method: 'DELETE' });
+                if (res.ok) loadMarks();
+            } catch (e) {
+                alert('Ошибка удаления');
+            }
+        }
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

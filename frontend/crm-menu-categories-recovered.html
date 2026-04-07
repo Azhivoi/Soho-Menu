@@ -1,0 +1,1550 @@
+<html><head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script><meta http-equiv="Content-Type" content="text/html; charset=
+=UTF-8"><meta name="color-scheme" content="light dark"></head><body><iv class="line-gutter-backdrop"></div><form autocomplete="off"><label lass="line-wrap-control">ÐÐµÑÐµÐ½Ð¾ÑÐ=
+¸ÑÑ ÑÑÑÐ¾ÐºÐ¸<input type="checkbox=
+" aria-label="ÐÐµÑÐµÐ½Ð¾ÑÐ¸ÑÑ=
+ ÑÑÑÐ¾ÐºÐ¸"></label></form><table><tbody><tr>=
+<td class="line-number" value="1"></td><td class="line-content"><span=
+ class="html-doctype">&lt;!DOCTYPE html&gt;</span></td></tr><tr><td class=
+="line-number" value="2"></td><td class="line-content"><span class==
+"html-tag">&lt;html <span class="html-attribute-name">lang</span>="<spa=
+n class="html-attribute-value">ru</span>"&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="3"></td><td class="line-content"><span class=
+="html-tag">&lt;head&gt;</span></td></tr><tr><td class="line-number" va=
+lue="4"></td><td class="line-content">    <span class="html-tag">&lt;=
+meta <span class="html-attribute-name">charset</span>="<span class="h=
+tml-attribute-value">UTF-8</span>"&gt;</span></td></tr><tr><td class="lin-number" value="5"></td><td class="line-content">    <span class="ht=
+ml-tag">&lt;meta <span class="html-attribute-name">name</span>="<span c=
+lass="html-attribute-value">viewport</span>" <span class="html-attribut-name">content</span>="<span class="html-attribute-value">width=devie-width, initial-scale=1.0</span>"&gt;</span></td></tr><tr><td class="=
+line-number" value="6"></td><td class="line-content">    <span class==
+"html-tag">&lt;title&gt;</span>ÐÐ°ÑÐµÐ³Ð¾Ñ=
+Ð¸Ð¸ - SOHO CRM<span class="html-tag">&lt;/title&gt;</span></td><=
+/tr><tr><td class="line-number" value="7"></td><td class="line-conten=
+t">    <span class="html-tag">&lt;style&gt;</span></td></tr><tr><td class=
+="line-number" value="8"></td><td class="line-content">        * { ma=
+rgin: 0; padding: 0; box-sizing: border-box; }</td></tr><tr><td class="li=
+ne-number" value="9"></td><td class="line-content">        body {</td><=
+/tr><tr><td class="line-number" value="10"></td><td class="line-conte=
+nt">            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-seri;</td></tr><tr><td class="line-number" value="11"></td><td class="li=
+ne-content">            background: #0f0f1a;</td></tr><tr><td class="line=
+-number" value="12"></td><td class="line-content">            color: #ff;</td></tr><tr><td class="line-number" value="13"></td><td class="l=
+ine-content">            min-height: 100vh;</td></tr><tr><td class="line-=
+number" value="14"></td><td class="line-content">        }</td></tr><tr=
+><td class="line-number" value="15"></td><td class="line-content">   =
+     .layout { display: flex; min-height: 100vh; }</td></tr><tr><td class=
+="line-number" value="16"></td><td class="line-content">        </td>=
+</tr><tr><td class="line-number" value="17"></td><td class="line-contnt">        /* Sidebar */</td></tr><tr><td class="line-number" value="8"></td><td class="line-content">        .sidebar {</td></tr><tr><td cla=
+ss="line-number" value="19"></td><td class="line-content">           =
+ width: 280px;</td></tr><tr><td class="line-number" value="20"></td><td=
+ class="line-content">            background: #1a1a2e;</td></tr><tr><td c=
+lass="line-number" value="21"></td><td class="line-content">         =
+   border-right: 1px solid #333;</td></tr><tr><td class="line-number" val=
+ue="22"></td><td class="line-content">            padding: 20px 0;</td>=
+</tr><tr><td class="line-number" value="23"></td><td class="line-contnt">            position: fixed;</td></tr><tr><td class="line-number" va=
+lue="24"></td><td class="line-content">            height: 100vh;</td><=
+/tr><tr><td class="line-number" value="25"></td><td class="line-conte=
+nt">            overflow-y: auto;</td></tr><tr><td class="line-number" va=
+lue="26"></td><td class="line-content">        }</td></tr><tr><td class=
+="line-number" value="27"></td><td class="line-content">        .sidear-header {</td></tr><tr><td class="line-number" value="28"></td><td c=
+lass="line-content">            padding: 0 20px 20px;</td></tr><tr><td cl
+ss="line-number" value="29"></td><td class="line-content">          =
+  border-bottom: 1px solid #333;</td></tr><tr><td class="line-number" val=
+ue="30"></td><td class="line-content">            margin-bottom: 20px;<=
+/td></tr><tr><td class="line-number" value="31"></td><td class="line-ontent">        }</td></tr><tr><td class="line-number" value="32"></td=
+><td class="line-content">        .sidebar-header h1 { font-size: 24px; c=
+olor: #e94560; margin-bottom: 5px; }</td></tr><tr><td class="line-number"=
+ value="33"></td><td class="line-content">        .sidebar-header span =
+{ font-size: 12px; color: #888; }</td></tr><tr><td class="line-number" va=
+lue="34"></td><td class="line-content">        .nav-section { margin-bo=
+ttom: 10px; }</td></tr><tr><td class="line-number" value="35"></td><td lass="line-content">        .nav-section-header {</td></tr><tr><td class=
+="line-number" value="36"></td><td class="line-content">            p
+dding: 12px 20px;</td></tr><tr><td class="line-number" value="37"></td=
+><td class="line-content">            cursor: pointer;</td></tr><tr><td c=
+lass="line-number" value="38"></td><td class="line-content">         =
+   display: flex;</td></tr><tr><td class="line-number" value="39"></td>=
+<td class="line-content">            justify-content: space-between;</td>=
+</tr><tr><td class="line-number" value="40"></td><td class="line-contnt">            align-items: center;</td></tr><tr><td class="line-number=
+" value="41"></td><td class="line-content">            color: #aaa;</td=
+></tr><tr><td class="line-number" value="42"></td><td class="line-con=
+tent">            font-size: 14px;</td></tr><tr><td class="line-number" v
+lue="43"></td><td class="line-content">            text-transform: upprcase;</td></tr><tr><td class="line-number" value="44"></td><td class=
+="line-content">            letter-spacing: 0.5px;</td></tr><tr><td class=
+="line-number" value="45"></td><td class="line-content">            t=
+ransition: all 0.2s;</td></tr><tr><td class="line-number" value="46"></=
+td><td class="line-content">        }</td></tr><tr><td class="line-numbr" value="47"></td><td class="line-content">        .nav-section-heade=
+r:hover { background: #252538; color: #fff; }</td></tr><tr><td class="lin-number" value="48"></td><td class="line-content">        .nav-section=
+-header.active { background: #e94560; color: #fff; }</td></tr><tr><td class=
+="line-number" value="49"></td><td class="line-content">        .nav-=
+section-header .toggle-icon { font-size: 12px; transition: transform 0.2s; =
+}</td></tr><tr><td class="line-number" value="50"></td><td class="lin-content">        .nav-section-header.collapsed .toggle-icon { transform: =
+rotate(-90deg); }</td></tr><tr><td class="line-number" value="51"></td>=
+<td class="line-content">        .nav-section-items { display: block; }</=
+td></tr><tr><td class="line-number" value="52"></td><td class="line-c=
+ontent">        .nav-section-items.collapsed { display: none; }</td></tr><t=
+r><td class="line-number" value="53"></td><td class="line-content">  =
+      .nav-item {</td></tr><tr><td class="line-number" value="54"></td>=
+<td class="line-content">            padding: 10px 20px 10px 40px;</td></=
+tr><tr><td class="line-number" value="55"></td><td class="line-conten=
+t">            cursor: pointer;</td></tr><tr><td class="line-number" valu="56"></td><td class="line-content">            color: #888;</td></tr>=
+<tr><td class="line-number" value="57"></td><td class="line-content">=
+            font-size: 14px;</td></tr><tr><td class="line-number" value=
+="58"></td><td class="line-content">            transition: all 0.2s;</=
+td></tr><tr><td class="line-number" value="59"></td><td class="line-c=
+ontent">            display: block;</td></tr><tr><td class="line-number" =
+value="60"></td><td class="line-content">            text-decoration: n=
+one;</td></tr><tr><td class="line-number" value="61"></td><td class="=
+line-content">        }</td></tr><tr><td class="line-number" value="62"=
+></td><td class="line-content">        .nav-item:hover { background: #25238; color: #fff; }</td></tr><tr><td class="line-number" value="63"></t><td class="line-content">        .nav-item.active { background: #252538=
+; color: #e94560; border-left: 3px solid #e94560; }</td></tr><tr><td class=
+="line-number" value="64"></td><td class="line-content">        </td>=
+</tr><tr><td class="line-number" value="65"></td><td class="line-contnt">        /* Main Content */</td></tr><tr><td class="line-number" valu="66"></td><td class="line-content">        .main-content {</td></tr><=
+tr><td class="line-number" value="67"></td><td class="line-content"> =
+           flex: 1;</td></tr><tr><td class="line-number" value="68"></t><td class="line-content">            margin-left: 280px;</td></tr><tr><=
+td class="line-number" value="69"></td><td class="line-content">     =
+       padding: 30px;</td></tr><tr><td class="line-number" value="70"><=
+/td><td class="line-content">        }</td></tr><tr><td class="line-numer" value="71"></td><td class="line-content">        .page-header {</t></tr><tr><td class="line-number" value="72"></td><td class="line-co=
+ntent">            display: flex;</td></tr><tr><td class="line-number" va=
+lue="73"></td><td class="line-content">            justify-content: spae-between;</td></tr><tr><td class="line-number" value="74"></td><td cl
+ss="line-content">            align-items: center;</td></tr><tr><td clas=
+s="line-number" value="75"></td><td class="line-content">            =
+margin-bottom: 30px;</td></tr><tr><td class="line-number" value="76"></=
+td><td class="line-content">            padding-bottom: 20px;</td></tr><t=
+r><td class="line-number" value="77"></td><td class="line-content">  =
+          border-bottom: 1px solid #333;</td></tr><tr><td class="line-numer" value="78"></td><td class="line-content">        }</td></tr><tr><t class="line-number" value="79"></td><td class="line-content">      =
+  .page-header h2 { font-size: 28px; font-weight: 600; }</td></tr><tr><td c=
+lass="line-number" value="80"></td><td class="line-content">        <=
+/td></tr><tr><td class="line-number" value="81"></td><td class="line-ontent">        /* Tabs */</td></tr><tr><td class="line-number" value==
+"82"></td><td class="line-content">        .tabs {</td></tr><tr><td class=
+="line-number" value="83"></td><td class="line-content">            d=
+isplay: flex;</td></tr><tr><td class="line-number" value="84"></td><td lass="line-content">            gap: 5px;</td></tr><tr><td class="line=
+-number" value="85"></td><td class="line-content">            margin-bo=
+ttom: 25px;</td></tr><tr><td class="line-number" value="86"></td><td cl
+ss="line-content">            border-bottom: 1px solid #333;</td></tr><t=
+r><td class="line-number" value="87"></td><td class="line-content">  =
+      }</td></tr><tr><td class="line-number" value="88"></td><td class=
+="line-content">        .tab {</td></tr><tr><td class="line-number" val=
+ue="89"></td><td class="line-content">            padding: 12px 24px;</=
+td></tr><tr><td class="line-number" value="90"></td><td class="line-c=
+ontent">            cursor: pointer;</td></tr><tr><td class="line-number"=
+ value="91"></td><td class="line-content">            color: #888;</td>=
+</tr><tr><td class="line-number" value="92"></td><td class="line-contnt">            font-size: 14px;</td></tr><tr><td class="line-number" va=
+lue="93"></td><td class="line-content">            border-bottom: 2px s=
+olid transparent;</td></tr><tr><td class="line-number" value="94"></td>=
+<td class="line-content">            transition: all 0.2s;</td></tr><tr><=
+td class="line-number" value="95"></td><td class="line-content">     =
+   }</td></tr><tr><td class="line-number" value="96"></td><td class="=
+line-content">        .tab:hover { color: #fff; }</td></tr><tr><td class==
+"line-number" value="97"></td><td class="line-content">        .tab.act=
+ive { color: #e94560; border-bottom-color: #e94560; }</td></tr><tr><td clas=
+s="line-number" value="98"></td><td class="line-content">        </td=
+></tr><tr><td class="line-number" value="99"></td><td class="line-con=
+tent">        .btn {</td></tr><tr><td class="line-number" value="100"><=
+/td><td class="line-content">            padding: 12px 24px;</td></tr><tr=
+><td class="line-number" value="101"></td><td class="line-content">  =
+          border: none;</td></tr><tr><td class="line-number" value="102=
+"></td><td class="line-content">            border-radius: 8px;</td></tr>=
+<tr><td class="line-number" value="103"></td><td class="line-content"=
+>            cursor: pointer;</td></tr><tr><td class="line-number" value=
+="104"></td><td class="line-content">            font-size: 14px;</td><=
+/tr><tr><td class="line-number" value="105"></td><td class="line-contnt">            font-weight: 500;</td></tr><tr><td class="line-number" v
+lue="106"></td><td class="line-content">            transition: all 0.s;</td></tr><tr><td class="line-number" value="107"></td><td class="=
+line-content">            text-decoration: none;</td></tr><tr><td class="=
+line-number" value="108"></td><td class="line-content">            disp=
+lay: inline-flex;</td></tr><tr><td class="line-number" value="109"></td=
+><td class="line-content">            align-items: center;</td></tr><tr><=
+td class="line-number" value="110"></td><td class="line-content">    =
+        gap: 8px;</td></tr><tr><td class="line-number" value="111"></td=
+><td class="line-content">        }</td></tr><tr><td class="line-number=
+" value="112"></td><td class="line-content">        .btn-primary { back=
+ground: #e94560; color: #fff; }</td></tr><tr><td class="line-number" valu="113"></td><td class="line-content">        .btn-primary:hover { back=
+ground: #d63a54; }</td></tr><tr><td class="line-number" value="114"></t><td class="line-content">        .btn-secondary { background: #252538; olor: #fff; border: 1px solid #444; }</td></tr><tr><td class="line-numbe=
+r" value="115"></td><td class="line-content">        .btn-secondary:hovr { background: #333; }</td></tr><tr><td class="line-number" value="11"></td><td class="line-content">        .btn-danger { background: rgba(24, 67, 54, 0.2); color: #f44336; border: 1px solid rgba(244, 67, 54, 0.3);=
+ }</td></tr><tr><td class="line-number" value="117"></td><td class="l=
+ine-content">        .btn-danger:hover { background: rgba(244, 67, 54, 0.3)=
+; }</td></tr><tr><td class="line-number" value="118"></td><td class="=
+line-content">        .btn-sm { padding: 8px 16px; font-size: 13px; }</td><=
+/tr><tr><td class="line-number" value="119"></td><td class="line-contnt">        </td></tr><tr><td class="line-number" value="120"></td><td=
+ class="line-content">        /* Add Category Form */</td></tr><tr><td cl
+ss="line-number" value="121"></td><td class="line-content">        .
+dd-category-form {</td></tr><tr><td class="line-number" value="122"></=
+td><td class="line-content">            background: #1a1a2e;</td></tr><tr=
+><td class="line-number" value="123"></td><td class="line-content">  =
+          border-radius: 10px;</td></tr><tr><td class="line-number" value=
+="124"></td><td class="line-content">            padding: 20px;</td></t=
+r><tr><td class="line-number" value="125"></td><td class="line-conten=
+t">            margin-bottom: 25px;</td></tr><tr><td class="line-number" =
+value="126"></td><td class="line-content">            border: 1px solid=
+ #333;</td></tr><tr><td class="line-number" value="127"></td><td class=
+="line-content">        }</td></tr><tr><td class="line-number" value==
+"128"></td><td class="line-content">        .form-row {</td></tr><tr><td lass="line-number" value="129"></td><td class="line-content">       =
+     display: flex;</td></tr><tr><td class="line-number" value="130"></=
+td><td class="line-content">            gap: 15px;</td></tr><tr><td class=
+="line-number" value="131"></td><td class="line-content">            
+lign-items: flex-end;</td></tr><tr><td class="line-number" value="132"=
+></td><td class="line-content">        }</td></tr><tr><td class="line-n=
+umber" value="133"></td><td class="line-content">        .form-group {<=
+/td></tr><tr><td class="line-number" value="134"></td><td class="line=
+-content">            flex: 1;</td></tr><tr><td class="line-number" value=
+="135"></td><td class="line-content">        }</td></tr><tr><td class=
+="line-number" value="136"></td><td class="line-content">        .for=
+m-group label {</td></tr><tr><td class="line-number" value="137"></td><=
+td class="line-content">            display: block;</td></tr><tr><td clas=
+s="line-number" value="138"></td><td class="line-content">           =
+ margin-bottom: 8px;</td></tr><tr><td class="line-number" value="139"><=
+/td><td class="line-content">            font-size: 14px;</td></tr><tr><t class="line-number" value="140"></td><td class="line-content">     =
+       color: #aaa;</td></tr><tr><td class="line-number" value="141"></=
+td><td class="line-content">        }</td></tr><tr><td class="line-numbr" value="142"></td><td class="line-content">        .form-group input=
+,</td></tr><tr><td class="line-number" value="143"></td><td class="li=
+ne-content">        .form-group textarea {</td></tr><tr><td class="line-n=
+umber" value="144"></td><td class="line-content">            width: 100=
+%;</td></tr><tr><td class="line-number" value="145"></td><td class="l=
+ine-content">            padding: 12px 15px;</td></tr><tr><td class="line=
+-number" value="146"></td><td class="line-content">            backgrou=
+nd: #252538;</td></tr><tr><td class="line-number" value="147"></td><td lass="line-content">            border: 1px solid #444;</td></tr><tr><td=
+ class="line-number" value="148"></td><td class="line-content">      =
+      border-radius: 6px;</td></tr><tr><td class="line-number" value="19"></td><td class="line-content">            color: #fff;</td></tr><tr><=
+td class="line-number" value="150"></td><td class="line-content">    =
+        font-size: 14px;</td></tr><tr><td class="line-number" value="15"></td><td class="line-content">        }</td></tr><tr><td class="line=
+-number" value="152"></td><td class="line-content">        .form-group =
+input:focus,</td></tr><tr><td class="line-number" value="153"></td><td lass="line-content">        .form-group textarea:focus {</td></tr><tr><t class="line-number" value="154"></td><td class="line-content">     =
+       outline: none;</td></tr><tr><td class="line-number" value="155">=
+</td><td class="line-content">            border-color: #e94560;</td></tr=
+><tr><td class="line-number" value="156"></td><td class="line-content=
+">        }</td></tr><tr><td class="line-number" value="157"></td><td c=
+lass="line-content">        .form-group textarea { min-height: 80px; resi=
+ze: vertical; }</td></tr><tr><td class="line-number" value="158"></td><=
+td class="line-content">        </td></tr><tr><td class="line-number" v
+lue="159"></td><td class="line-content">        /* Categories List Tab=
+le */</td></tr><tr><td class="line-number" value="160"></td><td class=
+="line-content">        .categories-list {</td></tr><tr><td class="line=
+-number" value="161"></td><td class="line-content">            backgrou=
+nd: #1a1a2e;</td></tr><tr><td class="line-number" value="162"></td><td lass="line-content">            border-radius: 10px;</td></tr><tr><td cl
+ss="line-number" value="163"></td><td class="line-content">         =
+   border: 1px solid #333;</td></tr><tr><td class="line-number" value="64"></td><td class="line-content">            overflow: hidden;</td></tr=
+><tr><td class="line-number" value="165"></td><td class="line-content=
+">        }</td></tr><tr><td class="line-number" value="166"></td><td c=
+lass="line-content">        .list-header {</td></tr><tr><td class="line=
+-number" value="167"></td><td class="line-content">            display:=
+ grid;</td></tr><tr><td class="line-number" value="168"></td><td class=
+="line-content">            grid-template-columns: 60px 2fr 1fr 100px 100=
+px 100px 120px;</td></tr><tr><td class="line-number" value="169"></td><=
+td class="line-content">            gap: 15px;</td></tr><tr><td class="=
+line-number" value="170"></td><td class="line-content">            padd=
+ing: 15px 20px;</td></tr><tr><td class="line-number" value="171"></td><=
+td class="line-content">            background: #252538;</td></tr><tr><td=
+ class="line-number" value="172"></td><td class="line-content">      =
+      border-bottom: 1px solid #333;</td></tr><tr><td class="line-number"=
+ value="173"></td><td class="line-content">            font-size: 13px;=
+</td></tr><tr><td class="line-number" value="174"></td><td class="lin-content">            font-weight: 600;</td></tr><tr><td class="line-numer" value="175"></td><td class="line-content">            color: #aaa;=
+</td></tr><tr><td class="line-number" value="176"></td><td class="lin-content">            text-transform: uppercase;</td></tr><tr><td class==
+"line-number" value="177"></td><td class="line-content">            let=
+ter-spacing: 0.5px;</td></tr><tr><td class="line-number" value="178"></=
+td><td class="line-content">        }</td></tr><tr><td class="line-numbr" value="179"></td><td class="line-content">        .category-row {</=
+td></tr><tr><td class="line-number" value="180"></td><td class="line-ontent">            display: grid;</td></tr><tr><td class="line-number" =
+value="181"></td><td class="line-content">            grid-template-col=
+umns: 60px 2fr 1fr 100px 100px 100px 120px;</td></tr><tr><td class="line-=
+number" value="182"></td><td class="line-content">            gap: 15px=
+;</td></tr><tr><td class="line-number" value="183"></td><td class="li=
+ne-content">            padding: 15px 20px;</td></tr><tr><td class="line-=
+number" value="184"></td><td class="line-content">            border-bo=
+ttom: 1px solid #333;</td></tr><tr><td class="line-number" value="185">=
+</td><td class="line-content">            align-items: center;</td></tr><=
+tr><td class="line-number" value="186"></td><td class="line-content">=
+            transition: background 0.2s;</td></tr><tr><td class="line-numer" value="187"></td><td class="line-content">        }</td></tr><tr><=
+td class="line-number" value="188"></td><td class="line-content">    =
+    .category-row:hover { background: #252538; }</td></tr><tr><td class="=
+line-number" value="189"></td><td class="line-content">        .categor=
+y-row:last-child { border-bottom: none; }</td></tr><tr><td class="line-nu=
+mber" value="190"></td><td class="line-content">        </td></tr><tr><=
+td class="line-number" value="191"></td><td class="line-content">    =
+    .cat-id { color: #666; font-size: 13px; }</td></tr><tr><td class="lin-number" value="192"></td><td class="line-content">        .cat-name {=
+ </td></tr><tr><td class="line-number" value="193"></td><td class="li=
+ne-content">            font-weight: 500; </td></tr><tr><td class="line-n=
+umber" value="194"></td><td class="line-content">            color: #ff;</td></tr><tr><td class="line-number" value="195"></td><td class="l=
+ine-content">            display: flex;</td></tr><tr><td class="line-numbr" value="196"></td><td class="line-content">            flex-directio=
+n: column;</td></tr><tr><td class="line-number" value="197"></td><td cl
+ss="line-content">            gap: 4px;</td></tr><tr><td class="line-n=
+umber" value="198"></td><td class="line-content">        }</td></tr><tr=
+><td class="line-number" value="199"></td><td class="line-content">  =
+      .cat-desc { </td></tr><tr><td class="line-number" value="200"></t><td class="line-content">            font-size: 13px; </td></tr><tr><td=
+ class="line-number" value="201"></td><td class="line-content">      =
+      color: #888;</td></tr><tr><td class="line-number" value="202"></t><td class="line-content">            font-weight: normal;</td></tr><tr>=
+<td class="line-number" value="203"></td><td class="line-content">   =
+     }</td></tr><tr><td class="line-number" value="204"></td><td class=
+="line-content">        .cat-sort input {</td></tr><tr><td class="line-=
+number" value="205"></td><td class="line-content">            width: 60=
+px;</td></tr><tr><td class="line-number" value="206"></td><td class="=
+line-content">            padding: 6px 10px;</td></tr><tr><td class="line=
+-number" value="207"></td><td class="line-content">            backgrou=
+nd: #252538;</td></tr><tr><td class="line-number" value="208"></td><td lass="line-content">            border: 1px solid #444;</td></tr><tr><td=
+ class="line-number" value="209"></td><td class="line-content">      =
+      border-radius: 4px;</td></tr><tr><td class="line-number" value="20"></td><td class="line-content">            color: #fff;</td></tr><tr><=
+td class="line-number" value="211"></td><td class="line-content">    =
+        text-align: center;</td></tr><tr><td class="line-number" value==
+"212"></td><td class="line-content">            font-size: 14px;</td></tr=
+><tr><td class="line-number" value="213"></td><td class="line-content=
+">        }</td></tr><tr><td class="line-number" value="214"></td><td c=
+lass="line-content">        </td></tr><tr><td class="line-number" value=
+="215"></td><td class="line-content">        /* Toggle Switch */</td></=
+tr><tr><td class="line-number" value="216"></td><td class="line-conte=
+nt">        .toggle-switch {</td></tr><tr><td class="line-number" value=
+="217"></td><td class="line-content">            position: relative;</t></tr><tr><td class="line-number" value="218"></td><td class="line-c=
+ontent">            display: inline-block;</td></tr><tr><td class="line-n=
+umber" value="219"></td><td class="line-content">            width: 44p=
+x;</td></tr><tr><td class="line-number" value="220"></td><td class="l=
+ine-content">            height: 24px;</td></tr><tr><td class="line-numbe=
+r" value="221"></td><td class="line-content">        }</td></tr><tr><td=
+ class="line-number" value="222"></td><td class="line-content">      =
+  .toggle-switch input {</td></tr><tr><td class="line-number" value="22"></td><td class="line-content">            opacity: 0;</td></tr><tr><td=
+ class="line-number" value="224"></td><td class="line-content">      =
+      width: 0;</td></tr><tr><td class="line-number" value="225"></td><=
+td class="line-content">            height: 0;</td></tr><tr><td class="=
+line-number" value="226"></td><td class="line-content">        }</td></=
+tr><tr><td class="line-number" value="227"></td><td class="line-conte=
+nt">        .toggle-slider {</td></tr><tr><td class="line-number" value=
+="228"></td><td class="line-content">            position: absolute;</t></tr><tr><td class="line-number" value="229"></td><td class="line-c=
+ontent">            cursor: pointer;</td></tr><tr><td class="line-number"=
+ value="230"></td><td class="line-content">            top: 0;</td></tr=
+><tr><td class="line-number" value="231"></td><td class="line-content=
+">            left: 0;</td></tr><tr><td class="line-number" value="232"=
+></td><td class="line-content">            right: 0;</td></tr><tr><td cla=
+ss="line-number" value="233"></td><td class="line-content">          =
+  bottom: 0;</td></tr><tr><td class="line-number" value="234"></td><td lass="line-content">            background: #444;</td></tr><tr><td class=
+="line-number" value="235"></td><td class="line-content">            order-radius: 24px;</td></tr><tr><td class="line-number" value="236"><=
+/td><td class="line-content">            transition: 0.3s;</td></tr><tr><=
+td class="line-number" value="237"></td><td class="line-content">    =
+    }</td></tr><tr><td class="line-number" value="238"></td><td class=
+="line-content">        .toggle-slider:before {</td></tr><tr><td class==
+"line-number" value="239"></td><td class="line-content">            pos=
+ition: absolute;</td></tr><tr><td class="line-number" value="240"></td>=
+<td class="line-content">            content: "";</td></tr><tr><td class=
+="line-number" value="241"></td><td class="line-content">            =
+height: 18px;</td></tr><tr><td class="line-number" value="242"></td><td=
+ class="line-content">            width: 18px;</td></tr><tr><td class="=
+line-number" value="243"></td><td class="line-content">            left=
+: 3px;</td></tr><tr><td class="line-number" value="244"></td><td class=
+="line-content">            bottom: 3px;</td></tr><tr><td class="line-n=
+umber" value="245"></td><td class="line-content">            background=
+: #fff;</td></tr><tr><td class="line-number" value="246"></td><td class=
+="line-content">            border-radius: 50%;</td></tr><tr><td class==
+"line-number" value="247"></td><td class="line-content">            tra=
+nsition: 0.3s;</td></tr><tr><td class="line-number" value="248"></td><t class="line-content">        }</td></tr><tr><td class="line-number" v
+lue="249"></td><td class="line-content">        .toggle-switch input:c=
+hecked + .toggle-slider {</td></tr><tr><td class="line-number" value="20"></td><td class="line-content">            background: #4CAF50;</td></=
+tr><tr><td class="line-number" value="251"></td><td class="line-conte=
+nt">        }</td></tr><tr><td class="line-number" value="252"></td><td=
+ class="line-content">        .toggle-switch input:checked + .toggle-slidr:before {</td></tr><tr><td class="line-number" value="253"></td><td c=
+lass="line-content">            transform: translateX(20px);</td></tr><tr=
+><td class="line-number" value="254"></td><td class="line-content">  =
+      }</td></tr><tr><td class="line-number" value="255"></td><td class=
+="line-content">        .toggle-switch input:disabled + .toggle-slider {<=
+/td></tr><tr><td class="line-number" value="256"></td><td class="line=
+-content">            opacity: 0.5;</td></tr><tr><td class="line-number" =
+value="257"></td><td class="line-content">            cursor: not-allowd;</td></tr><tr><td class="line-number" value="258"></td><td class="=
+line-content">        }</td></tr><tr><td class="line-number" value="259=
+"></td><td class="line-content">        </td></tr><tr><td class="line-n=
+umber" value="260"></td><td class="line-content">        .actions { dis=
+play: flex; gap: 8px; justify-content: flex-end; }</td></tr><tr><td class=
+="line-number" value="261"></td><td class="line-content">        </td=
+></tr><tr><td class="line-number" value="262"></td><td class="line-co=
+ntent">        /* Visibility badges */</td></tr><tr><td class="line-numbe=
+r" value="263"></td><td class="line-content">        .visibility-badges=
+ {</td></tr><tr><td class="line-number" value="264"></td><td class="l=
+ine-content">            display: flex;</td></tr><tr><td class="line-numbr" value="265"></td><td class="line-content">            gap: 6px;</td=
+></tr><tr><td class="line-number" value="266"></td><td class="line-co=
+ntent">            flex-wrap: wrap;</td></tr><tr><td class="line-number" =
+value="267"></td><td class="line-content">        }</td></tr><tr><td cl
+ss="line-number" value="268"></td><td class="line-content">        .adge {</td></tr><tr><td class="line-number" value="269"></td><td class=
+="line-content">            padding: 3px 8px;</td></tr><tr><td class="l=
+ine-number" value="270"></td><td class="line-content">            borde=
+r-radius: 4px;</td></tr><tr><td class="line-number" value="271"></td><t class="line-content">            font-size: 11px;</td></tr><tr><td clas=
+s="line-number" value="272"></td><td class="line-content">           =
+ font-weight: 500;</td></tr><tr><td class="line-number" value="273"></t><td class="line-content">        }</td></tr><tr><td class="line-numbe=
+r" value="274"></td><td class="line-content">        .badge-visible { b
+ckground: rgba(76, 175, 80, 0.2); color: #4CAF50; }</td></tr><tr><td class=
+="line-number" value="275"></td><td class="line-content">        .bad=
+ge-hidden { background: rgba(244, 67, 54, 0.2); color: #f44336; }</td></tr>=
+<tr><td class="line-number" value="276"></td><td class="line-content"=
+>        </td></tr><tr><td class="line-number" value="277"></td><td cla=
+ss="line-content">        /* Empty state */</td></tr><tr><td class="lin-number" value="278"></td><td class="line-content">        .empty-stat {</td></tr><tr><td class="line-number" value="279"></td><td class="=
+line-content">            text-align: center;</td></tr><tr><td class="lin-number" value="280"></td><td class="line-content">            padding=
+: 60px 20px;</td></tr><tr><td class="line-number" value="281"></td><td lass="line-content">            color: #888;</td></tr><tr><td class="l=
+ine-number" value="282"></td><td class="line-content">        }</td></t=
+r><tr><td class="line-number" value="283"></td><td class="line-conten=
+t">        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacit=
+y: 0.5; }</td></tr><tr><td class="line-number" value="284"></td><td cla=
+ss="line-content">        .empty-state h3 { font-size: 20px; margin-botto=
+m: 10px; color: #fff; }</td></tr><tr><td class="line-number" value="285=
+"></td><td class="line-content">        </td></tr><tr><td class="line-n=
+umber" value="286"></td><td class="line-content">        /* Import Sect=
+ion */</td></tr><tr><td class="line-number" value="287"></td><td class=
+="line-content">        .import-section {</td></tr><tr><td class="line-=
+number" value="288"></td><td class="line-content">            backgroun: #1a1a2e;</td></tr><tr><td class="line-number" value="289"></td><td c=
+lass="line-content">            border-radius: 10px;</td></tr><tr><td cla=
+ss="line-number" value="290"></td><td class="line-content">          =
+  padding: 20px;</td></tr><tr><td class="line-number" value="291"></td>=
+<td class="line-content">            margin-top: 25px;</td></tr><tr><td c=
+lass="line-number" value="292"></td><td class="line-content">        =
+    border: 1px dashed #555;</td></tr><tr><td class="line-number" value=
+="293"></td><td class="line-content">        }</td></tr><tr><td class=
+="line-number" value="294"></td><td class="line-content">        .imp=
+ort-section h4 {</td></tr><tr><td class="line-number" value="295"></td>=
+<td class="line-content">            margin-bottom: 15px;</td></tr><tr><t class="line-number" value="296"></td><td class="line-content">     =
+       font-size: 16px;</td></tr><tr><td class="line-number" value="297=
+"></td><td class="line-content">        }</td></tr><tr><td class="line-=
+number" value="298"></td><td class="line-content">        .file-input-w=
+rapper {</td></tr><tr><td class="line-number" value="299"></td><td clas=
+s="line-content">            position: relative;</td></tr><tr><td class=
+="line-number" value="300"></td><td class="line-content">            =
+overflow: hidden;</td></tr><tr><td class="line-number" value="301"></td=
+><td class="line-content">            display: inline-block;</td></tr><tr=
+><td class="line-number" value="302"></td><td class="line-content">  =
+      }</td></tr><tr><td class="line-number" value="303"></td><td class=
+="line-content">        .file-input-wrapper input[type=file] {</td></tr=
+><tr><td class="line-number" value="304"></td><td class="line-content=
+">            position: absolute;</td></tr><tr><td class="line-number" va=
+lue="305"></td><td class="line-content">            left: -9999px;</td>=
+</tr><tr><td class="line-number" value="306"></td><td class="line-con=
+tent">        }</td></tr><tr><td class="line-number" value="307"></td><=
+td class="line-content">        .file-input-label {</td></tr><tr><td clas=
+s="line-number" value="308"></td><td class="line-content">           =
+ display: inline-block;</td></tr><tr><td class="line-number" value="309=
+"></td><td class="line-content">            padding: 12px 24px;</td></tr>=
+<tr><td class="line-number" value="310"></td><td class="line-content"=
+>            background: #252538;</td></tr><tr><td class="line-number" va=
+lue="311"></td><td class="line-content">            border: 1px solid #44;</td></tr><tr><td class="line-number" value="312"></td><td class==
+"line-content">            border-radius: 6px;</td></tr><tr><td class="li=
+ne-number" value="313"></td><td class="line-content">            cursor=
+: pointer;</td></tr><tr><td class="line-number" value="314"></td><td cl
+ss="line-content">            color: #fff;</td></tr><tr><td class="lin-number" value="315"></td><td class="line-content">        }</td></tr>=
+<tr><td class="line-number" value="316"></td><td class="line-content"=
+>        .file-input-label:hover { background: #333; }</td></tr><tr><td cla=
+ss="line-number" value="317"></td><td class="line-content">        </=
+td></tr><tr><td class="line-number" value="318"></td><td class="line-ontent">        /* Drag and Drop */</td></tr><tr><td class="line-number"=
+ value="319"></td><td class="line-content">        .category-row {</td>=
+</tr><tr><td class="line-number" value="320"></td><td class="line-con=
+tent">            transition: all 0.2s;</td></tr><tr><td class="line-numbr" value="321"></td><td class="line-content">        }</td></tr><tr><t class="line-number" value="322"></td><td class="line-content">     =
+   .category-row.dragging {</td></tr><tr><td class="line-number" value==
+"323"></td><td class="line-content">            opacity: 0.5;</td></tr><t=
+r><td class="line-number" value="324"></td><td class="line-content"> =
+           background: #252538;</td></tr><tr><td class="line-number" valu="325"></td><td class="line-content">            box-shadow: 0 4px 12p=
+x rgba(0,0,0,0.3);</td></tr><tr><td class="line-number" value="326"></t><td class="line-content">        }</td></tr><tr><td class="line-numbe=
+r" value="327"></td><td class="line-content">        .category-row.drag=
+-over {</td></tr><tr><td class="line-number" value="328"></td><td class=
+="line-content">            border-top: 3px solid #e94560;</td></tr><tr><=
+td class="line-number" value="329"></td><td class="line-content">    =
+        background: rgba(233, 69, 96, 0.1);</td></tr><tr><td class="line-=
+number" value="330"></td><td class="line-content">        }</td></tr><t=
+r><td class="line-number" value="331"></td><td class="line-content"> =
+       .drag-handle {</td></tr><tr><td class="line-number" value="332">=
+</td><td class="line-content">            cursor: grab;</td></tr><tr><td lass="line-number" value="333"></td><td class="line-content">       =
+     user-select: none;</td></tr><tr><td class="line-number" value="334=
+"></td><td class="line-content">        }</td></tr><tr><td class="line-=
+number" value="335"></td><td class="line-content">        .drag-handle:
+ctive {</td></tr><tr><td class="line-number" value="336"></td><td clas=
+s="line-content">            cursor: grabbing;</td></tr><tr><td class="=
+line-number" value="337"></td><td class="line-content">        }</td></=
+tr><tr><td class="line-number" value="338"></td><td class="line-conte=
+nt">    <span class="html-tag">&lt;/style&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="339"></td><td class="line-content"><span clas=
+s="html-tag">&lt;/head&gt;</span></td></tr><tr><td class="line-number" =
+value="340"></td><td class="line-content"><span class="html-tag">&lt;ody&gt;</span></td></tr><tr><td class="line-number" value="341"></td><=
+td class="line-content">    <span class="html-tag">&lt;div <span class=
+="html-attribute-name">class</span>="<span class="html-attribute-valu">layout</span>"&gt;</span></td></tr><tr><td class="line-number" value=
+="342"></td><td class="line-content"><span class="html-comment">&lt;!=
+-- Unified Sidebar for Menu Pages --&gt;</span></td></tr><tr><td class="l=
+ine-number" value="343"></td><td class="line-content"><span class="ht=
+ml-tag">&lt;aside <span class="html-attribute-name">class</span>="<span=
+ class="html-attribute-value">unified-sidebar</span>" <span class="html=
+-attribute-name">id</span>="<span class="html-attribute-value">sidebar<=
+/span>"&gt;</span></td></tr><tr><td class="line-number" value="344"></t><td class="line-content">    <span class="html-tag">&lt;div <span cla=
+ss="html-attribute-name">class</span>="<span class="html-attribute-va=
+lue">sidebar-logo</span>"&gt;</span></td></tr><tr><td class="line-number"=
+ value="345"></td><td class="line-content">        <span class="html-=
+tag">&lt;h1&gt;</span><span class="html-tag">&lt;span&gt;</span>SOHO<span=
+ class="html-tag">&lt;/span&gt;</span> Menu<span class="html-tag">&lt;/=
+h1&gt;</span></td></tr><tr><td class="line-number" value="346"></td><td=
+ class="line-content">    <span class="html-tag">&lt;/div&gt;</span></t></tr><tr><td class="line-number" value="347"></td><td class="line-c=
+ontent">    </td></tr><tr><td class="line-number" value="348"></td><td lass="line-content">    <span class="html-tag">&lt;nav <span class="=
+html-attribute-name">class</span>="<span class="html-attribute-value">s=
+idebar-nav</span>"&gt;</span></td></tr><tr><td class="line-number" value=
+="349"></td><td class="line-content">        <span class="html-commen=
+t">&lt;!-- ÐÐ°ÐºÐ°Ð·Ñ --&gt;</span></td></tr><tr>=
+<td class="line-number" value="350"></td><td class="line-content">   =
+     <span class="html-tag">&lt;div <span class="html-attribute-name">c=
+lass</span>="<span class="html-attribute-value">nav-section</span>" <sp
+n class="html-attribute-name">data-section</span>="<span class="html=
+-attribute-value">orders</span>"&gt;</span></td></tr><tr><td class="line-=
+number" value="351"></td><td class="line-content">            <span cla=
+ss="html-tag">&lt;div <span class="html-attribute-name">class</span>==
+"<span class="html-attribute-value">nav-section-header</span>" <span clas=
+s="html-attribute-name">onclick</span>="<span class="html-attribute-v
+lue">toggleSection(this)</span>"&gt;</span></td></tr><tr><td class="line=
+-number" value="352"></td><td class="line-content">                <spa=
+n class="html-tag">&lt;div <span class="html-attribute-name">class</spa=
+n>="<span class="html-attribute-value">nav-section-title</span>"&gt;</s=
+pan></td></tr><tr><td class="line-number" value="353"></td><td class==
+"line-content">                    <span class="html-tag">&lt;span <span lass="html-attribute-name">class</span>="<span class="html-attribute=
+-value">nav-section-icon</span>"&gt;</span>ð<span class="html-=
+tag">&lt;/span&gt;</span></td></tr><tr><td class="line-number" value="34"></td><td class="line-content">                    <span class="html=
+-tag">&lt;span&gt;</span>ÐÐ°ÐºÐ°Ð·Ñ<span class==
+"html-tag">&lt;/span&gt;</span></td></tr><tr><td class="line-number" valu="355"></td><td class="line-content">                <span class="ht=
+ml-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number" value==
+"356"></td><td class="line-content">                <span class="html-t
+g">&lt;span <span class="html-attribute-name">class</span>="<span clas=
+s="html-attribute-value">nav-section-arrow</span>"&gt;</span>â¶<sp
+n class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class="line-n=
+umber" value="357"></td><td class="line-content">            <span clas=
+s="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number" v
+lue="358"></td><td class="line-content">            <span class="htm=
+l-tag">&lt;div <span class="html-attribute-name">class</span>="<span cl
+ss="html-attribute-value">nav-submenu</span>"&gt;</span></td></tr><tr><t class="line-number" value="359"></td><td class="line-content">     =
+           <span class="html-tag">&lt;a <span class="html-attribute-nam">href</span>="<a class="html-attribute-value html-external-link" targt="_blank" href="http://45.129.186.118/crm-orders.html" rel="norefer=
+rer noopener">crm-orders.html</a>" <span class="html-attribute-name">clas=
+s</span>="<span class="html-attribute-value">nav-item</span>"&gt;</span=
+>ð ÐÑÐµ Ð·Ð°ÐºÐ°Ð·Ñ<span lass="html-tag">&lt;/a&gt;</span></td></tr><tr><td class="line-number"=
+ value="360"></td><td class="line-content">                <span class=
+="html-tag">&lt;a <span class="html-attribute-name">href</span>="<a c=
+lass="html-attribute-value html-external-link" target="_blank" href="=
+http://45.129.186.118/crm-new-order.html" rel="noreferrer noopener">crm-nw-order.html</a>" <span class="html-attribute-name">class</span>="<spa=
+n class="html-attribute-value">nav-item</span>"&gt;</span>â Ð=
+Ð¾Ð²ÑÐ¹ Ð·Ð°ÐºÐ°Ð·<span class="ht=
+ml-tag">&lt;/a&gt;</span></td></tr><tr><td class="line-number" value="31"></td><td class="line-content">                <span class="html-tag=
+">&lt;a <span class="html-attribute-name">href</span>="<a class="html=
+-attribute-value html-external-link" target="_blank" href="http://45.12	.186.118/crm-kds.html" rel="noreferrer noopener">crm-kds.html</a>" <span=
+ class="html-attribute-name">class</span>="<span class="html-attribut-value">nav-item</span>"&gt;</span>ð¨âð³ KDS<s=
+pan class="html-tag">&lt;/a&gt;</span></td></tr><tr><td class="line-numer" value="362"></td><td class="line-content">            <span class=
+="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number" va=
+lue="363"></td><td class="line-content">        <span class="html-tag=
+">&lt;/div&gt;</span></td></tr><tr><td class="line-number" value="364">=
+</td><td class="line-content">        </td></tr><tr><td class="line-numer" value="365"></td><td class="line-content">        <span class="h=
+tml-comment">&lt;!-- ÐÐµÐ½Ñ --&gt;</span></td></tr><tr><t class="line-number" value="366"></td><td class="line-content">     =
+   <span class="html-tag">&lt;div <span class="html-attribute-name">cla=
+ss</span>="<span class="html-attribute-value">nav-section expanded</spa=
+n>" <span class="html-attribute-name">data-section</span>="<span class=
+="html-attribute-value">menu</span>"&gt;</span></td></tr><tr><td class==
+"line-number" value="367"></td><td class="line-content">            <sp
+n class="html-tag">&lt;div <span class="html-attribute-name">class</sp
+n>="<span class="html-attribute-value">nav-section-header</span>" <spa=
+n class="html-attribute-name">onclick</span>="<span class="html-attriute-value">toggleSection(this)</span>"&gt;</span></td></tr><tr><td class=
+="line-number" value="368"></td><td class="line-content">            =
+    <span class="html-tag">&lt;div <span class="html-attribute-name">cl
+ss</span>="<span class="html-attribute-value">nav-section-title</span>=
+"&gt;</span></td></tr><tr><td class="line-number" value="369"></td><td lass="line-content">                    <span class="html-tag">&lt;spa=
+n <span class="html-attribute-name">class</span>="<span class="html-a=
+ttribute-value">nav-section-icon</span>"&gt;</span>ð½ï¸<sp
+n class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class="line-n=
+umber" value="370"></td><td class="line-content">                    <s=
+pan class="html-tag">&lt;span&gt;</span>ÐÐµÐ½Ñ<span cla=
+ss="html-tag">&lt;/span&gt;</span></td></tr><tr><td class="line-number"=
+ value="371"></td><td class="line-content">                <span class=
+="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number" va=
+lue="372"></td><td class="line-content">                <span class="=
+html-tag">&lt;span <span class="html-attribute-name">class</span>="<spa=
+n class="html-attribute-value">nav-section-arrow</span>"&gt;</span>â=
+¶<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class="=
+line-number" value="373"></td><td class="line-content">            <spa=
+n class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-numer" value="374"></td><td class="line-content">            <span class=
+="html-tag">&lt;div <span class="html-attribute-name">class</span>="<=
+span class="html-attribute-value">nav-submenu</span>"&gt;</span></td></tr=
+><tr><td class="line-number" value="375"></td><td class="line-content=
+">                <span class="html-tag">&lt;a <span class="html-attrib=
+ute-name">href</span>="<a class="html-attribute-value html-external-lin=
+k" target="_blank" href="http://45.129.186.118/crm-menu-products.html" =
+rel="noreferrer noopener">crm-menu-products.html</a>" <span class="html=
+-attribute-name">class</span>="<span class="html-attribute-value">nav-i=
+tem</span>"&gt;</span>ð Ð¢Ð¾Ð²Ð°ÑÑ<spa=
+n class="html-tag">&lt;/a&gt;</span></td></tr><tr><td class="line-numbe=
+r" value="376"></td><td class="line-content">                <span clas=
+s="html-tag">&lt;a <span class="html-attribute-name">href</span>="<a lass="html-attribute-value html-external-link" target="_blank" href==
+"http://45.129.186.118/crm-menu-categories.html" rel="noreferrer noopener=
+">crm-menu-categories.html</a>" <span class="html-attribute-name">class</=
+span>="<span class="html-attribute-value">nav-item</span>"&gt;</span>=
+ð class="nav-item active"<span class="html-tag">&lt;/a&gt;</=
+span></td></tr><tr><td class="line-number" value="377"></td><td class=
+="line-content">                <span class="html-tag">&lt;a <span clas=
+s="html-attribute-name">href</span>="<a class="html-attribute-value h=
+tml-external-link" target="_blank" href="http://45.129.186.118/crm-menu=
+-ingredients.html" rel="noreferrer noopener">crm-menu-ingredients.html</a=
+>" <span class="html-attribute-name">class</span>="<span class="html-
+ttribute-value">nav-item</span>"&gt;</span>ð¥¬ ÐÐ½Ð³=
+ÑÐµÐ´Ð¸ÐµÐ½ÑÑ<span class="html-tag">&l=
+t;/a&gt;</span></td></tr><tr><td class="line-number" value="378"></td><=
+td class="line-content">                <span class="html-tag">&lt;a <s=
+pan class="html-attribute-name">href</span>="<a class="html-attribute=
+-value html-external-link" target="_blank" href="http://45.129.186.118/rm-recipes.html" rel="noreferrer noopener">crm-recipes.html</a>" <span c=
+lass="html-attribute-name">class</span>="<span class="html-attribute-=
+value">nav-item</span>"&gt;</span>ð Ð ÐµÑÐµÐ=
+¿ÑÑ<span class="html-tag">&lt;/a&gt;</span></td></tr><tr><td lass="line-number" value="379"></td><td class="line-content">       =
+     <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class==
+"line-number" value="380"></td><td class="line-content">        <span c=
+lass="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number=
+" value="381"></td><td class="line-content">        </td></tr><tr><td c=
+lass="line-number" value="382"></td><td class="line-content">        =
+<span class="html-comment">&lt;!-- Ð¡ÐºÐ»Ð°Ð´ --&gt;<=
+/span></td></tr><tr><td class="line-number" value="383"></td><td class=
+="line-content">        <span class="html-tag">&lt;div <span class="h=
+tml-attribute-name">class</span>="<span class="html-attribute-value">na=
+v-section</span>" <span class="html-attribute-name">data-section</span>=
+="<span class="html-attribute-value">warehouse</span>"&gt;</span></td><=
+/tr><tr><td class="line-number" value="384"></td><td class="line-contnt">            <span class="html-tag">&lt;div <span class="html-attriute-name">class</span>="<span class="html-attribute-value">nav-section=
+-header</span>" <span class="html-attribute-name">onclick</span>="<span=
+ class="html-attribute-value">toggleSection(this)</span>"&gt;</span></td>=
+</tr><tr><td class="line-number" value="385"></td><td class="line-con=
+tent">                <span class="html-tag">&lt;div <span class="html-
+ttribute-name">class</span>="<span class="html-attribute-value">nav-setion-title</span>"&gt;</span></td></tr><tr><td class="line-number" value=
+="386"></td><td class="line-content">                    <span class==
+"html-tag">&lt;span <span class="html-attribute-name">class</span>="<sp
+n class="html-attribute-value">nav-section-icon</span>"&gt;</span>ð=
+¦<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class=
+="line-number" value="387"></td><td class="line-content">            =
+        <span class="html-tag">&lt;span&gt;</span>Ð¡ÐºÐ»Ð=
+°Ð´<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="388"></td><td class="line-content">          =
+      <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class=
+="line-number" value="389"></td><td class="line-content">            =
+    <span class="html-tag">&lt;span <span class="html-attribute-name">c=
+lass</span>="<span class="html-attribute-value">nav-section-arrow</span=
+>"&gt;</span>â¶<span class="html-tag">&lt;/span&gt;</span></td></t=
+r><tr><td class="line-number" value="390"></td><td class="line-conten=
+t">            <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><t class="line-number" value="391"></td><td class="line-content">     =
+       <span class="html-tag">&lt;div <span class="html-attribute-name"=
+>class</span>="<span class="html-attribute-value">nav-submenu</span>"&g=
+t;</span></td></tr><tr><td class="line-number" value="392"></td><td cla=
+ss="line-content">                <span class="html-tag">&lt;a <span cl
+ss="html-attribute-name">href</span>="<a class="html-attribute-value=
+ html-external-link" target="_blank" href="http://45.129.186.118/crm-in=
+ventory.html" rel="noreferrer noopener">crm-inventory.html</a>" <span cla=
+ss="html-attribute-name">class</span>="<span class="html-attribute-va=
+lue">nav-item</span>"&gt;</span>ð ÐÑÑÐ°Ñ=
+ÐºÐ¸<span class="html-tag">&lt;/a&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="393"></td><td class="line-content">          =
+      <span class="html-tag">&lt;a <span class="html-attribute-name">hrf</span>="<a class="html-attribute-value html-external-link" target==
+"_blank" href="http://45.129.186.118/crm-warehouse-invoices.html" rel="=
+noreferrer noopener">crm-warehouse-invoices.html</a>" <span class="html-a=
+ttribute-name">class</span>="<span class="html-attribute-value">nav-ite=
+m</span>"&gt;</span>ð ÐÐ°ÐºÐ»Ð°Ð´Ð½=
+ÑÐµ<span class="html-tag">&lt;/a&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="394"></td><td class="line-content">          =
+      <span class="html-tag">&lt;a <span class="html-attribute-name">hrf</span>="<a class="html-attribute-value html-external-link" target==
+"_blank" href="http://45.129.186.118/crm-warehouse-suppliers.html" rel==
+"noreferrer noopener">crm-warehouse-suppliers.html</a>" <span class="html=
+-attribute-name">class</span>="<span class="html-attribute-value">nav-i=
+tem</span>"&gt;</span>ð¢ ÐÐ¾ÑÑÐ°Ð²Ñ=
+Ð¸ÐºÐ¸<span class="html-tag">&lt;/a&gt;</span></td></tr><t=
+r><td class="line-number" value="395"></td><td class="line-content"> =
+           <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td cl
+ss="line-number" value="396"></td><td class="line-content">        <=
+span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-=
+number" value="397"></td><td class="line-content">        </td></tr><tr=
+><td class="line-number" value="398"></td><td class="line-content">  =
+      <span class="html-comment">&lt;!-- ÐÐ´Ð¼Ð¸Ð½ -=
+-&gt;</span></td></tr><tr><td class="line-number" value="399"></td><td lass="line-content">        <span class="html-tag">&lt;div <span class=
+="html-attribute-name">class</span>="<span class="html-attribute-valu">nav-section</span>" <span class="html-attribute-name">data-section</sp
+n>="<span class="html-attribute-value">admin</span>"&gt;</span></td></=
+tr><tr><td class="line-number" value="400"></td><td class="line-conte=
+nt">            <span class="html-tag">&lt;div <span class="html-attrib=
+ute-name">class</span>="<span class="html-attribute-value">nav-section-=
+header</span>" <span class="html-attribute-name">onclick</span>="<span lass="html-attribute-value">toggleSection(this)</span>"&gt;</span></td><=
+/tr><tr><td class="line-number" value="401"></td><td class="line-contnt">                <span class="html-tag">&lt;div <span class="html-a=
+ttribute-name">class</span>="<span class="html-attribute-value">nav-sec=
+tion-title</span>"&gt;</span></td></tr><tr><td class="line-number" value=
+="402"></td><td class="line-content">                    <span class==
+"html-tag">&lt;span <span class="html-attribute-name">class</span>="<sp
+n class="html-attribute-value">nav-section-icon</span>"&gt;</span>â=
+ï¸<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td lass="line-number" value="403"></td><td class="line-content">       =
+             <span class="html-tag">&lt;span&gt;</span>ÐÐ´Ð¼=
+Ð¸Ð½<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td lass="line-number" value="404"></td><td class="line-content">       =
+         <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td clas=
+s="line-number" value="405"></td><td class="line-content">           =
+     <span class="html-tag">&lt;span <span class="html-attribute-name">lass</span>="<span class="html-attribute-value">nav-section-arrow</spa=
+n>"&gt;</span>â¶<span class="html-tag">&lt;/span&gt;</span></td></=
+tr><tr><td class="line-number" value="406"></td><td class="line-conte=
+nt">            <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><=
+td class="line-number" value="407"></td><td class="line-content">    =
+        <span class="html-tag">&lt;div <span class="html-attribute-name=
+">class</span>="<span class="html-attribute-value">nav-submenu</span>"&=
+gt;</span></td></tr><tr><td class="line-number" value="408"></td><td cl
+ss="line-content">                <span class="html-tag">&lt;a <span c=
+lass="html-attribute-name">href</span>="<a class="html-attribute-valu html-external-link" target="_blank" href="http://45.129.186.118/admin=
+-panel.html" rel="noreferrer noopener">admin-panel.html</a>" <span class=
+="html-attribute-name">class</span>="<span class="html-attribute-valu">nav-item</span>"&gt;</span>ð ÐÐ°Ð½ÐµÐ»=
+Ñ<span class="html-tag">&lt;/a&gt;</span></td></tr><tr><td class="=
+line-number" value="409"></td><td class="line-content">                =
+<span class="html-tag">&lt;a <span class="html-attribute-name">href</sp
+n>="<a class="html-attribute-value html-external-link" target="_blan=
+k" href="http://45.129.186.118/crm-customers.html" rel="noreferrer noopner">crm-customers.html</a>" <span class="html-attribute-name">class</sp
+n>="<span class="html-attribute-value">nav-item</span>"&gt;</span>ð=
+¥ ÐÐ»Ð¸ÐµÐ½ÑÑ<span class="html-tag=
+">&lt;/a&gt;</span></td></tr><tr><td class="line-number" value="410"></=
+td><td class="line-content">            <span class="html-tag">&lt;/div=
+&gt;</span></td></tr><tr><td class="line-number" value="411"></td><td c=
+lass="line-content">        <span class="html-tag">&lt;/div&gt;</span><=
+/td></tr><tr><td class="line-number" value="412"></td><td class="line=
+-content">    <span class="html-tag">&lt;/nav&gt;</span></td></tr><tr><td=
+ class="line-number" value="413"></td><td class="line-content">    </=
+td></tr><tr><td class="line-number" value="414"></td><td class="line-ontent">    <span class="html-tag">&lt;div <span class="html-attribute=
+-name">class</span>="<span class="html-attribute-value">sidebar-footer<=
+/span>"&gt;</span></td></tr><tr><td class="line-number" value="415"></t><td class="line-content">        <span class="html-tag">&lt;div <span=
+ class="html-attribute-name">class</span>="<span class="html-attribut-value">user-card</span>"&gt;</span></td></tr><tr><td class="line-number=
+" value="416"></td><td class="line-content">            <span class="=
+html-tag">&lt;div <span class="html-attribute-name">class</span>="<span=
+ class="html-attribute-value">user-avatar</span>"&gt;</span>ÐÐ<=
+span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-=
+number" value="417"></td><td class="line-content">            <span cla=
+ss="html-tag">&lt;div <span class="html-attribute-name">class</span>==
+"<span class="html-attribute-value">user-info</span>"&gt;</span></td></tr=
+><tr><td class="line-number" value="418"></td><td class="line-content=
+">                <span class="html-tag">&lt;div <span class="html-attr=
+ibute-name">class</span>="<span class="html-attribute-value">user-name<=
+/span>"&gt;</span>ÐÐ´Ð¼Ð¸Ð½<span class="html-tag">&l=
+t;/div&gt;</span></td></tr><tr><td class="line-number" value="419"></td=
+><td class="line-content">                <span class="html-tag">&lt;di=
+v <span class="html-attribute-name">class</span>="<span class="html-a=
+ttribute-value">user-role</span>"&gt;</span>SOHO Cafe<span class="html-ta=
+g">&lt;/div&gt;</span></td></tr><tr><td class="line-number" value="420"=
+></td><td class="line-content">            <span class="html-tag">&lt;/iv&gt;</span></td></tr><tr><td class="line-number" value="421"></td><t class="line-content">        <span class="html-tag">&lt;/div&gt;</spa=
+n></td></tr><tr><td class="line-number" value="422"></td><td class="l=
+ine-content">    <span class="html-tag">&lt;/div&gt;</span></td></tr><tr>=
+<td class="line-number" value="423"></td><td class="line-content"><sp
+n class="html-tag">&lt;/aside&gt;</span></td></tr><tr><td class="line-=
+number" value="424"></td><td class="line-content"><br></td></tr><tr><td=
+ class="line-number" value="425"></td><td class="line-content"><span lass="html-comment">&lt;!-- Mobile Toggle --&gt;</span></td></tr><tr><td=
+ class="line-number" value="426"></td><td class="line-content"><span lass="html-tag">&lt;button <span class="html-attribute-name">class</sp
+n>="<span class="html-attribute-value">sidebar-toggle</span>" <span cl
+ss="html-attribute-name">id</span>="<span class="html-attribute-valu">sidebarToggle</span>" <span class="html-attribute-name">onclick</span>=
+="<span class="html-attribute-value">toggleSidebar()</span>"&gt;</span>=
+â°<span class="html-tag">&lt;/button&gt;</span></td></tr><tr><td c=
+lass="line-number" value="427"></td><td class="line-content"><span cl
+ss="html-tag">&lt;div <span class="html-attribute-name">class</span>=
+="<span class="html-attribute-value">sidebar-overlay</span>" <span clas=
+s="html-attribute-name">id</span>="<span class="html-attribute-value"=
+>sidebarOverlay</span>" <span class="html-attribute-name">onclick</span>=
+="<span class="html-attribute-value">toggleSidebar()</span>"&gt;</span>=
+<span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line=
+-number" value="428"></td><td class="line-content"><br></td></tr><tr><t class="line-number" value="429"></td><td class="line-content">     =
+   <span class="html-tag">&lt;main <span class="html-attribute-name">cl
+ss</span>="<span class="html-attribute-value">main-content</span>"&gt;=
+</span></td></tr><tr><td class="line-number" value="430"></td><td class=
+="line-content">            <span class="html-tag">&lt;div <span class=
+="html-attribute-name">class</span>="<span class="html-attribute-valu">page-header</span>"&gt;</span></td></tr><tr><td class="line-number" va=
+lue="431"></td><td class="line-content">                <span class="=
+html-tag">&lt;h2&gt;</span>ð ÐÐ°ÑÐµÐ³Ð=
+¾ÑÐ¸Ð¸<span class="html-tag">&lt;/h2&gt;</span></td></tr><=
+tr><td class="line-number" value="432"></td><td class="line-content">=
+            <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td c=
+lass="line-number" value="433"></td><td class="line-content"><br></td=
+></tr><tr><td class="line-number" value="434"></td><td class="line-co=
+ntent">            <span class="html-comment">&lt;!-- Tabs --&gt;</span><=
+/td></tr><tr><td class="line-number" value="435"></td><td class="line=
+-content">            <span class="html-tag">&lt;div <span class="html-
+ttribute-name">class</span>="<span class="html-attribute-value">tabs</=
+span>"&gt;</span></td></tr><tr><td class="line-number" value="436"></td=
+><td class="line-content">                <span class="html-tag">&lt;di=
+v <span class="html-attribute-name">class</span>="<span class="html-a=
+ttribute-value">tab active</span>" <span class="html-attribute-name">oncl=
+ick</span>="<span class="html-attribute-value">switchTab('ingredients')=
+</span>"&gt;</span>ÐÐ°ÑÐµÐ³Ð¾ÑÐ¸Ð¸ =
+Ð¸Ð½Ð³ÑÐµÐ´Ð¸ÐµÐ½ÑÐ¾Ð²<sp
+n class="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-nu=
+mber" value="437"></td><td class="line-content">                <span c=
+lass="html-tag">&lt;div <span class="html-attribute-name">class</span>=
+="<span class="html-attribute-value">tab</span>" <span class="html-at=
+tribute-name">onclick</span>="<span class="html-attribute-value">switch=
+Tab('products')</span>"&gt;</span>ÐÐ°ÑÐµÐ³Ð¾Ñ=
+Ð¸Ð¸ ÑÐ¾Ð²Ð°ÑÐ¾Ð²<span class="ht=
+ml-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number" value==
+"438"></td><td class="line-content">            <span class="html-tag">=
+&lt;/div&gt;</span></td></tr><tr><td class="line-number" value="439"></=
+td><td class="line-content"><br></td></tr><tr><td class="line-number" v
+lue="440"></td><td class="line-content">            <span class="htm=
+l-comment">&lt;!-- Add Category Form --&gt;</span></td></tr><tr><td class=
+="line-number" value="441"></td><td class="line-content">            =
+<span class="html-tag">&lt;div <span class="html-attribute-name">class<=
+/span>="<span class="html-attribute-value">add-category-form</span>"&gt=
+;</span></td></tr><tr><td class="line-number" value="442"></td><td clas=
+s="line-content">                <span class="html-tag">&lt;div <span c=
+lass="html-attribute-name">class</span>="<span class="html-attribute-=
+value">form-row</span>"&gt;</span></td></tr><tr><td class="line-number" v
+lue="443"></td><td class="line-content">                    <span clas=
+s="html-tag">&lt;div <span class="html-attribute-name">class</span>="=
+<span class="html-attribute-value">form-group</span>" <span class="html=
+-attribute-name">style</span>="<span class="html-attribute-value">flex:=
+ 2;</span>"&gt;</span></td></tr><tr><td class="line-number" value="444"=
+></td><td class="line-content">                        <span class="htm=
+l-tag">&lt;label&gt;</span>ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ=
+ ÐºÐ°ÑÐµÐ³Ð¾ÑÐ¸Ð¸ *<span class="htm=
+l-tag">&lt;/label&gt;</span></td></tr><tr><td class="line-number" value=
+="445"></td><td class="line-content">                        <span clas=
+s="html-tag">&lt;input <span class="html-attribute-name">type</span>==
+"<span class="html-attribute-value">text</span>" <span class="html-attr=
+ibute-name">id</span>="<span class="html-attribute-value">newCategoryNa=
+me</span>" <span class="html-attribute-name">placeholder</span>="<span lass="html-attribute-value">ÐÐ°Ð¿ÑÐ¸Ð¼Ðµ=
+Ñ: ÐÐ²Ð¾ÑÐ¸</span>"&gt;</span></td></tr><tr><td lass="line-number" value="446"></td><td class="line-content">       =
+             <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td lass="line-number" value="447"></td><td class="line-content">       =
+             <span class="html-tag">&lt;div <span class="html-attribute=
+-name">class</span>="<span class="html-attribute-value">form-group</spa=
+n>" <span class="html-attribute-name">style</span>="<span class="html=
+-attribute-value">flex: 3;</span>"&gt;</span></td></tr><tr><td class="lin-number" value="448"></td><td class="line-content">                   =
+     <span class="html-tag">&lt;label&gt;</span>ÐÐ¿Ð¸Ñ=
+Ð°Ð½Ð¸Ðµ<span class="html-tag">&lt;/label&gt;</span></td>=
+</tr><tr><td class="line-number" value="449"></td><td class="line-con=
+tent">                        <span class="html-tag">&lt;input <span clas=
+s="html-attribute-name">type</span>="<span class="html-attribute-valu">text</span>" <span class="html-attribute-name">id</span>="<span clas=
+s="html-attribute-value">newCategoryDesc</span>" <span class="html-attr=
+ibute-name">placeholder</span>="<span class="html-attribute-value">Ð=
+Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ ÐºÐ°ÑÐµÐ=
+³Ð¾ÑÐ¸Ð¸ (Ð½ÐµÐ¾Ð±ÑÐ·Ð°Ñ=
+ÐµÐ»ÑÐ½Ð¾)</span>"&gt;</span></td></tr><tr><td clas=
+s="line-number" value="450"></td><td class="line-content">           =
+         <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td clas=
+s="line-number" value="451"></td><td class="line-content">           =
+         <span class="html-tag">&lt;button <span class="html-attribute-=
+name">class</span>="<span class="html-attribute-value">btn btn-primary<=
+/span>" <span class="html-attribute-name">onclick</span>="<span class=
+="html-attribute-value">addCategory()</span>"&gt;</span>+ ÐÐ¾Ð=
+±Ð°Ð²Ð¸ÑÑ<span class="html-tag">&lt;/button&gt;</=
+span></td></tr><tr><td class="line-number" value="452"></td><td class=
+="line-content">                <span class="html-tag">&lt;/div&gt;</sp
+n></td></tr><tr><td class="line-number" value="453"></td><td class="=
+line-content">            <span class="html-tag">&lt;/div&gt;</span></td>=
+</tr><tr><td class="line-number" value="454"></td><td class="line-con=
+tent"><br></td></tr><tr><td class="line-number" value="455"></td><td cl
+ss="line-content">            <span class="html-comment">&lt;!-- Categ=
+ories List --&gt;</span></td></tr><tr><td class="line-number" value="45"></td><td class="line-content">            <span class="html-tag">&lt=
+;div <span class="html-attribute-name">class</span>="<span class="htm=
+l-attribute-value">categories-list</span>"&gt;</span></td></tr><tr><td clas=
+s="line-number" value="457"></td><td class="line-content">           =
+     <span class="html-tag">&lt;div <span class="html-attribute-name">c=
+lass</span>="<span class="html-attribute-value">list-header</span>"&gt;=
+</span></td></tr><tr><td class="line-number" value="458"></td><td class=
+="line-content">                    <span class="html-tag">&lt;span&gt;=
+</span>ID<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td cla=
+ss="line-number" value="459"></td><td class="line-content">          =
+          <span class="html-tag">&lt;span&gt;</span>ÐÐ°Ð·Ð=
+²Ð°Ð½Ð¸Ðµ / ÐÐ¿Ð¸ÑÐ°Ð½Ð¸Ð=
+µ<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class="=
+line-number" value="460"></td><td class="line-content">                =
+    <span class="html-tag">&lt;span <span class="html-attribute-name">s=
+tyle</span>="<span class="html-attribute-value">text-align: center;</sp
+n>"&gt;</span>ÐÐ¾ÑÑÐ´Ð¾Ðº<span class="htm=
+l-tag">&lt;/span&gt;</span></td></tr><tr><td class="line-number" value==
+"461"></td><td class="line-content">                    <span class="ht=
+ml-tag">&lt;span <span class="html-attribute-name">style</span>="<span lass="html-attribute-value">text-align: center;</span>"&gt;</span>Ð=
+Ð° ÑÐ°Ð¹ÑÐµ<span class="html-tag">&lt;/span&gt;=
+</span></td></tr><tr><td class="line-number" value="462"></td><td class=
+="line-content">                    <span class="html-tag">&lt;span <sp
+n class="html-attribute-name">style</span>="<span class="html-attrib=
+ute-value">text-align: center;</span>"&gt;</span>Ð Ð¼ÐµÐ½=
+Ñ<span class="html-tag">&lt;/span&gt;</span></td></tr><tr><td class=
+="line-number" value="463"></td><td class="line-content">            =
+        <span class="html-tag">&lt;span <span class="html-attribute-nam">style</span>="<span class="html-attribute-value">text-align: center;=
+</span>"&gt;</span>Ð¡ÑÐ°ÑÑÑ<span class="html-=
+tag">&lt;/span&gt;</span></td></tr><tr><td class="line-number" value="44"></td><td class="line-content">                    <span class="html=
+-tag">&lt;span <span class="html-attribute-name">style</span>="<span cl
+ss="html-attribute-value">text-align: right;</span>"&gt;</span>ÐÐ=
+µÐ¹ÑÑÐ²Ð¸Ñ<span class="html-tag">&lt;/span&g=
+t;</span></td></tr><tr><td class="line-number" value="465"></td><td cla=
+ss="line-content">                <span class="html-tag">&lt;/div&gt;</=
+span></td></tr><tr><td class="line-number" value="466"></td><td class=
+="line-content">                <span class="html-tag">&lt;div <span cl
+ss="html-attribute-name">id</span>="<span class="html-attribute-valu">categoriesList</span>"&gt;</span></td></tr><tr><td class="line-number"=
+ value="467"></td><td class="line-content">                    <span cl
+ss="html-comment">&lt;!-- Categories loaded here --&gt;</span></td></tr>=
+<tr><td class="line-number" value="468"></td><td class="line-content"=
+>                <span class="html-tag">&lt;/div&gt;</span></td></tr><tr>=
+<td class="line-number" value="469"></td><td class="line-content">   =
+         <span class="html-tag">&lt;/div&gt;</span></td></tr><tr><td clas=
+s="line-number" value="470"></td><td class="line-content"><br></td></=
+tr><tr><td class="line-number" value="471"></td><td class="line-conte=
+nt">            <span class="html-comment">&lt;!-- Import Section --&gt;<=
+/span></td></tr><tr><td class="line-number" value="472"></td><td class=
+="line-content">            <span class="html-tag">&lt;div <span class=
+="html-attribute-name">class</span>="<span class="html-attribute-valu">import-section</span>"&gt;</span></td></tr><tr><td class="line-number"=
+ value="473"></td><td class="line-content">                <span class=
+="html-tag">&lt;h4&gt;</span>ð¥ ÐÐ¼Ð¿Ð¾Ñ=
+Ñ ÐºÐ°ÑÐµÐ³Ð¾ÑÐ¸Ð¹ Ð¸Ð· =
+ÑÐ°Ð¹Ð»Ð°<span class="html-tag">&lt;/h4&gt;</span></=
+td></tr><tr><td class="line-number" value="474"></td><td class="line-ontent">                <span class="html-tag">&lt;p <span class="html=
+-attribute-name">style</span>="<span class="html-attribute-value">color=
+: #888; margin-bottom: 15px; font-size: 14px;</span>"&gt;</span></td></tr><=
+tr><td class="line-number" value="475"></td><td class="line-content">=
+                    ÐÐ°Ð³ÑÑÐ·Ð¸ÑÐµ SV Ð¸Ð»Ð¸ Excel ÑÐ°Ð¹Ð» Ñ ÐºÐ°=
+ÑÐµÐ³Ð¾ÑÐ¸ÑÐ¼Ð¸. Ð¤Ð¾Ñ=
+Ð¼Ð°Ñ: Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ, Ð=
+¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ðµ (Ð¾Ð¿ÑÐ¸Ð=
+¾Ð½Ð°Ð»ÑÐ½Ð¾)</td></tr><tr><td class="line-numer" value="476"></td><td class="line-content">                <span cl
+ss="html-tag">&lt;/p&gt;</span></td></tr><tr><td class="line-number" v
+lue="477"></td><td class="line-content">                <span class==
+"html-tag">&lt;div <span class="html-attribute-name">class</span>="<spa=
+n class="html-attribute-value">file-input-wrapper</span>"&gt;</span></td>=
+</tr><tr><td class="line-number" value="478"></td><td class="line-con=
+tent">                    <span class="html-tag">&lt;input <span class==
+"html-attribute-name">type</span>="<span class="html-attribute-value">f=
+ile</span>" <span class="html-attribute-name">id</span>="<span class==
+"html-attribute-value">importFile</span>" <span class="html-attribute-nam">accept</span>="<span class="html-attribute-value">.csv,.xlsx,.xls</s=
+pan>" <span class="html-attribute-name">onchange</span>="<span class==
+"html-attribute-value">importCategories()</span>"&gt;</span></td></tr><tr><=
+td class="line-number" value="479"></td><td class="line-content">    =
+                <span class="html-tag">&lt;label <span class="html-attr=
+ibute-name">for</span>="<span class="html-attribute-value">importFile</=
+span>" <span class="html-attribute-name">class</span>="<span class="h=
+tml-attribute-value">file-input-label</span>"&gt;</span>ÐÑÐ±=
+ÑÐ°ÑÑ ÑÐ°Ð¹Ð»<span class="html-tag">&=
+lt;/label&gt;</span></td></tr><tr><td class="line-number" value="480"><=
+/td><td class="line-content">                <span class="html-tag">&lt=
+;/div&gt;</span></td></tr><tr><td class="line-number" value="481"></td>=
+<td class="line-content">                <span class="html-tag">&lt;spa=
+n <span class="html-attribute-name">id</span>="<span class="html-attr=
+ibute-value">selectedFileName</span>" <span class="html-attribute-name">s=
+tyle</span>="<span class="html-attribute-value">margin-left: 15px; colo=
+r: #888;</span>"&gt;</span><span class="html-tag">&lt;/span&gt;</span></t></tr><tr><td class="line-number" value="482"></td><td class="line-c=
+ontent">            <span class="html-tag">&lt;/div&gt;</span></td></tr><=
+tr><td class="line-number" value="483"></td><td class="line-content">=
+        <span class="html-tag">&lt;/main&gt;</span></td></tr><tr><td clas=
+s="line-number" value="484"></td><td class="line-content">    <span c=
+lass="html-tag">&lt;/div&gt;</span></td></tr><tr><td class="line-number=
+" value="485"></td><td class="line-content"><br></td></tr><tr><td class=
+="line-number" value="486"></td><td class="line-content">    <span cl
+ss="html-tag">&lt;script&gt;</span></td></tr><tr><td class="line-numbe=
+r" value="487"></td><td class="line-content">        const API_URL = =
+'/api';</td></tr><tr><td class="line-number" value="488"></td><td class=
+="line-content">        let currentTab = 'ingredients';</td></tr><tr><t class="line-number" value="489"></td><td class="line-content">     =
+   let ingredientCategories = [];</td></tr><tr><td class="line-number" =
+value="490"></td><td class="line-content">        let productCategories=
+ = [];</td></tr><tr><td class="line-number" value="491"></td><td clas=
+s="line-content">        let draggedCategoryId = null;</td></tr><tr><td=
+ class="line-number" value="492"></td><td class="line-content">      =
+  let isSavingOrder = false;</td></tr><tr><td class="line-number" value=
+="493"></td><td class="line-content"><br></td></tr><tr><td class="lin-number" value="494"></td><td class="line-content">        function to=
+ggleSection(header) {</td></tr><tr><td class="line-number" value="495">=
+</td><td class="line-content">            header.classList.toggle('collap=
+sed');</td></tr><tr><td class="line-number" value="496"></td><td class=
+="line-content">            header.nextElementSibling.classList.toggle('c=
+ollapsed');</td></tr><tr><td class="line-number" value="497"></td><td c=
+lass="line-content">        }</td></tr><tr><td class="line-number" valu="498"></td><td class="line-content"><br></td></tr><tr><td class="li=
+ne-number" value="499"></td><td class="line-content">        function s=
+witchTab(tab) {</td></tr><tr><td class="line-number" value="500"></td><=
+td class="line-content">            currentTab = tab;</td></tr><tr><td lass="line-number" value="501"></td><td class="line-content">       =
+     document.querySelectorAll('.tab').forEach(t =&gt; t.classList.remove=
+('active'));</td></tr><tr><td class="line-number" value="502"></td><td lass="line-content">            event.target.classList.add('active');</t></tr><tr><td class="line-number" value="503"></td><td class="line-c=
+ontent">            updateHeader();</td></tr><tr><td class="line-number" =
+value="504"></td><td class="line-content">            renderCategories(=
+);</td></tr><tr><td class="line-number" value="505"></td><td class="l=
+ine-content">        }</td></tr><tr><td class="line-number" value="506"=
+></td><td class="line-content">        </td></tr><tr><td class="line-nu=
+mber" value="507"></td><td class="line-content">        function update=
+Header() {</td></tr><tr><td class="line-number" value="508"></td><td cl
+ss="line-content">            const header = document.querySelector('.=
+list-header');</td></tr><tr><td class="line-number" value="509"></td><t class="line-content">            if (currentTab === 'ingredients'=
+) {</td></tr><tr><td class="line-number" value="510"></td><td class="=
+line-content">                header.innerHTML = `</td></tr><tr><td class=
+="line-number" value="511"></td><td class="line-content">            =
+        &lt;span&gt;ID&lt;/span&gt;</td></tr><tr><td class="line-number" =
+value="512"></td><td class="line-content">                    &lt;span&=
+gt;ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ / ÐÐ¿Ð¸Ñ=
+Ð°Ð½Ð¸Ðµ&lt;/span&gt;</td></tr><tr><td class="line-numer" value="513"></td><td class="line-content">                    &lt;=
+span style="text-align: center;"&gt;â&lt;/span&gt;</td></tr><tr><=
+td class="line-number" value="514"></td><td class="line-content">    =
+                &lt;span style="text-align: center;"&gt;ÐÐ° Ñ=
+Ð°Ð¹ÑÐµ&lt;/span&gt;</td></tr><tr><td class="line-numer" value="515"></td><td class="line-content">                    &lt;=
+span style="text-align: center;"&gt;Ð Ð¼ÐµÐ½Ñ&lt;/s=
+pan&gt;</td></tr><tr><td class="line-number" value="516"></td><td class=
+="line-content">                    &lt;span style="text-align: center;=
+"&gt;Ð¡ÑÐ°ÑÑÑ&lt;/span&gt;</td></tr><tr><td cla=
+ss="line-number" value="517"></td><td class="line-content">          =
+          &lt;span style="text-align: right;"&gt;ÐÐµÐ¹Ñ=
+ÑÐ²Ð¸Ñ&lt;/span&gt;</td></tr><tr><td class="line-number=
+" value="518"></td><td class="line-content">                `;</td></tr=
+><tr><td class="line-number" value="519"></td><td class="line-content=
+">            } else {</td></tr><tr><td class="line-number" value="520"=
+></td><td class="line-content">                header.innerHTML = `</td=
+></tr><tr><td class="line-number" value="521"></td><td class="line-co=
+ntent">                    &lt;span&gt;ID&lt;/span&gt;</td></tr><tr><td cla=
+ss="line-number" value="522"></td><td class="line-content">          =
+          &lt;span&gt;ÐÐ°Ð·Ð²Ð°Ð½Ð¸Ðµ / =
+ÐÐ¿Ð¸ÑÐ°Ð½Ð¸Ðµ&lt;/span&gt;</td></tr><tr>=
+<td class="line-number" value="523"></td><td class="line-content">   =
+                 &lt;span style="text-align: center;"&gt;ÐÐ¾Ñ=
+ÑÐ´Ð¾Ðº&lt;/span&gt;</td></tr><tr><td class="line-numer" value="524"></td><td class="line-content">                    &lt;=
+span style="text-align: center;"&gt;ÐÐ° ÑÐ°Ð¹Ñ=
+Ðµ&lt;/span&gt;</td></tr><tr><td class="line-number" value="525"></=
+td><td class="line-content">                    &lt;span style="text-al=
+ign: center;"&gt;Ð Ð¼ÐµÐ½Ñ&lt;/span&gt;</td></tr><tr>=
+<td class="line-number" value="526"></td><td class="line-content">   =
+                 &lt;span style="text-align: center;"&gt;Ð¡ÑÐ=
+°ÑÑÑ&lt;/span&gt;</td></tr><tr><td class="line-number" v
+lue="527"></td><td class="line-content">                    &lt;span s=
+tyle="text-align: right;"&gt;ÐÐµÐ¹ÑÑÐ²Ð¸=
+Ñ&lt;/span&gt;</td></tr><tr><td class="line-number" value="528"></=
+td><td class="line-content">                `;</td></tr><tr><td class="=
+line-number" value="529"></td><td class="line-content">            }</t></tr><tr><td class="line-number" value="530"></td><td class="line-c=
+ontent">        }</td></tr><tr><td class="line-number" value="531"></td=
+><td class="line-content"><br></td></tr><tr><td class="line-number" val=
+ue="532"></td><td class="line-content">        async function loadData(=
+) {</td></tr><tr><td class="line-number" value="533"></td><td class="=
+line-content">            const [ingRes, prodRes] = await Promise.all([</=
+td></tr><tr><td class="line-number" value="534"></td><td class="line-ontent">                fetch(`${API_URL}/menu/ingredient-categories`),</t></tr><tr><td class="line-number" value="535"></td><td class="line-c=
+ontent">                fetch(`${API_URL}/menu/product-categories`)</td></t=
+r><tr><td class="line-number" value="536"></td><td class="line-conten=
+t">            ]);</td></tr><tr><td class="line-number" value="537"></t><td class="line-content">            ingredientCategories = await ing=
+Res.json();</td></tr><tr><td class="line-number" value="538"></td><td c=
+lass="line-content">            productCategories = await prodRes.json(=
+);</td></tr><tr><td class="line-number" value="539"></td><td class="l=
+ine-content">            renderCategories();</td></tr><tr><td class="line=
+-number" value="540"></td><td class="line-content">        }</td></tr><=
+tr><td class="line-number" value="541"></td><td class="line-content">=
+<br></td></tr><tr><td class="line-number" value="542"></td><td class==
+"line-content">        function renderCategories() {</td></tr><tr><td class=
+="line-number" value="543"></td><td class="line-content">            onst container = document.getElementById('categoriesList');</td></tr><tr=
+><td class="line-number" value="544"></td><td class="line-content">  =
+          const categories = currentTab === 'ingredients' ? ingredintCategories : productCategories;</td></tr><tr><td class="line-number" v
+lue="545"></td><td class="line-content">            </td></tr><tr><td lass="line-number" value="546"></td><td class="line-content">       =
+     if (categories.length === 0) {</td></tr><tr><td class="line-nu=
+mber" value="547"></td><td class="line-content">                containr.innerHTML = `</td></tr><tr><td class="line-number" value="548"></t><td class="line-content">                    &lt;div class="empty-sta=
+te"&gt;</td></tr><tr><td class="line-number" value="549"></td><td class=
+="line-content">                        &lt;div class="empty-state-icon=
+"&gt;ð&lt;/div&gt;</td></tr><tr><td class="line-number" value=
+="550"></td><td class="line-content">                        &lt;h3&gt;=
+ÐÐµÑ ÐºÐ°ÑÐµÐ³Ð¾ÑÐ¸Ð¹&l=
+t;/h3&gt;</td></tr><tr><td class="line-number" value="551"></td><td cla=
+ss="line-content">                        &lt;p&gt;ÐÐ¾Ð±Ð=
+°Ð²ÑÑÐµ Ð¿ÐµÑÐ²ÑÑ ÐºÐ=
+°ÑÐµÐ³Ð¾ÑÐ¸Ñ Ð²ÑÑÐµ&lt;/=
+p&gt;</td></tr><tr><td class="line-number" value="552"></td><td class=
+="line-content">                    &lt;/div&gt;</td></tr><tr><td class=
+="line-number" value="553"></td><td class="line-content">            =
+    `;</td></tr><tr><td class="line-number" value="554"></td><td class=
+="line-content">                return;</td></tr><tr><td class="line-nu=
+mber" value="555"></td><td class="line-content">            }</td></tr>=
+<tr><td class="line-number" value="556"></td><td class="line-content"=
+>            </td></tr><tr><td class="line-number" value="557"></td><td=
+ class="line-content">            container.innerHTML = categories.map(=
+(cat, index) =&gt; `</td></tr><tr><td class="line-number" value="558"=
+></td><td class="line-content">                &lt;div class="category-=
+row" </td></tr><tr><td class="line-number" value="559"></td><td class=
+="line-content">                     draggable="true" </td></tr><tr><td=
+ class="line-number" value="560"></td><td class="line-content">      =
+               data-category-id="${cat.id}"</td></tr><tr><td class="lin-number" value="561"></td><td class="line-content">                   =
+  ondragstart="handleCategoryDragStart(event, ${cat.id})"</td></tr><tr><t class="line-number" value="562"></td><td class="line-content">     =
+                ondragover="handleCategoryDragOver(event)"</td></tr><tr><=
+td class="line-number" value="563"></td><td class="line-content">    =
+                 ondrop="handleCategoryDrop(event, ${cat.id})"</td></tr><=
+tr><td class="line-number" value="564"></td><td class="line-content">=
+                     ondragend="handleCategoryDragEnd(event)"</td></tr><t=
+r><td class="line-number" value="565"></td><td class="line-content"> =
+                    style="cursor: move;"&gt;</td></tr><tr><td class="l=
+ine-number" value="566"></td><td class="line-content">                 =
+   &lt;span class="cat-id"&gt;</td></tr><tr><td class="line-number" val=
+ue="567"></td><td class="line-content">                        &lt;span=
+ class="drag-handle" style="cursor: grab; color: #666; font-size: 16px;=
+ margin-right: 8px;"&gt;â°&lt;/span&gt;</td></tr><tr><td class="li=
+ne-number" value="568"></td><td class="line-content">                  =
+      #${cat.id}</td></tr><tr><td class="line-number" value="569"></td>=
+<td class="line-content">                    &lt;/span&gt;</td></tr><tr><=
+td class="line-number" value="570"></td><td class="line-content">    =
+                &lt;div class="cat-name"&gt;</td></tr><tr><td class="li=
+ne-number" value="571"></td><td class="line-content">                  =
+      &lt;span&gt;${cat.name}&lt;/span&gt;</td></tr><tr><td class="line-n=
+umber" value="572"></td><td class="line-content">                      =
+  &lt;span class="cat-desc"&gt;${cat.description || 'ÐÐµÑ =
+Ð¾Ð¿Ð¸ÑÐ°Ð½Ð¸Ñ'}&lt;/span&gt;</td></tr><t=
+r><td class="line-number" value="573"></td><td class="line-content"> =
+                   &lt;/div&gt;</td></tr><tr><td class="line-number" valu="574"></td><td class="line-content">                    ${currentTab =
+=== 'products' ? `</td></tr><tr><td class="line-number" value="57"></td><td class="line-content">                    &lt;div class="cat=
+-sort" style="text-align: center; display: flex; align-items: center; jus=
+tify-content: center; gap: 5px;"&gt;</td></tr><tr><td class="line-number"=
+ value="576"></td><td class="line-content">                        &lt;utton class="btn btn-secondary btn-sm" onclick="moveCategory(${cat.id}=
+, -1)" title="ÐÐ²ÐµÑÑ"&gt;â&lt;/button&gt;=
+</td></tr><tr><td class="line-number" value="577"></td><td class="lin-content">                        &lt;span style="min-width: 30px; text-
+lign: center;"&gt;${cat.sort_order || 0}&lt;/span&gt;</td></tr><tr><td cla=
+ss="line-number" value="578"></td><td class="line-content">          =
+              &lt;button class="btn btn-secondary btn-sm" onclick="moveategory(${cat.id}, 1)" title="ÐÐ½Ð¸Ð·"&gt;â&lt;=
+/button&gt;</td></tr><tr><td class="line-number" value="579"></td><td c=
+lass="line-content">                    &lt;/div&gt;</td></tr><tr><td cla=
+ss="line-number" value="580"></td><td class="line-content">          =
+          ` : '&lt;span style="text-align: center; color: #666;"&gt;â=
+&lt;/span&gt;'}</td></tr><tr><td class="line-number" value="581">=
+</td><td class="line-content">                    &lt;div style="text-a=
+lign: center;"&gt;</td></tr><tr><td class="line-number" value="582"></t><td class="line-content">                        &lt;label class="tog=
+gle-switch" title="ÐÐ¸Ð´Ð¸Ð¼Ð¾ÑÑÑ=
+ Ð½Ð° ÑÐ°Ð¹ÑÐµ"&gt;</td></tr><tr><td class==
+"line-number" value="583"></td><td class="line-content">               =
+             &lt;input type="checkbox" </td></tr><tr><td class="line-nu=
+mber" value="584"></td><td class="line-content">                       =
+            ${cat.is_visible_on_site !== false ? 'checked' : ''} </td><=
+/tr><tr><td class="line-number" value="585"></td><td class="line-contnt">                                   onchange="toggleVisibility(${cat.=
+id}, 'is_visible_on_site', this.checked)"&gt;</td></tr><tr><td class="lin-number" value="586"></td><td class="line-content">                   =
+         &lt;span class="toggle-slider"&gt;&lt;/span&gt;</td></tr><tr><td=
+ class="line-number" value="587"></td><td class="line-content">      =
+                  &lt;/label&gt;</td></tr><tr><td class="line-number" val=
+ue="588"></td><td class="line-content">                    &lt;/div&gt;=
+</td></tr><tr><td class="line-number" value="589"></td><td class="lin-content">                    &lt;div style="text-align: center;"&gt;</t></tr><tr><td class="line-number" value="590"></td><td class="line-c=
+ontent">                        &lt;label class="toggle-switch" title="=
+ÐÐ¸Ð´Ð¸Ð¼Ð¾ÑÑÑ Ð² Ð¼Ðµ=
+Ð½Ñ"&gt;</td></tr><tr><td class="line-number" value="591"></td=
+><td class="line-content">                            &lt;input type="c=
+heckbox" </td></tr><tr><td class="line-number" value="592"></td><td cla=
+ss="line-content">                                   ${cat.is_visible_in_=
+menu !== false ? 'checked' : ''} </td></tr><tr><td class="line-number=
+" value="593"></td><td class="line-content">                           =
+        onchange="toggleVisibility(${cat.id}, 'is_visible_in_menu', this.hecked)"&gt;</td></tr><tr><td class="line-number" value="594"></td><td=
+ class="line-content">                            &lt;span class="toggl-slider"&gt;&lt;/span&gt;</td></tr><tr><td class="line-number" value="95"></td><td class="line-content">                        &lt;/label&gt;=
+</td></tr><tr><td class="line-number" value="596"></td><td class="lin-content">                    &lt;/div&gt;</td></tr><tr><td class="line-=
+number" value="597"></td><td class="line-content">                    &=
+lt;div style="text-align: center;"&gt;</td></tr><tr><td class="line-numer" value="598"></td><td class="line-content">                        =
+&lt;label class="toggle-switch" title="ÐÐºÑÐ¸Ð²=
+Ð½Ð°"&gt;</td></tr><tr><td class="line-number" value="599"></td=
+><td class="line-content">                            &lt;input type="c=
+heckbox" </td></tr><tr><td class="line-number" value="600"></td><td cla=
+ss="line-content">                                   ${cat.is_active !==
+= false ? 'checked' : ''} </td></tr><tr><td class="line-number" value=
+="601"></td><td class="line-content">                                  =
+ onchange="toggleVisibility(${cat.id}, 'is_active', this.checked)"&gt;</t></tr><tr><td class="line-number" value="602"></td><td class="line-c=
+ontent">                            &lt;span class="toggle-slider"&gt;&lt=
+;/span&gt;</td></tr><tr><td class="line-number" value="603"></td><td cl
+ss="line-content">                        &lt;/label&gt;</td></tr><tr><t class="line-number" value="604"></td><td class="line-content">     =
+               &lt;/div&gt;</td></tr><tr><td class="line-number" value==
+"605"></td><td class="line-content">                    &lt;div class="
+ctions"&gt;</td></tr><tr><td class="line-number" value="606"></td><td lass="line-content">                        &lt;button class="btn btn-=
+secondary btn-sm" onclick="editCategory(${cat.id})" title="Ð Ðµ=
+Ð´Ð°ÐºÑÐ¸ÑÐ¾Ð²Ð°ÑÑ"&gt;â=
+ï¸&lt;/button&gt;</td></tr><tr><td class="line-number" value=
+="607"></td><td class="line-content">                        &lt;button=
+ class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})" titl="Ð£Ð´Ð°Ð»Ð¸ÑÑ"&gt;ðï¸&l=
+t;/button&gt;</td></tr><tr><td class="line-number" value="608"></td><td=
+ class="line-content">                    &lt;/div&gt;</td></tr><tr><td c=
+lass="line-number" value="609"></td><td class="line-content">        =
+        &lt;/div&gt;</td></tr><tr><td class="line-number" value="610"><=
+/td><td class="line-content">            `).join('');</td></tr><tr><td cl
+ss="line-number" value="611"></td><td class="line-content">        }=
+</td></tr><tr><td class="line-number" value="612"></td><td class="lin-content"><br></td></tr><tr><td class="line-number" value="613"></td><=
+td class="line-content">        async function addCategory() {</td></tr><=
+tr><td class="line-number" value="614"></td><td class="line-content">=
+            const name = document.getElementById('newCategoryName').value=
+.trim();</td></tr><tr><td class="line-number" value="615"></td><td clas=
+s="line-content">            const description = document.getElementByI('newCategoryDesc').value.trim();</td></tr><tr><td class="line-number" v
+lue="616"></td><td class="line-content">            </td></tr><tr><td lass="line-number" value="617"></td><td class="line-content">       =
+     if (!name) {</td></tr><tr><td class="line-number" value="618"></td=
+><td class="line-content">                alert('ÐÐ²ÐµÐ´=
+Ð¸ÑÐµ Ð½Ð°Ð·Ð²Ð°Ð½Ð¸Ðµ Ðº=
+Ð°ÑÐµÐ³Ð¾ÑÐ¸Ð¸');</td></tr><tr><td class=
+="line-number" value="619"></td><td class="line-content">            =
+    return;</td></tr><tr><td class="line-number" value="620"></td><td c=
+lass="line-content">            }</td></tr><tr><td class="line-number" =
+value="621"></td><td class="line-content">            </td></tr><tr><td=
+ class="line-number" value="622"></td><td class="line-content">      =
+      const endpoint = currentTab === 'ingredients' </td></tr><tr><=
+td class="line-number" value="623"></td><td class="line-content">    =
+            ? 'ingredient-categories' </td></tr><tr><td class="line-numbe=
+r" value="624"></td><td class="line-content">                : 'product=
+-categories';</td></tr><tr><td class="line-number" value="625"></td><td=
+ class="line-content">            </td></tr><tr><td class="line-number"=
+ value="626"></td><td class="line-content">            const data = c=
+urrentTab === 'ingredients' </td></tr><tr><td class="line-number" v
+lue="627"></td><td class="line-content">                ? { name, desc=
+ription, is_visible_on_site: true, is_visible_in_menu: true }</td></tr><tr>=
+<td class="line-number" value="628"></td><td class="line-content">   =
+             : { name, description, sort_order: 0, is_visible_on_site: true=
+, is_visible_in_menu: true };</td></tr><tr><td class="line-number" value=
+="629"></td><td class="line-content">            </td></tr><tr><td clas=
+s="line-number" value="630"></td><td class="line-content">           =
+ try {</td></tr><tr><td class="line-number" value="631"></td><td class=
+="line-content">                const res = await fetch(`${API_URL}/men=
+u/${endpoint}`, {</td></tr><tr><td class="line-number" value="632"></td=
+><td class="line-content">                    method: 'POST',</td></tr><t=
+r><td class="line-number" value="633"></td><td class="line-content"> =
+                   headers: { 'Content-Type': 'application/json' },</td></t=
+r><tr><td class="line-number" value="634"></td><td class="line-conten=
+t">                    body: JSON.stringify(data)</td></tr><tr><td class==
+"line-number" value="635"></td><td class="line-content">               =
+ });</td></tr><tr><td class="line-number" value="636"></td><td class==
+"line-content">                </td></tr><tr><td class="line-number" valu="637"></td><td class="line-content">                if (res.ok) {</td=
+></tr><tr><td class="line-number" value="638"></td><td class="line-co=
+ntent">                    document.getElementById('newCategoryName').value=
+ = '';</td></tr><tr><td class="line-number" value="639"></td><td clas=
+s="line-content">                    document.getElementById('newCategoryesc').value = '';</td></tr><tr><td class="line-number" value="640"><=
+/td><td class="line-content">                    await loadData();</td></=
+tr><tr><td class="line-number" value="641"></td><td class="line-conte=
+nt">                } else {</td></tr><tr><td class="line-number" value=
+="642"></td><td class="line-content">                    const err = 
+wait res.json();</td></tr><tr><td class="line-number" value="643"></td=
+><td class="line-content">                    alert(err.detail || 'Ð=
+ÑÐ¸Ð±ÐºÐ° ÑÐ¾Ð·Ð´Ð°Ð½Ð¸=
+Ñ');</td></tr><tr><td class="line-number" value="644"></td><td cla=
+ss="line-content">                }</td></tr><tr><td class="line-number=
+" value="645"></td><td class="line-content">            } catch (error)=
+ {</td></tr><tr><td class="line-number" value="646"></td><td class="l=
+ine-content">                console.error('Error:', error);</td></tr><tr><=
+td class="line-number" value="647"></td><td class="line-content">    =
+            alert('ÐÑÐ¸Ð±ÐºÐ° ÑÐ¾Ðµ=
+Ð´Ð¸Ð½ÐµÐ½Ð¸Ñ');</td></tr><tr><td class="lin-number" value="648"></td><td class="line-content">            }</td><=
+/tr><tr><td class="line-number" value="649"></td><td class="line-contnt">        }</td></tr><tr><td class="line-number" value="650"></td><t class="line-content"><br></td></tr><tr><td class="line-number" value=
+="651"></td><td class="line-content">        async function toggleVisib=
+ility(id, field, value) {</td></tr><tr><td class="line-number" value="62"></td><td class="line-content">            const endpoint = currentT
+b === 'ingredients' </td></tr><tr><td class="line-number" value==
+"653"></td><td class="line-content">                ? 'ingredient-categor=
+ies' </td></tr><tr><td class="line-number" value="654"></td><td class=
+="line-content">                : 'product-categories';</td></tr><tr><td lass="line-number" value="655"></td><td class="line-content">       =
+     </td></tr><tr><td class="line-number" value="656"></td><td class=
+="line-content">            const data = { [field]: value };</td></tr><=
+tr><td class="line-number" value="657"></td><td class="line-content">=
+            </td></tr><tr><td class="line-number" value="658"></td><td lass="line-content">            try {</td></tr><tr><td class="line-numer" value="659"></td><td class="line-content">                const re=
+s = await fetch(`${API_URL}/menu/${endpoint}/${id}`, {</td></tr><tr><td c=
+lass="line-number" value="660"></td><td class="line-content">        =
+            method: 'PUT',</td></tr><tr><td class="line-number" value="61"></td><td class="line-content">                    headers: { 'Conten=
+t-Type': 'application/json' },</td></tr><tr><td class="line-number" value=
+="662"></td><td class="line-content">                    body: JSON.str=
+ingify(data)</td></tr><tr><td class="line-number" value="663"></td><td lass="line-content">                });</td></tr><tr><td class="line-n=
+umber" value="664"></td><td class="line-content">                </td><=
+/tr><tr><td class="line-number" value="665"></td><td class="line-contnt">                if (!res.ok) {</td></tr><tr><td class="line-number" =
+value="666"></td><td class="line-content">                    const err=
+ = await res.json();</td></tr><tr><td class="line-number" value="667"=
+></td><td class="line-content">                    alert(err.detail || '=
+ÐÑÐ¸Ð±ÐºÐ° Ð¾Ð±Ð½Ð¾Ð²Ð»=
+ÐµÐ½Ð¸Ñ');</td></tr><tr><td class="line-number" value==
+"668"></td><td class="line-content">                    await loadData();=
+ // Reload to reset toggle</td></tr><tr><td class="line-number" value="69"></td><td class="line-content">                }</td></tr><tr><td cla=
+ss="line-number" value="670"></td><td class="line-content">          =
+  } catch (error) {</td></tr><tr><td class="line-number" value="671"></=
+td><td class="line-content">                console.error('Error:', error=
+);</td></tr><tr><td class="line-number" value="672"></td><td class="l=
+ine-content">                alert('ÐÑÐ¸Ð±ÐºÐ° =
+ÑÐ¾ÐµÐ´Ð¸Ð½ÐµÐ½Ð¸Ñ');</td></tr><t=
+r><td class="line-number" value="673"></td><td class="line-content"> =
+               await loadData();</td></tr><tr><td class="line-number" val=
+ue="674"></td><td class="line-content">            }</td></tr><tr><td c=
+lass="line-number" value="675"></td><td class="line-content">        =
+}</td></tr><tr><td class="line-number" value="676"></td><td class="li=
+ne-content"><br></td></tr><tr><td class="line-number" value="677"></td>=
+<td class="line-content">        async function moveCategory(id, directio=
+n) {</td></tr><tr><td class="line-number" value="678"></td><td class==
+"line-content">            if (currentTab !== 'products') return;</td><=
+/tr><tr><td class="line-number" value="679"></td><td class="line-contnt">            </td></tr><tr><td class="line-number" value="680"></td=
+><td class="line-content">            const categories = [...productCatgories]; // Copy array</td></tr><tr><td class="line-number" value="681=
+"></td><td class="line-content">            const idx = categories.find=
+Index(c =&gt; c.id === id);</td></tr><tr><td class="line-number" =
+value="682"></td><td class="line-content">            if (idx ====
+ -1) return;</td></tr><tr><td class="line-number" value="683"></td><td lass="line-content">            </td></tr><tr><td class="line-number" =
+value="684"></td><td class="line-content">            const currentCat =
+= categories[idx];</td></tr><tr><td class="line-number" value="685"><=
+/td><td class="line-content">            const currentOrder = currentCa=
+t.sort_order || 0;</td></tr><tr><td class="line-number" value="686"></t><td class="line-content">            </td></tr><tr><td class="line-nu=
+mber" value="687"></td><td class="line-content">            // Find catgory to swap with</td></tr><tr><td class="line-number" value="688"></t><td class="line-content">            let swapIdx = -1;</td></tr><tr><=
+td class="line-number" value="689"></td><td class="line-content">    =
+        if (direction === -1 &amp;&amp; idx &gt; 0) {</td></tr><tr><t class="line-number" value="690"></td><td class="line-content">     =
+           // Move up - find category with closest lower sort_order</td></t=
+r><tr><td class="line-number" value="691"></td><td class="line-conten=
+t">                swapIdx = idx - 1;</td></tr><tr><td class="line-numbr" value="692"></td><td class="line-content">            } else if (di=
+rection === 1 &amp;&amp; idx &lt; categories.length - 1) {</td></tr><=
+tr><td class="line-number" value="693"></td><td class="line-content">=
+                // Move down - find category with closest higher sort_order=
+</td></tr><tr><td class="line-number" value="694"></td><td class="lin-content">                swapIdx = idx + 1;</td></tr><tr><td class="l=
+ine-number" value="695"></td><td class="line-content">            }</td=
+></tr><tr><td class="line-number" value="696"></td><td class="line-co=
+ntent">            </td></tr><tr><td class="line-number" value="697"></=
+td><td class="line-content">            if (swapIdx === -1) return;=
+ // Can't move further</td></tr><tr><td class="line-number" value="698"=
+></td><td class="line-content">            </td></tr><tr><td class="lin-number" value="699"></td><td class="line-content">            const s=
+wapCat = categories[swapIdx];</td></tr><tr><td class="line-number" valu="700"></td><td class="line-content">            const swapOrder = s=
+wapCat.sort_order || 0;</td></tr><tr><td class="line-number" value="701=
+"></td><td class="line-content">            </td></tr><tr><td class="li=
+ne-number" value="702"></td><td class="line-content">            // Swa=
+p sort orders</td></tr><tr><td class="line-number" value="703"></td><td=
+ class="line-content">            try {</td></tr><tr><td class="line-nu=
+mber" value="704"></td><td class="line-content">                const rs1 = await fetch(`${API_URL}/menu/product-categories/${currentCat.id}`, =
+{</td></tr><tr><td class="line-number" value="705"></td><td class="li=
+ne-content">                    method: 'PUT',</td></tr><tr><td class="li=
+ne-number" value="706"></td><td class="line-content">                  =
+  headers: { 'Content-Type': 'application/json' },</td></tr><tr><td class=
+="line-number" value="707"></td><td class="line-content">            =
+        body: JSON.stringify({ sort_order: swapOrder })</td></tr><tr><td cl
+ss="line-number" value="708"></td><td class="line-content">         =
+       });</td></tr><tr><td class="line-number" value="709"></td><td cl
+ss="line-content">                </td></tr><tr><td class="line-number=
+" value="710"></td><td class="line-content">                const res2 =
+= await fetch(`${API_URL}/menu/product-categories/${swapCat.id}`, {</td><=
+/tr><tr><td class="line-number" value="711"></td><td class="line-contnt">                    method: 'PUT',</td></tr><tr><td class="line-numbr" value="712"></td><td class="line-content">                    heade=
+rs: { 'Content-Type': 'application/json' },</td></tr><tr><td class="line-=
+number" value="713"></td><td class="line-content">                    b=
+ody: JSON.stringify({ sort_order: currentOrder })</td></tr><tr><td class==
+"line-number" value="714"></td><td class="line-content">               =
+ });</td></tr><tr><td class="line-number" value="715"></td><td class==
+"line-content">                </td></tr><tr><td class="line-number" valu="716"></td><td class="line-content">                await loadData();=
+</td></tr><tr><td class="line-number" value="717"></td><td class="lin-content">            } catch (error) {</td></tr><tr><td class="line-numer" value="718"></td><td class="line-content">                console.rror('Error:', error);</td></tr><tr><td class="line-number" value="719=
+"></td><td class="line-content">                await loadData();</td></t=
+r><tr><td class="line-number" value="720"></td><td class="line-conten=
+t">            }</td></tr><tr><td class="line-number" value="721"></td>=
+<td class="line-content">        }</td></tr><tr><td class="line-number"=
+ value="722"></td><td class="line-content">        </td></tr><tr><td cl
+ss="line-number" value="723"></td><td class="line-content">        /=
+/ Drag and Drop for categories</td></tr><tr><td class="line-number" value=
+="724"></td><td class="line-content">        function handleCategoryDra=
+gStart(event, categoryId) {</td></tr><tr><td class="line-number" value==
+"725"></td><td class="line-content">            console.log('Category dra=
+g start:', categoryId);</td></tr><tr><td class="line-number" value="726=
+"></td><td class="line-content">            draggedCategoryId = categor=
+yId;</td></tr><tr><td class="line-number" value="727"></td><td class==
+"line-content">            event.target.classList.add('dragging');</td></tr=
+><tr><td class="line-number" value="728"></td><td class="line-content=
+">            event.dataTransfer.effectAllowed = 'move';</td></tr><tr><td=
+ class="line-number" value="729"></td><td class="line-content">      =
+      event.dataTransfer.setData('text/plain', categoryId);</td></tr><tr><t class="line-number" value="730"></td><td class="line-content">     =
+   }</td></tr><tr><td class="line-number" value="731"></td><td class==
+"line-content">        </td></tr><tr><td class="line-number" value="732=
+"></td><td class="line-content">        function handleCategoryDragOver(e=
+vent) {</td></tr><tr><td class="line-number" value="733"></td><td class=
+="line-content">            event.preventDefault();</td></tr><tr><td clas=
+s="line-number" value="734"></td><td class="line-content">           =
+ event.dataTransfer.dropEffect = 'move';</td></tr><tr><td class="line-n=
+umber" value="735"></td><td class="line-content">            const row =
+= event.target.closest('.category-row');</td></tr><tr><td class="line-n=
+umber" value="736"></td><td class="line-content">            if (row &a=
+mp;&amp; !row.classList.contains('dragging')) {</td></tr><tr><td class="l=
+ine-number" value="737"></td><td class="line-content">                r=
+ow.classList.add('drag-over');</td></tr><tr><td class="line-number" value=
+="738"></td><td class="line-content">            }</td></tr><tr><td cla=
+ss="line-number" value="739"></td><td class="line-content">        }<=
+/td></tr><tr><td class="line-number" value="740"></td><td class="line=
+-content">        </td></tr><tr><td class="line-number" value="741"></t><td class="line-content">        function handleCategoryDragEnd(event) =
+{</td></tr><tr><td class="line-number" value="742"></td><td class="li=
+ne-content">            event.target.classList.remove('dragging');</td></tr=
+><tr><td class="line-number" value="743"></td><td class="line-content=
+">            document.querySelectorAll('.category-row').forEach(row =&gt=
+; {</td></tr><tr><td class="line-number" value="744"></td><td class="=
+line-content">                row.classList.remove('drag-over');</td></tr><=
+tr><td class="line-number" value="745"></td><td class="line-content">=
+            });</td></tr><tr><td class="line-number" value="746"></td><=
+td class="line-content">        }</td></tr><tr><td class="line-number" =
+value="747"></td><td class="line-content">        </td></tr><tr><td cla=
+ss="line-number" value="748"></td><td class="line-content">        as=
+ync function handleCategoryDrop(event, targetCategoryId) {</td></tr><tr><td=
+ class="line-number" value="749"></td><td class="line-content">      =
+      event.preventDefault();</td></tr><tr><td class="line-number" value=
+="750"></td><td class="line-content">            const row = event.ta=
+rget.closest('.category-row');</td></tr><tr><td class="line-number" value=
+="751"></td><td class="line-content">            if (row) {</td></tr><t=
+r><td class="line-number" value="752"></td><td class="line-content"> =
+               row.classList.remove('drag-over');</td></tr><tr><td class==
+"line-number" value="753"></td><td class="line-content">            }</=
+td></tr><tr><td class="line-number" value="754"></td><td class="line-ontent">            </td></tr><tr><td class="line-number" value="755">=
+</td><td class="line-content">            if (!draggedCategoryId || draggdCategoryId === targetCategoryId) {</td></tr><tr><td class="line-n=
+umber" value="756"></td><td class="line-content">                return=
+;</td></tr><tr><td class="line-number" value="757"></td><td class="li=
+ne-content">            }</td></tr><tr><td class="line-number" value="78"></td><td class="line-content">            </td></tr><tr><td class="=
+line-number" value="759"></td><td class="line-content">            cons=
+ole.log('Category drop:', draggedCategoryId, '-&gt;', targetCategoryId);</t></tr><tr><td class="line-number" value="760"></td><td class="line-c=
+ontent">            await reorderCategories(draggedCategoryId, targetCatego=
+ryId);</td></tr><tr><td class="line-number" value="761"></td><td class=
+="line-content">        }</td></tr><tr><td class="line-number" value==
+"762"></td><td class="line-content">        </td></tr><tr><td class="li=
+ne-number" value="763"></td><td class="line-content">        async func=
+tion reorderCategories(draggedId, targetId) {</td></tr><tr><td class="lin-number" value="764"></td><td class="line-content">            if (isS
+vingOrder) return; // Prevent simultaneous requests</td></tr><tr><td class=
+="line-number" value="765"></td><td class="line-content">            =
+</td></tr><tr><td class="line-number" value="766"></td><td class="lin-content">            isSavingOrder = true;</td></tr><tr><td class="li=
+ne-number" value="767"></td><td class="line-content">            </td><=
+/tr><tr><td class="line-number" value="768"></td><td class="line-contnt">            const categories = currentTab === 'ingredients' ? =
+[...ingredientCategories] : [...productCategories];</td></tr><tr><td class=
+="line-number" value="769"></td><td class="line-content">            =
+</td></tr><tr><td class="line-number" value="770"></td><td class="lin-content">            const draggedIdx = categories.findIndex(c =&gt; .id === draggedId);</td></tr><tr><td class="line-number" value="71"></td><td class="line-content">            const targetIdx = catego=
+ries.findIndex(c =&gt; c.id === targetId);</td></tr><tr><td class=
+="line-number" value="772"></td><td class="line-content">            =
+</td></tr><tr><td class="line-number" value="773"></td><td class="lin-content">            if (draggedIdx === -1 || targetIdx === -) {</td></tr><tr><td class="line-number" value="774"></td><td class==
+"line-content">                isSavingOrder = false;</td></tr><tr><td cl
+ss="line-number" value="775"></td><td class="line-content">         =
+       return;</td></tr><tr><td class="line-number" value="776"></td><t class="line-content">            }</td></tr><tr><td class="line-numbe=
+r" value="777"></td><td class="line-content">            </td></tr><tr>=
+<td class="line-number" value="778"></td><td class="line-content">   =
+         // Reorder array locally first</td></tr><tr><td class="line-numbr" value="779"></td><td class="line-content">            const [remove] = categories.splice(draggedIdx, 1);</td></tr><tr><td class="line-numer" value="780"></td><td class="line-content">            categories.s=
+plice(targetIdx, 0, removed);</td></tr><tr><td class="line-number" value=
+="781"></td><td class="line-content">            </td></tr><tr><td clas=
+s="line-number" value="782"></td><td class="line-content">           =
+ // Update local state immediately</td></tr><tr><td class="line-number" v
+lue="783"></td><td class="line-content">            if (currentTab ==
+== 'ingredients') {</td></tr><tr><td class="line-number" value="784=
+"></td><td class="line-content">                ingredientCategories = ategories;</td></tr><tr><td class="line-number" value="785"></td><td c=
+lass="line-content">            } else {</td></tr><tr><td class="line-n=
+umber" value="786"></td><td class="line-content">                produc=
+tCategories = categories;</td></tr><tr><td class="line-number" value==
+"787"></td><td class="line-content">            }</td></tr><tr><td class=
+="line-number" value="788"></td><td class="line-content">            =
+renderCategories();</td></tr><tr><td class="line-number" value="789"></=
+td><td class="line-content">            </td></tr><tr><td class="line-n=
+umber" value="790"></td><td class="line-content">            // Update =
+sort_order for all categories</td></tr><tr><td class="line-number" value=
+="791"></td><td class="line-content">            const endpoint = cur=
+rentTab === 'ingredients' ? 'ingredient-categories' : 'product-catego=
+ries';</td></tr><tr><td class="line-number" value="792"></td><td class=
+="line-content">            </td></tr><tr><td class="line-number" value=
+="793"></td><td class="line-content">            setTimeout(async () =
+=&gt; {</td></tr><tr><td class="line-number" value="794"></td><td cla=
+ss="line-content">                try {</td></tr><tr><td class="line-nu=
+mber" value="795"></td><td class="line-content">                    for=
+ (let i = 0; i &lt; categories.length; i++) {</td></tr><tr><td class="l=
+ine-number" value="796"></td><td class="line-content">                 =
+       const cat = categories[i];</td></tr><tr><td class="line-number" =
+value="797"></td><td class="line-content">                        const=
+ res = await fetch(`${API_URL}/menu/${endpoint}/${cat.id}`, {</td></tr><t=
+r><td class="line-number" value="798"></td><td class="line-content"> =
+                           method: 'PUT',</td></tr><tr><td class="line-nu=
+mber" value="799"></td><td class="line-content">                       =
+     headers: { 'Content-Type': 'application/json' },</td></tr><tr><td clas=
+s="line-number" value="800"></td><td class="line-content">           =
+                 body: JSON.stringify({ sort_order: i * 10 })</td></tr><tr>=
+<td class="line-number" value="801"></td><td class="line-content">   =
+                     });</td></tr><tr><td class="line-number" value="80"></td><td class="line-content">                        if (!res.ok) {</=
+td></tr><tr><td class="line-number" value="803"></td><td class="line-ontent">                            console.error('API error for category'=
+, cat.id, ':', await res.text());</td></tr><tr><td class="line-number" va=
+lue="804"></td><td class="line-content">                        }</td><=
+/tr><tr><td class="line-number" value="805"></td><td class="line-contnt">                    }</td></tr><tr><td class="line-number" value="06"></td><td class="line-content">                } catch (error) {</td>=
+</tr><tr><td class="line-number" value="807"></td><td class="line-con=
+tent">                    console.error('Error saving sort order:', error);=
+</td></tr><tr><td class="line-number" value="808"></td><td class="lin-content">                } finally {</td></tr><tr><td class="line-numbe=
+r" value="809"></td><td class="line-content">                    isSavi=
+ngOrder = false;</td></tr><tr><td class="line-number" value="810"></t><td class="line-content">                    await loadData();</td></tr=
+><tr><td class="line-number" value="811"></td><td class="line-content=
+">                }</td></tr><tr><td class="line-number" value="812"></=
+td><td class="line-content">            }, 100);</td></tr><tr><td class=
+="line-number" value="813"></td><td class="line-content">        }</t></tr><tr><td class="line-number" value="814"></td><td class="line-c=
+ontent"><br></td></tr><tr><td class="line-number" value="815"></td><td lass="line-content">        async function updateSortOrder(id, value) {<=
+/td></tr><tr><td class="line-number" value="816"></td><td class="line=
+-content">            if (currentTab !== 'products') return;</td></tr><=
+tr><td class="line-number" value="817"></td><td class="line-content">=
+            </td></tr><tr><td class="line-number" value="818"></td><td lass="line-content">            try {</td></tr><tr><td class="line-numer" value="819"></td><td class="line-content">                const re=
+s = await fetch(`${API_URL}/menu/product-categories/${id}`, {</td></tr><t=
+r><td class="line-number" value="820"></td><td class="line-content"> =
+                   method: 'PUT',</td></tr><tr><td class="line-number" va=
+lue="821"></td><td class="line-content">                    headers: { =
+'Content-Type': 'application/json' },</td></tr><tr><td class="line-number=
+" value="822"></td><td class="line-content">                    body: J=
+SON.stringify({ sort_order: parseInt(value) || 0 })</td></tr><tr><td class=
+="line-number" value="823"></td><td class="line-content">            =
+    });</td></tr><tr><td class="line-number" value="824"></td><td class=
+="line-content">                </td></tr><tr><td class="line-number" v
+lue="825"></td><td class="line-content">                if (!res.ok) {=
+</td></tr><tr><td class="line-number" value="826"></td><td class="lin-content">                    const err = await res.json();</td></tr><tr=
+><td class="line-number" value="827"></td><td class="line-content">  =
+                  alert(err.detail || 'ÐÑÐ¸Ð±ÐºÐ°=
+ Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð¸Ñ');</td></tr><=
+tr><td class="line-number" value="828"></td><td class="line-content">=
+                }</td></tr><tr><td class="line-number" value="829"></td=
+><td class="line-content">            } catch (error) {</td></tr><tr><td lass="line-number" value="830"></td><td class="line-content">       =
+         console.error('Error:', error);</td></tr><tr><td class="line-numer" value="831"></td><td class="line-content">                alert('=
+ÐÑÐ¸Ð±ÐºÐ° ÑÐ¾ÐµÐ´Ð¸Ð½=
+ÐµÐ½Ð¸Ñ');</td></tr><tr><td class="line-number" value==
+"832"></td><td class="line-content">            }</td></tr><tr><td class=
+="line-number" value="833"></td><td class="line-content">        }</t></tr><tr><td class="line-number" value="834"></td><td class="line-c=
+ontent"><br></td></tr><tr><td class="line-number" value="835"></td><td lass="line-content">        async function editCategory(id) {</td></tr><=
+tr><td class="line-number" value="836"></td><td class="line-content">=
+            const categories = currentTab === 'ingredients' ? ingreientCategories : productCategories;</td></tr><tr><td class="line-number"=
+ value="837"></td><td class="line-content">            const cat = ca=
+tegories.find(c =&gt; c.id === id);</td></tr><tr><td class="line-=
+number" value="838"></td><td class="line-content">            if (!cat)=
+ return;</td></tr><tr><td class="line-number" value="839"></td><td clas=
+s="line-content">            </td></tr><tr><td class="line-number" valu="840"></td><td class="line-content">            const newName = pro=
+mpt('ÐÐ¾Ð²Ð¾Ðµ Ð½Ð°Ð·Ð²Ð°Ð½Ð=
+¸Ðµ:', cat.name);</td></tr><tr><td class="line-number" value="841=
+"></td><td class="line-content">            if (newName === null) rturn;</td></tr><tr><td class="line-number" value="842"></td><td class=
+="line-content">            </td></tr><tr><td class="line-number" value=
+="843"></td><td class="line-content">            const newDesc = prom=
+pt('ÐÐ¾Ð²Ð¾Ðµ Ð¾Ð¿Ð¸ÑÐ°Ð½Ð=
+¸Ðµ:', cat.description || '');</td></tr><tr><td class="line-number"=
+ value="844"></td><td class="line-content">            if (newDesc ==
+== null) return;</td></tr><tr><td class="line-number" value="845"><=
+/td><td class="line-content">            </td></tr><tr><td class="line-=
+number" value="846"></td><td class="line-content">            const end=
+point = currentTab === 'ingredients' </td></tr><tr><td class="lin-number" value="847"></td><td class="line-content">                ? '=
+ingredient-categories' </td></tr><tr><td class="line-number" value="848=
+"></td><td class="line-content">                : 'product-categories';</=
+td></tr><tr><td class="line-number" value="849"></td><td class="line-ontent">            </td></tr><tr><td class="line-number" value="850">=
+</td><td class="line-content">            const data = currentTab ==
+== 'ingredients' </td></tr><tr><td class="line-number" value="851">=
+</td><td class="line-content">                ? { name: newName, descript=
+ion: newDesc }</td></tr><tr><td class="line-number" value="852"></td><t class="line-content">                : { name: newName, description: ne=
+wDesc, sort_order: cat.sort_order || 0 };</td></tr><tr><td class="line-nu=
+mber" value="853"></td><td class="line-content">            </td></tr><=
+tr><td class="line-number" value="854"></td><td class="line-content">=
+            try {</td></tr><tr><td class="line-number" value="855"></td=
+><td class="line-content">                const res = await fetch(`${AP=
+I_URL}/menu/${endpoint}/${id}`, {</td></tr><tr><td class="line-number" va=
+lue="856"></td><td class="line-content">                    method: 'PU=
+T',</td></tr><tr><td class="line-number" value="857"></td><td class="=
+line-content">                    headers: { 'Content-Type': 'application/j=
+son' },</td></tr><tr><td class="line-number" value="858"></td><td class=
+="line-content">                    body: JSON.stringify(data)</td></tr><=
+tr><td class="line-number" value="859"></td><td class="line-content">=
+                });</td></tr><tr><td class="line-number" value="860"></=
+td><td class="line-content">                </td></tr><tr><td class="li=
+ne-number" value="861"></td><td class="line-content">                if=
+ (res.ok) {</td></tr><tr><td class="line-number" value="862"></td><td c=
+lass="line-content">                    await loadData();</td></tr><tr><t class="line-number" value="863"></td><td class="line-content">     =
+           } else {</td></tr><tr><td class="line-number" value="864"></=
+td><td class="line-content">                    const err = await res.j=
+son();</td></tr><tr><td class="line-number" value="865"></td><td class=
+="line-content">                    alert(err.detail || 'ÐÑÐ=
+¸Ð±ÐºÐ° Ð¾Ð±Ð½Ð¾Ð²Ð»ÐµÐ½Ð=
+¸Ñ');</td></tr><tr><td class="line-number" value="866"></td><td lass="line-content">                }</td></tr><tr><td class="line-numer" value="867"></td><td class="line-content">            } catch (err=
+or) {</td></tr><tr><td class="line-number" value="868"></td><td class=
+="line-content">                console.error('Error:', error);</td></tr>=
+<tr><td class="line-number" value="869"></td><td class="line-content"=
+>            }</td></tr><tr><td class="line-number" value="870"></td><t class="line-content">        }</td></tr><tr><td class="line-number" v
+lue="871"></td><td class="line-content"><br></td></tr><tr><td class==
+"line-number" value="872"></td><td class="line-content">        async f=
+unction deleteCategory(id) {</td></tr><tr><td class="line-number" value=
+="873"></td><td class="line-content">            if (!confirm('Ð£=
+Ð´Ð°Ð»Ð¸ÑÑ ÐºÐ°ÑÐµÐ³Ð¾=
+ÑÐ¸Ñ?')) return;</td></tr><tr><td class="line-number" value=
+="874"></td><td class="line-content">            </td></tr><tr><td clas=
+s="line-number" value="875"></td><td class="line-content">           =
+ const endpoint = currentTab === 'ingredients' </td></tr><tr><td cl
+ss="line-number" value="876"></td><td class="line-content">         =
+       ? 'ingredient-categories' </td></tr><tr><td class="line-number" va=
+lue="877"></td><td class="line-content">                : 'product-cate=
+gories';</td></tr><tr><td class="line-number" value="878"></td><td clas=
+s="line-content">            </td></tr><tr><td class="line-number" valu="879"></td><td class="line-content">            try {</td></tr><tr><t class="line-number" value="880"></td><td class="line-content">     =
+           const res = await fetch(`${API_URL}/menu/${endpoint}/${id}`, {=
+</td></tr><tr><td class="line-number" value="881"></td><td class="lin-content">                    method: 'DELETE'</td></tr><tr><td class="l=
+ine-number" value="882"></td><td class="line-content">                }=
+);</td></tr><tr><td class="line-number" value="883"></td><td class="l=
+ine-content">                </td></tr><tr><td class="line-number" value=
+="884"></td><td class="line-content">                if (res.ok) {</td>=
+</tr><tr><td class="line-number" value="885"></td><td class="line-con=
+tent">                    await loadData();</td></tr><tr><td class="line-=
+number" value="886"></td><td class="line-content">                } els {</td></tr><tr><td class="line-number" value="887"></td><td class="=
+line-content">                    const err = await res.json();</td></tr>=
+<tr><td class="line-number" value="888"></td><td class="line-content"=
+>                    alert(err.detail || 'ÐÐµÐ»ÑÐ·Ñ=
+ ÑÐ´Ð°Ð»Ð¸ÑÑ ÐºÐ°ÑÐµÐ=
+³Ð¾ÑÐ¸Ñ Ñ ÑÐ»ÐµÐ¼ÐµÐ½Ñ=
+Ð°Ð¼Ð¸');</td></tr><tr><td class="line-number" value="88	"></td><td class="line-content">                }</td></tr><tr><td class=
+="line-number" value="890"></td><td class="line-content">            =
+} catch (error) {</td></tr><tr><td class="line-number" value="891"></td=
+><td class="line-content">                console.error('Error:', error);=
+</td></tr><tr><td class="line-number" value="892"></td><td class="lin-content">            }</td></tr><tr><td class="line-number" value="89"></td><td class="line-content">        }</td></tr><tr><td class="line=
+-number" value="894"></td><td class="line-content"><br></td></tr><tr><t class="line-number" value="895"></td><td class="line-content">     =
+   function importCategories() {</td></tr><tr><td class="line-number" val=
+ue="896"></td><td class="line-content">            const fileInput = ocument.getElementById('importFile');</td></tr><tr><td class="line-numbe=
+r" value="897"></td><td class="line-content">            const file ==
+ fileInput.files[0];</td></tr><tr><td class="line-number" value="898"><=
+/td><td class="line-content">            if (file) {</td></tr><tr><td cla=
+ss="line-number" value="899"></td><td class="line-content">          =
+      document.getElementById('selectedFileName').textContent = file.name=
+;</td></tr><tr><td class="line-number" value="900"></td><td class="li=
+ne-content">                alert('ÐÐ¼Ð¿Ð¾ÑÑ Ð=
+±ÑÐ´ÐµÑ ÑÐµÐ°Ð»Ð¸Ð·Ð¾Ð=
+²Ð°Ð½ Ð² ÑÐ»ÐµÐ´ÑÑÑÐµÐ=
+¼ ÑÑÐ°Ð¿Ðµ');</td></tr><tr><td class="line-number=
+" value="901"></td><td class="line-content">            }</td></tr><tr>=
+<td class="line-number" value="902"></td><td class="line-content">   =
+     }</td></tr><tr><td class="line-number" value="903"></td><td class=
+="line-content"><br></td></tr><tr><td class="line-number" value="904"=
+></td><td class="line-content">        loadData();</td></tr><tr><td class=
+="line-number" value="905"></td><td class="line-content">    <span cl
+ss="html-tag">&lt;/script&gt;</span></td></tr><tr><td class="line-numbr" value="906"></td><td class="line-content"><span class="html-tag">=
+&lt;/body&gt;</span></td></tr><tr><td class="line-number" value="907"><=
+/td><td class="line-content"><span class="html-tag">&lt;/html&gt;</span=
+></td></tr><tr><td class="line-number" value="908"></td><td class="li=
+ne-content"></td></tr></tbody></table><script src="js/iframe-helper.js"></script>
+</body></html>

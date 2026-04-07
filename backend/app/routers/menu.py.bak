@@ -1,0 +1,1027 @@
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from pydantic import BaseModel
+from decimal import Decimal
+from datetime import datetime
+import os
+import uuid
+
+from ..database import get_db
+from ..models import (
+    IngredientCategory, ProductCategory,
+    SemiFinishedProduct, SemiFinishedComposition,
+    MenuProduct, TechCard, TechCardItem, ProductHistory,
+    ProductionDepartment
+)
+
+router = APIRouter(tags=["menu"])
+
+# ============ КАТЕГОРИИ ИНГРЕДИЕНТОВ ============
+
+class CatCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+
+@router.get("/ingredient-categories")
+def get_ing_cats(db: Session = Depends(get_db)):
+    return db.query(IngredientCategory).order_by(IngredientCategory.name).all()
+
+@router.post("/ingredient-categories")
+def create_ing_cat(data: CatCreate, db: Session = Depends(get_db)):
+    cat = IngredientCategory(**data.dict())
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+@router.put("/ingredient-categories/{id}")
+def update_ing_cat(id: int, data: dict, db: Session = Depends(get_db)):
+    cat = db.query(IngredientCategory).filter(IngredientCategory.id == id).first()
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    
+    if "name" in data:
+        cat.name = data["name"]
+    if "description" in data:
+        cat.description = data["description"]
+    if "is_visible_on_site" in data:
+        cat.is_visible_on_site = data["is_visible_on_site"]
+    if "is_visible_in_menu" in data:
+        cat.is_visible_in_menu = data["is_visible_in_menu"]
+    
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+@router.delete("/ingredient-categories/{id}")
+def delete_ing_cat(id: int, db: Session = Depends(get_db)):
+    cat = db.query(IngredientCategory).filter(IngredientCategory.id == id).first()
+    if cat:
+        db.delete(cat)
+        db.commit()
+    return {"ok": True}
+
+# ============ ЕДИНИЦЫ ИЗМЕРЕНИЯ ============
+
+@router.get("/units")
+def get_units(db: Session = Depends(get_db)):
+    from ..models import Unit
+    return db.query(Unit).all()
+
+
+# ============ ИНГРЕДИЕНТЫ ============
+
+@router.get("/ingredients")
+def get_ingredients(
+    category_id: Optional[int] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
+    from ..models import Ingredient
+    query = db.query(Ingredient)
+    if search:
+        query = query.filter(Ingredient.name.ilike(f"%{search}%"))
+    return query.order_by(Ingredient.name).all()
+
+
+@router.post("/ingredients")
+def create_ingredient(data: dict, db: Session = Depends(get_db)):
+    from ..models import Ingredient, IngredientCategory, Unit
+    
+    # Get category name from ID
+    category = None
+    if data.get("category_id"):
+        cat = db.query(IngredientCategory).filter(IngredientCategory.id == int(data["category_id"])).first()
+        if cat:
+            category = cat.name
+    
+    # Get unit from ID
+    unit = "г"
+    if data.get("unit_id"):
+        u = db.query(Unit).filter(Unit.id == int(data["unit_id"])).first()
+        if u:
+            unit = u.abbreviation
+    
+    ing = Ingredient(
+        name=data["name"],
+        name_ru=data["name"],
+        category=category,
+        unit=unit,
+        processing_loss_percent=data.get("processing_loss_percent", 0),
+        storage_conditions=data.get("storage_conditions"),
+        shelf_life_days=data.get("shelf_life_days"),
+        cost_per_unit=data.get("cost_per_unit"),
+        is_active=data.get("is_active", True)
+    )
+    db.add(ing)
+    db.commit()
+    db.refresh(ing)
+    return {"id": ing.id, "name": ing.name}
+
+
+@router.put("/ingredients/{id}")
+def update_ingredient(id: int, data: dict, db: Session = Depends(get_db)):
+    from ..models import Ingredient, IngredientCategory, Unit
+    ing = db.query(Ingredient).filter(Ingredient.id == id).first()
+    if not ing:
+        raise HTTPException(404, "Not found")
+    
+    ing.name = data.get("name", ing.name)
+    ing.name_ru = data.get("name", ing.name_ru)
+    
+    # Get category name from ID
+    if "category_id" in data:
+        if data["category_id"]:
+            cat = db.query(IngredientCategory).filter(IngredientCategory.id == int(data["category_id"])).first()
+            if cat:
+                ing.category = cat.name
+        else:
+            ing.category = None
+    
+    # Get unit from ID
+    if "unit_id" in data:
+        if data["unit_id"]:
+            u = db.query(Unit).filter(Unit.id == int(data["unit_id"])).first()
+            if u:
+                ing.unit = u.abbreviation
+        else:
+            ing.unit = "г"
+    
+    if "processing_loss_percent" in data:
+        ing.processing_loss_percent = data["processing_loss_percent"]
+    if "storage_conditions" in data:
+        ing.storage_conditions = data["storage_conditions"]
+    if "shelf_life_days" in data:
+        ing.shelf_life_days = data["shelf_life_days"]
+    if "is_active" in data:
+        ing.is_active = data["is_active"]
+    if "cost_per_unit" in data:
+        ing.cost_per_unit = data["cost_per_unit"]
+    
+    db.commit()
+    db.refresh(ing)
+    return {"id": ing.id, "name": ing.name}
+
+
+@router.delete("/ingredients/{id}")
+def delete_ingredient(id: int, db: Session = Depends(get_db)):
+    from ..models import Ingredient
+    ing = db.query(Ingredient).filter(Ingredient.id == id).first()
+    if ing:
+        db.delete(ing)
+        db.commit()
+    return {"ok": True}
+
+
+# ============ КАТЕГОРИИ ТОВАРОВ ============
+
+@router.get("/categories")
+def get_categories_public(db: Session = Depends(get_db)):
+    """Публичный endpoint для клиентского меню"""
+    cats = db.query(ProductCategory).filter(
+        ProductCategory.is_active == True,
+        ProductCategory.is_visible_on_site == True
+    ).order_by(ProductCategory.sort_order).all()
+    return [{"id": c.id, "name": c.name, "description": c.description} for c in cats]
+
+
+@router.get("/public/menu")
+def get_public_menu(db: Session = Depends(get_db)):
+    """Полное меню для клиентского сайта"""
+    from ..models import Ingredient
+    
+    categories = db.query(ProductCategory).filter(
+        ProductCategory.is_active == True,
+        ProductCategory.is_visible_on_site == True
+    ).order_by(ProductCategory.sort_order).all()
+    result = []
+    
+    for cat in categories:
+        products = db.query(MenuProduct).filter(
+            MenuProduct.category_id == cat.id,
+            MenuProduct.is_active == True,
+            MenuProduct.is_visible_on_site == True
+        ).order_by(MenuProduct.name).all()
+        
+        products_data = []
+        for p in products:
+            # Получаем техкарту для состава
+            tc = db.query(TechCard).filter(TechCard.product_id == p.id, TechCard.is_active == True).first()
+            composition = []
+            if tc:
+                items = db.query(TechCardItem).filter(TechCardItem.tech_card_id == tc.id).all()
+                for item in items:
+                    if item.item_type == 'ingredient':
+                        ing = db.query(Ingredient).filter(Ingredient.id == item.item_id).first()
+                        if ing:
+                            composition.append(ing.name)
+            
+            products_data.append({
+                "id": p.id,
+                "name": p.name,
+                "name_ru": p.name,
+                "price": float(p.price),
+                "image_url": p.image_url or "/images/placeholder.jpg",
+                "description": p.description or "",
+                "composition": ", ".join(composition) if composition else "",
+                "weight": p.weight_grams
+            })
+        
+        result.append({
+            "id": cat.id,
+            "slug": f"cat-{cat.id}",
+            "name": cat.name,
+            "name_ru": cat.name,
+            "products": products_data
+        })
+    
+    return result
+
+
+@router.get("/product-categories")
+def get_prod_cats(db: Session = Depends(get_db)):
+    return db.query(ProductCategory).order_by(ProductCategory.sort_order).all()
+
+@router.post("/product-categories")
+def create_prod_cat(data: CatCreate, db: Session = Depends(get_db)):
+    cat = ProductCategory(**data.dict(), sort_order=0)
+    db.add(cat)
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+@router.put("/product-categories/{id}")
+def update_prod_cat(id: int, data: dict, db: Session = Depends(get_db)):
+    cat = db.query(ProductCategory).filter(ProductCategory.id == id).first()
+    if not cat:
+        raise HTTPException(404, "Category not found")
+    
+    if "name" in data:
+        cat.name = data["name"]
+    if "description" in data:
+        cat.description = data["description"]
+    if "sort_order" in data:
+        cat.sort_order = data["sort_order"]
+    if "is_active" in data:
+        cat.is_active = data["is_active"]
+    if "is_visible_on_site" in data:
+        cat.is_visible_on_site = data["is_visible_on_site"]
+    if "is_visible_in_menu" in data:
+        cat.is_visible_in_menu = data["is_visible_in_menu"]
+    
+    db.commit()
+    db.refresh(cat)
+    return cat
+
+@router.delete("/product-categories/{id}")
+def delete_prod_cat(id: int, db: Session = Depends(get_db)):
+    cat = db.query(ProductCategory).filter(ProductCategory.id == id).first()
+    if cat:
+        db.delete(cat)
+        db.commit()
+    return {"ok": True}
+
+# ============ ПОЛУФАБРИКАТЫ ============
+
+@router.get("/semi-finished")
+def get_semi(db: Session = Depends(get_db)):
+    items = db.query(SemiFinishedProduct).all()
+    result = []
+    for sf in items:
+        comp = db.query(SemiFinishedComposition).filter(
+            SemiFinishedComposition.semi_finished_id == sf.id
+        ).all()
+        result.append({
+            "id": sf.id,
+            "name": sf.name,
+            "description": sf.description,
+            "unit": sf.unit,
+            "department_id": sf.department_id,
+            "preparation_time_minutes": sf.preparation_time_minutes,
+            "is_active": sf.is_active,
+            "composition": [{"item_type": c.item_type, "item_id": c.item_id, 
+                           "quantity": c.quantity, "unit": c.unit} for c in comp]
+        })
+    return result
+
+@router.post("/semi-finished")
+def create_semi(data: dict, db: Session = Depends(get_db)):
+    sf = SemiFinishedProduct(
+        name=data["name"],
+        description=data.get("description"),
+        unit=data.get("unit"),
+        department_id=data.get("department_id"),
+        preparation_time_minutes=data.get("preparation_time_minutes"),
+        is_active=data.get("is_active", True)
+    )
+    db.add(sf)
+    db.commit()
+    db.refresh(sf)
+    
+    for item in data.get("composition", []):
+        comp = SemiFinishedComposition(
+            semi_finished_id=sf.id,
+            item_type=item["item_type"],
+            item_id=item["item_id"],
+            quantity=item["quantity"],
+            unit=item.get("unit")
+        )
+        db.add(comp)
+    db.commit()
+    return {"id": sf.id}
+
+@router.delete("/semi-finished/{id}")
+def delete_semi(id: int, db: Session = Depends(get_db)):
+    db.query(SemiFinishedComposition).filter(SemiFinishedComposition.semi_finished_id == id).delete()
+    sf = db.query(SemiFinishedProduct).filter(SemiFinishedProduct.id == id).first()
+    if sf:
+        db.delete(sf)
+        db.commit()
+    return {"ok": True}
+
+# ============ ТОВАРЫ ============
+
+@router.get("/products")
+def get_products(db: Session = Depends(get_db)):
+    prods = db.query(MenuProduct).order_by(MenuProduct.name).all()
+    result = []
+    for p in prods:
+        cat = db.query(ProductCategory).filter(ProductCategory.id == p.category_id).first()
+        dept = db.query(ProductionDepartment).filter(ProductionDepartment.id == p.department_id).first()
+        result.append({
+            "id": p.id, "name": p.name, "sku": p.sku, "barcode": p.barcode,
+            "category_id": p.category_id, "category_name": cat.name if cat else None,
+            "department_id": p.department_id, "department_name": dept.name if dept else None,
+            "price": p.price, "cost_price": p.cost_price,
+            "image_url": p.image_url, "description": p.description,
+            "weight_grams": p.weight_grams,
+            "is_visible_on_site": p.is_visible_on_site,
+            "is_visible_in_menu": p.is_visible_in_menu,
+            "is_active": p.is_active
+        })
+    return result
+
+def calculate_product_cost(product_id: int, db: Session):
+    """Расчет себестоимости товара по техкарте"""
+    from ..models import Ingredient
+    
+    tc = db.query(TechCard).filter(TechCard.product_id == product_id, TechCard.is_active == True).first()
+    if not tc:
+        return 0
+    
+    items = db.query(TechCardItem).filter(TechCardItem.tech_card_id == tc.id).all()
+    total_cost = 0
+    
+    for item in items:
+        if item.item_type == 'ingredient':
+            ing = db.query(Ingredient).filter(Ingredient.id == item.item_id).first()
+            if ing and ing.cost_per_unit:
+                # Переводим стоимость в зависимости от единиц измерения
+                quantity = float(item.quantity) if item.quantity else 0
+                cost_per_unit = float(ing.cost_per_unit)
+                
+                # Учитываем потери при обработке
+                loss_percent = float(ing.processing_loss_percent) if ing.processing_loss_percent else 0
+                quantity_with_loss = quantity * (1 + loss_percent / 100)
+                
+                total_cost += quantity_with_loss * cost_per_unit
+    
+    return round(total_cost, 2)
+
+
+# ============ ПОИСК ПРОДУКТОВ (должен быть до /products/{id}) ============
+
+@router.get("/products/search")
+def search_products(q: str = "", db: Session = Depends(get_db)):
+    """Поиск продуктов для клиентского меню"""
+    from ..models import Ingredient
+    
+    if not q or len(q) < 2:
+        return []
+    
+    query = f"%{q}%"
+    
+    products = db.query(MenuProduct).filter(
+        MenuProduct.is_active == True,
+        MenuProduct.is_visible_on_site == True,
+        (MenuProduct.name.ilike(query) | 
+         MenuProduct.description.ilike(query))
+    ).limit(20).all()
+    
+    result = []
+    for p in products:
+        # Получаем техкарту для состава
+        tc = db.query(TechCard).filter(TechCard.product_id == p.id, TechCard.is_active == True).first()
+        composition = []
+        if tc:
+            items = db.query(TechCardItem).filter(TechCardItem.tech_card_id == tc.id).all()
+            for item in items:
+                if item.item_type == 'ingredient':
+                    ing = db.query(Ingredient).filter(Ingredient.id == item.item_id).first()
+                    if ing:
+                        composition.append(ing.name)
+        
+        result.append({
+            "id": p.id,
+            "name": p.name,
+            "name_ru": p.name,
+            "price": float(p.price),
+            "image_url": p.image_url or "/images/placeholder.jpg",
+            "description": p.description or "",
+            "composition": ", ".join(composition) if composition else "",
+            "weight": p.weight_grams
+        })
+    
+    return result
+
+
+# ============ ЭКСПОРТ / ИМПОРТ ТОВАРОВ (должен быть до /products/{id}) ============
+
+@router.get("/products/export")
+def export_products(db: Session = Depends(get_db)):
+    """Экспорт всех товаров в CSV"""
+    import csv
+    import io
+    
+    products = db.query(MenuProduct).filter(MenuProduct.is_active == True).order_by(MenuProduct.name).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Заголовки
+    writer.writerow([
+        "id", "name", "sku", "barcode", "category_id", "category_name", "department_id",
+        "price", "cost_price", "description", "weight_grams",
+        "is_visible_on_site", "is_visible_in_menu", "is_active", "image_url"
+    ])
+    
+    for p in products:
+        cat = db.query(ProductCategory).filter(ProductCategory.id == p.category_id).first()
+        writer.writerow([
+            p.id,
+            p.name,
+            p.sku or "",
+            p.barcode or "",
+            p.category_id or "",
+            cat.name if cat else "",
+            p.department_id or "",
+            p.price,
+            p.cost_price,
+            p.description or "",
+            p.weight_grams or "",
+            "1" if p.is_visible_on_site else "0",
+            "1" if p.is_visible_in_menu else "0",
+            "1" if p.is_active else "0",
+            p.image_url or ""
+        ])
+    
+    output.seek(0)
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=products.csv"}
+    )
+
+
+@router.post("/products/import")
+def import_products(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Импорт товаров из CSV"""
+    import csv
+    import io
+    
+    content = file.file.read().decode('utf-8-sig')
+    reader = csv.DictReader(io.StringIO(content))
+    
+    imported = 0
+    updated = 0
+    errors = []
+    
+    for row_num, row in enumerate(reader, start=2):
+        try:
+            name = row.get("name", "").strip()
+            if not name:
+                continue
+            
+            # Ищем существующий товар по имени или SKU
+            existing = None
+            if row.get("sku"):
+                existing = db.query(MenuProduct).filter(MenuProduct.sku == row.get("sku")).first()
+            if not existing:
+                existing = db.query(MenuProduct).filter(MenuProduct.name == name).first()
+            
+            # Получаем или создаем категорию
+            category_id = None
+            cat_name = row.get("category_name", "").strip()
+            if cat_name:
+                cat = db.query(ProductCategory).filter(ProductCategory.name == cat_name).first()
+                if cat:
+                    category_id = cat.id
+                elif row.get("category_id"):
+                    category_id = int(row.get("category_id")) if row.get("category_id").isdigit() else None
+            
+            data = {
+                "name": name,
+                "sku": row.get("sku", "").strip() or None,
+                "barcode": row.get("barcode", "").strip() or None,
+                "category_id": category_id,
+                "department_id": int(row.get("department_id")) if row.get("department_id") and row.get("department_id").isdigit() else None,
+                "price": float(row.get("price", 0) or 0),
+                "cost_price": float(row.get("cost_price", 0) or 0),
+                "description": row.get("description", "").strip() or None,
+                "weight_grams": int(row.get("weight_grams")) if row.get("weight_grams") and row.get("weight_grams").isdigit() else None,
+                "is_visible_on_site": row.get("is_visible_on_site", "1") == "1",
+                "is_visible_in_menu": row.get("is_visible_in_menu", "1") == "1",
+                "is_active": row.get("is_active", "1") == "1",
+                "image_url": row.get("image_url", "").strip() or None
+            }
+            
+            if existing:
+                # Обновляем
+                for key, value in data.items():
+                    if value is not None:
+                        setattr(existing, key, value)
+                updated += 1
+            else:
+                # Создаем новый
+                prod = MenuProduct(**data)
+                db.add(prod)
+                imported += 1
+                
+        except Exception as e:
+            errors.append(f"Строка {row_num}: {str(e)}")
+    
+    db.commit()
+    return {
+        "imported": imported,
+        "updated": updated,
+        "errors": errors
+    }
+
+
+@router.get("/products/{id}")
+def get_product(id: int, db: Session = Depends(get_db)):
+    p = db.query(MenuProduct).filter(MenuProduct.id == id).first()
+    if not p:
+        raise HTTPException(404, "Not found")
+    
+    # Расчитываем себестоимость
+    calculated_cost = calculate_product_cost(id, db)
+    
+    tc = db.query(TechCard).filter(TechCard.product_id == id, TechCard.is_active == True).first()
+    tc_data = None
+    if tc:
+        items = db.query(TechCardItem).filter(TechCardItem.tech_card_id == tc.id).all()
+        items_data = []
+        for item in items:
+            item_cost = 0
+            if item.item_type == 'ingredient':
+                from ..models import Ingredient
+                ing = db.query(Ingredient).filter(Ingredient.id == item.item_id).first()
+                if ing and ing.cost_per_unit:
+                    quantity = float(item.quantity) if item.quantity else 0
+                    cost_per_unit = float(ing.cost_per_unit)
+                    loss_percent = float(ing.processing_loss_percent) if ing.processing_loss_percent else 0
+                    quantity_with_loss = quantity * (1 + loss_percent / 100)
+                    item_cost = round(quantity_with_loss * cost_per_unit, 2)
+            
+            items_data.append({
+                "item_type": item.item_type, 
+                "item_id": item.item_id,
+                "quantity": item.quantity, 
+                "unit": item.unit, 
+                "is_optional": item.is_optional,
+                "item_cost": item_cost
+            })
+        
+        tc_data = {
+            "id": tc.id,
+            "cooking_time_minutes": tc.cooking_time_minutes,
+            "preparation_method": tc.preparation_method,
+            "calculated_cost": calculated_cost,
+            "items": items_data
+        }
+    
+    return {
+        "id": p.id, "name": p.name, "sku": p.sku,
+        "category_id": p.category_id,
+        "department_id": p.department_id,
+        "price": p.price, 
+        "cost_price": calculated_cost if calculated_cost > 0 else p.cost_price,
+        "description": p.description,
+        "is_visible_on_site": p.is_visible_on_site,
+        "is_visible_in_menu": p.is_visible_in_menu,
+        "is_active": p.is_active,
+        "tech_card": tc_data
+    }
+
+@router.post("/products")
+def create_product(data: dict, db: Session = Depends(get_db)):
+    p = MenuProduct(
+        name=data["name"],
+        sku=data.get("sku"),
+        price=data.get("price", 0),
+        description=data.get("description"),
+        category_id=data.get("category_id"),
+        department_id=data.get("department_id"),
+        is_visible_on_site=data.get("is_visible_on_site", True),
+        is_visible_in_menu=data.get("is_visible_in_menu", True),
+        is_active=data.get("is_active", True)
+    )
+    db.add(p)
+    db.commit()
+    db.refresh(p)
+    
+    if "tech_card" in data:
+        tc = TechCard(
+            product_id=p.id,
+            cooking_time_minutes=data["tech_card"].get("cooking_time_minutes"),
+            preparation_method=data["tech_card"].get("preparation_method")
+        )
+        db.add(tc)
+        db.commit()
+        db.refresh(tc)
+        
+        for item in data["tech_card"].get("items", []):
+            tci = TechCardItem(
+                tech_card_id=tc.id,
+                item_type=item["item_type"],
+                item_id=item["item_id"],
+                quantity=item["quantity"],
+                unit=item.get("unit"),
+                is_optional=item.get("is_optional", False)
+            )
+            db.add(tci)
+        db.commit()
+    
+    return {"id": p.id}
+
+@router.put("/products/{id}")
+def update_product(id: int, data: dict, db: Session = Depends(get_db)):
+    p = db.query(MenuProduct).filter(MenuProduct.id == id).first()
+    if not p:
+        raise HTTPException(404, "Товар не найден")
+    
+    p.name = data.get("name", p.name)
+    p.sku = data.get("sku", p.sku)
+    p.barcode = data.get("barcode", p.barcode)
+    p.price = data.get("price", p.price)
+    p.description = data.get("description", p.description)
+    
+    # Handle category_id - empty string should set to None
+    if "category_id" in data:
+        cat_id = data["category_id"]
+        p.category_id = int(cat_id) if cat_id and str(cat_id).isdigit() else None
+    
+    # Handle department_id - empty string should set to None
+    if "department_id" in data:
+        dept_id = data["department_id"]
+        p.department_id = int(dept_id) if dept_id and str(dept_id).isdigit() else None
+    
+    p.weight_grams = data.get("weight_grams", p.weight_grams)
+    p.is_visible_on_site = data.get("is_visible_on_site", p.is_visible_on_site)
+    p.is_visible_in_menu = data.get("is_visible_in_menu", p.is_visible_in_menu)
+    p.is_active = data.get("is_active", p.is_active)
+    
+    db.commit()
+    db.refresh(p)
+    
+    # Обновляем техкарту если передана
+    if "tech_card" in data:
+        # Деактивируем старую техкарту
+        old_tc = db.query(TechCard).filter(TechCard.product_id == id, TechCard.is_active == True).first()
+        if old_tc:
+            old_tc.is_active = False
+            db.commit()
+        
+        # Создаем новую
+        tc = TechCard(
+            product_id=p.id,
+            cooking_time_minutes=data["tech_card"].get("cooking_time_minutes"),
+            preparation_method=data["tech_card"].get("preparation_method")
+        )
+        db.add(tc)
+        db.commit()
+        db.refresh(tc)
+        
+        for item in data["tech_card"].get("items", []):
+            tci = TechCardItem(
+                tech_card_id=tc.id,
+                item_type=item["item_type"],
+                item_id=item["item_id"],
+                quantity=item["quantity"],
+                unit=item.get("unit"),
+                is_optional=item.get("is_optional", False)
+            )
+            db.add(tci)
+        db.commit()
+    
+    return {"id": p.id}
+
+
+@router.delete("/products/{id}")
+def delete_product(id: int, db: Session = Depends(get_db)):
+    p = db.query(MenuProduct).filter(MenuProduct.id == id).first()
+    if p:
+        p.is_active = False
+        db.commit()
+    return {"ok": True}
+
+
+# ============ ЭКСПОРТ / ИМПОРТ ИНГРЕДИЕНТОВ ============
+
+@router.get("/ingredients/export")
+def export_ingredients(db: Session = Depends(get_db)):
+    """Экспорт всех ингредиентов в CSV"""
+    from ..models import Ingredient
+    import csv
+    import io
+    
+    ingredients = db.query(Ingredient).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Заголовки
+    writer.writerow([
+        "id", "name", "category", "unit", "processing_loss_percent",
+        "storage_conditions", "shelf_life_days", "is_active"
+    ])
+    
+    for ing in ingredients:
+        writer.writerow([
+            ing.id,
+            ing.name,
+            ing.category or "",
+            ing.unit or "г",
+            ing.processing_loss_percent or 0,
+            ing.storage_conditions or "",
+            ing.shelf_life_days or "",
+            "1" if ing.is_active else "0"
+        ])
+    
+    output.seek(0)
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=ingredients.csv"}
+    )
+
+
+@router.post("/ingredients/import")
+def import_ingredients(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Импорт ингредиентов из CSV"""
+    from ..models import Ingredient
+    import csv
+    import io
+    
+    content = file.file.read().decode('utf-8-sig')
+    reader = csv.DictReader(io.StringIO(content))
+    
+    imported = 0
+    updated = 0
+    errors = []
+    
+    for row_num, row in enumerate(reader, start=2):
+        try:
+            name = row.get("name", "").strip()
+            if not name:
+                continue
+            
+            # Ищем существующий ингредиент по имени
+            existing = db.query(Ingredient).filter(Ingredient.name == name).first()
+            
+            data = {
+                "name": name,
+                "category": row.get("category", "").strip() or None,
+                "unit": row.get("unit", "г").strip(),
+                "processing_loss_percent": float(row.get("processing_loss_percent", 0) or 0),
+                "storage_conditions": row.get("storage_conditions", "").strip() or None,
+                "shelf_life_days": int(row.get("shelf_life_days", 0) or 0) if row.get("shelf_life_days") else None,
+                "is_active": row.get("is_active", "1") == "1"
+            }
+            
+            if existing:
+                # Обновляем
+                for key, value in data.items():
+                    setattr(existing, key, value)
+                updated += 1
+            else:
+                # Создаем новый
+                ing = Ingredient(**data)
+                db.add(ing)
+                imported += 1
+                
+        except Exception as e:
+            errors.append(f"Строка {row_num}: {str(e)}")
+    
+    db.commit()
+    
+    return {
+        "imported": imported,
+        "updated": updated,
+        "errors": errors
+    }
+
+
+# ============ ЭКСПОРТ / ИМПОРТ ТОВАРОВ ============
+
+@router.get("/products/export")
+def export_products(db: Session = Depends(get_db)):
+    """Экспорт всех товаров в CSV"""
+    import csv
+    import io
+    
+    products = db.query(MenuProduct).filter(MenuProduct.is_active == True).order_by(MenuProduct.name).all()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Заголовки
+    writer.writerow([
+        "id", "name", "sku", "barcode", "category_id", "category_name", "department_id",
+        "price", "cost_price", "description", "weight_grams",
+        "is_visible_on_site", "is_visible_in_menu", "is_active", "image_url"
+    ])
+    
+    for p in products:
+        cat = db.query(ProductCategory).filter(ProductCategory.id == p.category_id).first()
+        writer.writerow([
+            p.id,
+            p.name,
+            p.sku or "",
+            p.barcode or "",
+            p.category_id or "",
+            cat.name if cat else "",
+            p.department_id or "",
+            p.price,
+            p.cost_price,
+            p.description or "",
+            p.weight_grams or "",
+            "1" if p.is_visible_on_site else "0",
+            "1" if p.is_visible_in_menu else "0",
+            "1" if p.is_active else "0",
+            p.image_url or ""
+        ])
+    
+    output.seek(0)
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        io.BytesIO(output.getvalue().encode('utf-8-sig')),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=products.csv"}
+    )
+
+
+@router.post("/products/import")
+def import_products(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Импорт товаров из CSV"""
+    import csv
+    import io
+    
+    content = file.file.read().decode('utf-8-sig')
+    reader = csv.DictReader(io.StringIO(content))
+    
+    imported = 0
+    updated = 0
+    errors = []
+    
+    for row_num, row in enumerate(reader, start=2):
+        try:
+            name = row.get("name", "").strip()
+            if not name:
+                continue
+            
+            # Ищем существующий товар по имени или SKU
+            existing = None
+            if row.get("sku"):
+                existing = db.query(MenuProduct).filter(MenuProduct.sku == row.get("sku")).first()
+            if not existing:
+                existing = db.query(MenuProduct).filter(MenuProduct.name == name).first()
+            
+            # Получаем или создаем категорию
+            category_id = None
+            cat_name = row.get("category_name", "").strip()
+            if cat_name:
+                cat = db.query(ProductCategory).filter(ProductCategory.name == cat_name).first()
+                if cat:
+                    category_id = cat.id
+                elif row.get("category_id"):
+                    category_id = int(row.get("category_id")) if row.get("category_id").isdigit() else None
+            
+            data = {
+                "name": name,
+                "sku": row.get("sku", "").strip() or None,
+                "barcode": row.get("barcode", "").strip() or None,
+                "category_id": category_id,
+                "department_id": int(row.get("department_id")) if row.get("department_id") and row.get("department_id").isdigit() else None,
+                "price": float(row.get("price", 0) or 0),
+                "cost_price": float(row.get("cost_price", 0) or 0),
+                "description": row.get("description", "").strip() or None,
+                "weight_grams": int(row.get("weight_grams")) if row.get("weight_grams") and row.get("weight_grams").isdigit() else None,
+                "is_visible_on_site": row.get("is_visible_on_site", "1") == "1",
+                "is_visible_in_menu": row.get("is_visible_in_menu", "1") == "1",
+                "is_active": row.get("is_active", "1") == "1",
+                "image_url": row.get("image_url", "").strip() or None
+            }
+            
+            if existing:
+                # Обновляем
+                for key, value in data.items():
+                    if value is not None:
+                        setattr(existing, key, value)
+                updated += 1
+            else:
+                # Создаем новый
+                prod = MenuProduct(**data)
+                db.add(prod)
+                imported += 1
+                
+        except Exception as e:
+            errors.append(f"Строка {row_num}: {str(e)}")
+    
+    db.commit()
+    
+    return {
+        "imported": imported,
+        "updated": updated,
+        "errors": errors
+    }
+
+
+# ============ ЗАГРУЗКА ФОТО ТОВАРА ============
+
+@router.post("/products/{product_id}/image")
+def upload_product_image(
+    product_id: int,
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db)
+):
+    """Загрузка фото товара"""
+    import os
+    import uuid
+    from pathlib import Path
+    
+    # Проверяем существование товара
+    p = db.query(MenuProduct).filter(MenuProduct.id == product_id).first()
+    if not p:
+        raise HTTPException(404, "Товар не найден")
+    
+    # Проверяем расширение файла
+    ext = file.filename.split('.')[-1].lower()
+    if ext not in ['jpg', 'jpeg', 'png', 'webp', 'gif']:
+        raise HTTPException(400, "Неподдерживаемый формат файла. Разрешены: jpg, jpeg, png, webp, gif")
+    
+    # Создаем директорию если не существует
+    upload_dir = Path("/opt/soho/uploads/products")
+    upload_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Генерируем уникальное имя файла
+    filename = f"{uuid.uuid4()}.{ext}"
+    filepath = upload_dir / filename
+    
+    # Сохраняем файл
+    with open(filepath, "wb") as f:
+        f.write(file.file.read())
+    
+    # Обновляем URL в базе
+    image_url = f"/uploads/products/{filename}"
+    p.image_url = image_url
+    db.commit()
+    
+    return {"image_url": image_url, "message": "Фото загружено"}
+
+
+@router.delete("/products/{product_id}/image")
+def delete_product_image(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    """Удаление фото товара"""
+    import os
+    from pathlib import Path
+    
+    p = db.query(MenuProduct).filter(MenuProduct.id == product_id).first()
+    if not p:
+        raise HTTPException(404, "Товар не найден")
+    
+    # Удаляем файл если есть
+    if p.image_url:
+        filepath = Path("/opt/soho") / p.image_url.lstrip('/')
+        if filepath.exists():
+            os.remove(filepath)
+        p.image_url = None
+        db.commit()
+    
+    return {"message": "Фото удалено"}

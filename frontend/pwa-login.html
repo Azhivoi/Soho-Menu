@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f0f1a">
+    <title>SOHO PWA - Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .pin-display {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+        
+        .pin-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #2a2a40;
+            border: 2px solid #3a3a50;
+            transition: all 0.2s;
+        }
+        
+        .pin-dot.filled {
+            background: #e94560;
+            border-color: #e94560;
+        }
+        
+        .pin-dot.error {
+            background: #f44336;
+            border-color: #f44336;
+            animation: shake 0.5s;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 300px;
+        }
+        
+        .key {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #1a1a2e;
+            border: 2px solid #2a2a40;
+            color: #fff;
+            font-size: 28px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            user-select: none;
+        }
+        
+        .key:active {
+            background: #e94560;
+            border-color: #e94560;
+            transform: scale(0.95);
+        }
+        
+        .key.delete {
+            font-size: 20px;
+            background: #2a2a40;
+        }
+        
+        .key.delete:active {
+            background: #f44336;
+            border-color: #f44336;
+        }
+        
+        .error-message {
+            color: #f44336;
+            font-size: 14px;
+            margin-top: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .error-message.show {
+            opacity: 1;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 15, 26, 0.95);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        
+        .loading.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid #2a2a40;
+            border-top-color: #e94560;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">🍽️</div>
+    <h1>SOHO Menu</h1>
+    <p class="subtitle">Введите PIN-код для входа</p>
+    
+    <div class="pin-display">
+        <div class="pin-dot" id="dot1"></div>
+        <div class="pin-dot" id="dot2"></div>
+        <div class="pin-dot" id="dot3"></div>
+        <div class="pin-dot" id="dot4"></div>
+        <div class="pin-dot" id="dot5"></div>
+        <div class="pin-dot" id="dot6"></div>
+    </div>
+    
+    <div class="keypad">
+        <div class="key" onclick="addDigit('1')">1</div>
+        <div class="key" onclick="addDigit('2')">2</div>
+        <div class="key" onclick="addDigit('3')">3</div>
+        <div class="key" onclick="addDigit('4')">4</div>
+        <div class="key" onclick="addDigit('5')">5</div>
+        <div class="key" onclick="addDigit('6')">6</div>
+        <div class="key" onclick="addDigit('7')">7</div>
+        <div class="key" onclick="addDigit('8')">8</div>
+        <div class="key" onclick="addDigit('9')">9</div>
+        <div class="key" style="visibility: hidden;"></div>
+        <div class="key" onclick="addDigit('0')">0</div>
+        <div class="key delete" onclick="deleteDigit()">⌫</div>
+    </div>
+    
+    <div class="error-message" id="errorMsg">Неверный PIN-код</div>
+    
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p class="loading-text">Проверка...</p>
+    </div>
+
+    <script>
+        let pin = '';
+        const maxLength = 6;
+        
+        // Check if already logged in
+        const token = localStorage.getItem('pwa_auth_token');
+        if (token) {
+            validateToken(token);
+        }
+        
+        function addDigit(digit) {
+            if (pin.length < maxLength) {
+                pin += digit;
+                updateDisplay();
+                
+                if (pin.length === maxLength) {
+                    checkPin();
+                }
+            }
+        }
+        
+        function deleteDigit() {
+            if (pin.length > 0) {
+                pin = pin.slice(0, -1);
+                updateDisplay();
+                hideError();
+            }
+        }
+        
+        function updateDisplay() {
+            for (let i = 1; i <= maxLength; i++) {
+                const dot = document.getElementById(`dot${i}`);
+                if (i <= pin.length) {
+                    dot.classList.add('filled');
+                    dot.classList.remove('error');
+                } else {
+                    dot.classList.remove('filled', 'error');
+                }
+            }
+        }
+        
+        function showError() {
+            document.getElementById('errorMsg').classList.add('show');
+            for (let i = 1; i <= maxLength; i++) {
+                document.getElementById(`dot${i}`).classList.add('error');
+            }
+            setTimeout(() => {
+                hideError();
+                pin = '';
+                updateDisplay();
+            }, 1500);
+        }
+        
+        function hideError() {
+            document.getElementById('errorMsg').classList.remove('show');
+            for (let i = 1; i <= maxLength; i++) {
+                document.getElementById(`dot${i}`).classList.remove('error');
+            }
+        }
+        
+        function showLoading() {
+            document.getElementById('loading').classList.add('show');
+        }
+        
+        function hideLoading() {
+            document.getElementById('loading').classList.remove('show');
+        }
+        
+        async function checkPin() {
+            showLoading();
+            
+            try {
+                const res = await fetch('/api/auth/pwa/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({pin: pin})
+                });
+                
+                const data = await res.json();
+                
+                if (data.success && data.token) {
+                    localStorage.setItem('pwa_auth_token', data.token);
+                    localStorage.setItem('pwa_user', JSON.stringify(data.user));
+                    window.location.href = '/pwa/';
+                } else {
+                    hideLoading();
+                    showError();
+                }
+            } catch (e) {
+                hideLoading();
+                showError();
+            }
+        }
+        
+        async function validateToken(token) {
+            showLoading();
+            
+            try {
+                const res = await fetch('/api/auth/pwa/validate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({token: token})
+                });
+                
+                const data = await res.json();
+                
+                if (data.valid) {
+                    window.location.href = '/pwa/';
+                } else {
+                    localStorage.removeItem('pwa_auth_token');
+                    hideLoading();
+                }
+            } catch (e) {
+                // Offline mode - allow access with cached token
+                window.location.href = '/pwa/';
+            }
+        }
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key >= '0' && e.key <= '9') {
+                addDigit(e.key);
+            } else if (e.key === 'Backspace') {
+                deleteDigit();
+            }
+        });
+    </script>
+</body>
+</html>

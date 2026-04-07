@@ -1,0 +1,1821 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Общие настройки - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .page-header p {
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+        
+        .settings-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: #252538;
+            padding: 16px 20px;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .card-header .icon {
+            font-size: 20px;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: #a0a0b0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            background: #16162a;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #16162a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .checkbox-group:hover {
+            background: #1f1f35;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .checkbox-group .hint {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .font-settings {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 8px;
+            align-items: end;
+            padding: 12px;
+            background: #16162a;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .font-settings .field-name {
+            font-size: 13px;
+            color: #a0a0b0;
+            margin-bottom: 4px;
+        }
+        .font-settings .field-label {
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        /* Work hours grid */
+        .work-hours-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .work-day-row {
+            display: grid;
+            grid-template-columns: 50px 80px 20px 80px 50px;
+            gap: 8px;
+            align-items: center;
+            padding: 10px;
+            background: #16162a;
+            border-radius: 8px;
+        }
+        .work-day-row.weekend {
+            background: rgba(233, 69, 96, 0.05);
+        }
+        .day-checkbox, .round-checkbox {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+        }
+        .day-checkbox input, .round-checkbox input {
+            width: 18px;
+            height: 18px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+        .day-checkbox span {
+            font-size: 12px;
+            font-weight: 600;
+            color: #a0a0b0;
+        }
+        .day-checkbox input:checked + span {
+            color: #fff;
+        }
+        .round-checkbox span {
+            font-size: 10px;
+            color: #888;
+        }
+        
+        /* Print Mode Selector */
+        .print-mode-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .print-mode-option {
+            cursor: pointer;
+        }
+        .print-mode-option input {
+            display: none;
+        }
+        .print-mode-card {
+            background: #16162a;
+            border: 2px solid #2a2a40;
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.2s;
+            height: 100%;
+        }
+        .print-mode-option input:checked + .print-mode-card {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .print-mode-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .print-mode-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .print-mode-desc {
+            font-size: 12px;
+            color: #888;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .print-mode-pros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .print-mode-pros .pro, .print-mode-pros .con {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .print-mode-pros .pro {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        .print-mode-pros .con {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+        }
+        .print-mode-settings {
+            border-top: 1px solid #2a2a40;
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        
+        /* Agent Status */
+        .agent-status-box {
+            transition: all 0.3s;
+        }
+        .agent-status-box.connected {
+            background: #1a3a1a !important;
+            border: 1px solid #2a5a2a;
+        }
+        }
+        .day-time {
+            padding: 8px !important;
+            text-align: center;
+        }
+        .time-separator {
+            text-align: center;
+            color: #888;
+        }
+        
+        /* Preview styles */
+        .preview-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .preview-box {
+            background: #fff;
+            color: #000;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            min-height: 300px;
+        }
+        .preview-box.kitchen-runner {
+            background: #fff;
+        }
+        .preview-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .preview-order-num {
+            font-size: 32px;
+            font-weight: bold;
+        }
+        .preview-item {
+            margin: 8px 0;
+        }
+        .preview-footer {
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        /* Printer settings */
+        .printer-card {
+            background: #16162a;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .printer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .printer-name {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .printer-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+        .printer-status.online {
+            background: rgba(0, 217, 165, 0.1);
+            color: #00d9a5;
+        }
+        .printer-status.offline {
+            background: rgba(233, 69, 96, 0.1);
+            color: #e94560;
+        }
+        
+        .security-level {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .security-level label {
+            flex: 1;
+            padding: 12px;
+            background: #16162a;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .security-level label:hover {
+            background: #1f1f35;
+        }
+        .security-level input[type="radio"] {
+            display: none;
+        }
+        .security-level input[type="radio"]:checked + span {
+            color: #00d9a5;
+        }
+        .security-level input[type="radio"]:checked + span::before {
+            content: "✓ ";
+        }
+        .security-level label:has(input:checked) {
+            border-color: #00d9a5;
+            background: rgba(0, 217, 165, 0.1);
+        }
+        
+        .btn-save {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            padding: 16px 32px;
+            background: #e94560;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(233, 69, 96, 0.4);
+            transition: all 0.2s;
+        }
+        .btn-save:hover {
+            background: #ff5773;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(233, 69, 96, 0.5);
+        }
+        
+        .preview-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: #16162a;
+            border-radius: 8px;
+        }
+        .preview-section h4 {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+        .receipt-preview {
+            background: #fff;
+            color: #000;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            max-width: 300px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: #16162a;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: #888;
+            font-size: 13px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #fff;
+        }
+        .tab-btn.active {
+            background: #e94560;
+            color: #fff;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>⚙️ Общие настройки</h1>
+        <p>Настройка заведения, чеков, кухни и безопасности</p>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('general', this)">🏢 Заведение</button>
+        <button class="tab-btn" onclick="showTab('receipts', this)">🖨️ Принтеры</button>
+        <button class="tab-btn" onclick="showTab('kitchen', this)">👨‍🍳 Кухня</button>
+        <button class="tab-btn" onclick="showTab('security', this)">🔒 Безопасность</button>
+    </div>
+    
+    <!-- Заведение -->
+    <div id="general" class="tab-content active">
+        <div class="settings-grid">
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🏢</span>
+                    <h2>Информация о заведении</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Название заведения</label>
+                        <input type="text" class="form-input" id="venueName" value="SOHO Cafe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Адрес</label>
+                        <textarea class="form-textarea" id="venueAddress">г. Минск, ул. Примерная, 1</textarea>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Телефон</label>
+                            <input type="tel" class="form-input" id="venuePhone" value="+375 (29) 123-45-67">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="venueEmail" value="info@soho.by">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🕐</span>
+                    <h2>Время работы по дням</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Часовой пояс</label>
+                        <select class="form-select" id="timezone">
+                            <option value="Europe/Minsk" selected>Europe/Minsk (GMT+3)</option>
+                            <option value="Europe/Moscow">Europe/Moscow (GMT+3)</option>
+                            <option value="Europe/Kiev">Europe/Kiev (GMT+2/+3)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="work-hours-grid">
+                        <div class="work-day-row">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_mon" checked>
+                                <span>Пн</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_mon" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_mon" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_mon">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_tue" checked>
+                                <span>Вт</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_tue" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_tue" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_tue">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_wed" checked>
+                                <span>Ср</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_wed" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_wed" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_wed">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_thu" checked>
+                                <span>Чт</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_thu" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_thu" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_thu">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_fri" checked>
+                                <span>Пт</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_fri" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_fri" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_fri">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row weekend">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_sat" checked>
+                                <span>Сб</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_sat" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_sat" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_sat">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                        <div class="work-day-row weekend">
+                            <label class="day-checkbox">
+                                <input type="checkbox" id="day_sun" checked>
+                                <span>Вс</span>
+                            </label>
+                            <input type="time" class="form-input day-time" id="open_sun" value="10:00">
+                            <span class="time-separator">—</span>
+                            <input type="time" class="form-input day-time" id="close_sun" value="23:00">
+                            <label class="round-checkbox">
+                                <input type="checkbox" id="round_sun">
+                                <span>24ч</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="checkbox-group" style="margin-top: 16px;">
+                        <input type="checkbox" id="sameHoursAllDays" onchange="toggleSameHours()">
+                        <label for="sameHoursAllDays">Одинаковое время для всех дней</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">💰</span>
+                    <h2>Валюта и налоги</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Валюта</label>
+                            <select class="form-select" id="currency">
+                                <option value="BYN" selected>BYN (Белорусский рубль)</option>
+                                <option value="RUB">RUB (Российский рубль)</option>
+                                <option value="USD">USD (Доллар)</option>
+                                <option value="EUR">EUR (Евро)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Символ валюты</label>
+                            <input type="text" class="form-input" id="currencySymbol" value="BYN">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">НДС (%)</label>
+                        <input type="number" class="form-input" id="vatRate" value="20" min="0" max="100">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="priceIncludesVat" checked>
+                        <label for="priceIncludesVat">Цены включают НДС</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Принтеры -->
+<div id="receipts" class="tab-content">
+        <div class="settings-grid">
+            <!-- Print Mode -->
+            <div class="settings-card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="icon">⚙️</span>
+                    <h2>Режим печати</h2>
+                </div>
+                <div class="card-body">
+                    <div class="print-mode-selector" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                        <label class="print-mode-option" style="cursor: pointer;">
+                            <input type="radio" name="printMode" value="browser" id="printModeBrowser" checked onchange="togglePrintMode()" style="display: none;">
+                            <div class="print-mode-card" style="background: #16162a; border: 2px solid #2a2a40; border-radius: 12px; padding: 16px; transition: all 0.2s; height: 100%;">
+                                <div style="font-size: 32px; margin-bottom: 12px;">🖨️</div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Стандартная печать</div>
+                                <div style="font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 12px;">Через диалог печати браузера. Работает с любым принтером.</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <span style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: rgba(76, 175, 80, 0.2); color: #4caf50;">✓ Работает на HTTP</span>
+                                    <span style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: rgba(76, 175, 80, 0.2); color: #4caf50;">✓ Любой принтер</span>
+                                </div>
+                            </div>
+                        </label>
+                        
+                        <label class="print-mode-option" style="cursor: pointer;">
+                            <input type="radio" name="printMode" value="local_agent" id="printModeAgent" onchange="togglePrintMode()" style="display: none;">
+                            <div class="print-mode-card" style="background: #16162a; border: 2px solid #2a2a40; border-radius: 12px; padding: 16px; transition: all 0.2s; height: 100%;">
+                                <div style="font-size: 32px; margin-bottom: 12px;">🖥️</div>
+                                <div style="font-size: 14px; font-weight: 600; margin-bottom: 8px;">Локальный агент</div>
+                                <div style="font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 12px;">Прямая печать без диалога. Требует запуска агента на ПК.</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                                    <span style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: rgba(76, 175, 80, 0.2); color: #4caf50;">✓ Без диалога</span>
+                                    <span style="font-size: 11px; padding: 4px 8px; border-radius: 4px; background: rgba(76, 175, 80, 0.2); color: #4caf50;">✓ ESC/POS</span>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <!-- Browser Print Settings -->
+                    <div id="browserPrintSettings" class="print-mode-settings" style="margin-top: 16px; border-top: 1px solid #2a2a40; padding-top: 16px;">
+                        <div style="background: #1a3a1a; border: 1px solid #2a5a2a; padding: 12px; border-radius: 8px;">
+                            <div style="font-size: 13px; color: #a0e0a0;">
+                                <strong>✓ Стандартная печать активна</strong><br>
+                                <span style="color: #888; font-size: 11px;">Чеки настраиваются в разделе "🧾 Чеки" в главном меню CRM</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Local Agent Settings -->
+                    <div id="localAgentSettings" class="print-mode-settings" style="display: none; margin-top: 16px; border-top: 1px solid #2a2a40; padding-top: 16px;">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label">IP адрес компьютера с агентом</label>
+                            <input type="text" class="form-input" id="agentIpAddress" value="localhost" placeholder="192.168.1.100" onchange="checkAgentStatus()">
+                            <div style="font-size: 11px; color: #666; margin-top: 4px;">Укажите IP компьютера где запущен агент (показан в консоли агента)</div>
+                        </div>
+                        
+                        <div class="agent-status-box" id="agentStatusBox" style="background: #16162a; padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <span id="agentStatusIcon" style="font-size: 24px;">🔴</span>
+                                <div>
+                                    <div style="font-weight: 600;" id="agentStatusText">Агент не подключен</div>
+                                    <div style="font-size: 12px; color: #888;" id="agentStatusDetail">Запустите агент на ПК</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn btn-primary" style="flex: 1;" onclick="checkAgentStatus()" id="btnCheckAgent">🔄 Проверить статус</button>
+                                <button class="btn btn-secondary" style="flex: 1;" onclick="testAgentPrint()">🖨️ Тестовая печать</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">WebSocket URL</label>
+                            <input type="text" class="form-input" id="agentWsUrl" value="ws://localhost:8765" placeholder="ws://localhost:8765">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Токен агента</label>
+                            <input type="password" class="form-input" id="agentToken" placeholder="Опционально">
+                        </div>
+                        
+                        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #2a2a40;">
+                            <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #a0a0b0;">🖨️ Настройки принтеров</h4>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Чековый принтер</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" class="form-input" id="agentReceiptPrinterIp" value="192.168.1.100" placeholder="IP адрес" style="flex: 2;">
+                                    <input type="number" class="form-input" id="agentReceiptPrinterPort" value="9100" placeholder="Порт" style="flex: 1;">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Кухонный принтер</label>
+                                <div style="display: flex; gap: 8px;">
+                                    <input type="text" class="form-input" id="agentKitchenPrinterIp" value="192.168.1.101" placeholder="IP адрес" style="flex: 2;">
+                                    <input type="number" class="form-input" id="agentKitchenPrinterPort" value="9100" placeholder="Порт" style="flex: 1;">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: #1a3a1a; border: 1px solid #2a5a2a; padding: 12px; border-radius: 8px; margin-top: 16px;">
+                            <div style="font-size: 13px; color: #a0e0a0;">
+                                <strong>📥 Скачать агента:</strong><br>
+                                <a href="/downloads/soho-print-agent.exe" download style="color: #4caf50;">soho-print-agent.exe</a> (37MB)<br>
+                                <span style="color: #888; font-size: 11px;">Запуск: двойной клик, ничего устанавливать не нужно</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Info Card -->
+            <div class="settings-card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="icon">ℹ️</span>
+                    <h2>Настройки чеков переехали</h2>
+                </div>
+                <div class="card-body">
+                    <div style="background: #1a3a1a; border: 1px solid #2a5a2a; padding: 20px; border-radius: 8px; margin-bottom: 16px;">
+                        <p style="color: #a0e0a0; margin-bottom: 12px;">
+                            <strong>Настройки дизайна чеков</strong> (логотип, шрифты, подвал) теперь находятся в отдельном разделе:
+                        </p>
+                        <a href="crm-settings-receipt.html" target="_blank" style="display: inline-block; background: #e94560; color: #fff; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">
+                            🧾 Открыть настройки чеков
+                        </a>
+                    </div>
+                    <p style="color: #888; font-size: 13px;">
+                        В этом разделе остались только настройки подключения принтеров (IP, порты, режим печати).
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Кухня -->
+    <div id="kitchen" class="tab-content">
+        <div class="settings-grid">
+            <!-- Отправка на кухню -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">📤</span>
+                    <h2>Отправка на кухню</h2>
+                </div>
+                <div class="card-body">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmBeforeSend" checked>
+                        <label for="confirmBeforeSend">
+                            Подтверждение перед отправкой
+                            <span class="hint">Показывать диалог подтверждения</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="allowResend" checked>
+                        <label for="allowResend">
+                            Разрешить повторную отправку
+                            <span class="hint">Можно отправить заказ повторно</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showSendTime" checked>
+                        <label for="showSendTime">
+                            Показывать время отправки
+                            <span class="hint">Время отправки на кухню в заказе</span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">Звук при отправке</label>
+                        <select class="form-select" id="kitchenSound">
+                            <option value="bell" selected>🔔 Колокольчик</option>
+                            <option value="beep">📢 Сигнал</option>
+                            <option value="none">🔇 Без звука</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Изменения после отправки -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🔄</span>
+                    <h2>Изменения после отправки</h2>
+                </div>
+                <div class="card-body">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="markAddedItems" checked>
+                        <label for="markAddedItems">
+                            Выделять добавленные позиции
+                            <span class="hint">Новые позиции помечаются как "Добавлено"</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="separateSendAdded" checked>
+                        <label for="separateSendAdded">
+                            Отправлять добавленное отдельно
+                            <span class="hint">Только новые позиции на кухню</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showOriginalOrder">
+                        <label for="showOriginalOrder">
+                            Показывать исходный заказ
+                            <span class="hint">Сохранять историю изменений</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Время приготовления -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">⏱️</span>
+                    <h2>Время приготовления</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Стандартное время (мин)</label>
+                        <input type="number" class="form-input" id="defaultCookTime" value="20" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Максимальное время (мин)</label>
+                        <input type="number" class="form-input" id="maxCookTime" value="60" min="1">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showCookTimeOnKds" checked>
+                        <label for="showCookTimeOnKds">Показывать время на KDS</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="alertOverdue" checked>
+                        <label for="alertOverdue">Оповещать о просрочке</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Настройки бегунка -->
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🏃</span>
+                    <h2>Настройки бегунка</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label class="form-label">Размер номера заказа</label>
+                        <select class="form-select" id="runnerFontOrder">
+                            <option value="24px">Мелкий (24px)</option>
+                            <option value="32px" selected>Средний (32px)</option>
+                            <option value="40px">Крупный (40px)</option>
+                            <option value="48px">Очень крупный (48px)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Размер текста позиций</label>
+                        <select class="form-select" id="runnerFontItem">
+                            <option value="14px">Мелкий (14px)</option>
+                            <option value="16px" selected>Средний (16px)</option>
+                            <option value="18px">Крупный (18px)</option>
+                            <option value="20px">Очень крупный (20px)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Отступ сверху (для держателя)</label>
+                        <select class="form-select" id="runnerTopMargin">
+                            <option value="0">Нет</option>
+                            <option value="20px">Малый (20px)</option>
+                            <option value="30px" selected>Средний (30px)</option>
+                            <option value="40px">Большой (40px)</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showModifiers" checked>
+                        <label for="showModifiers">Показывать модификаторы</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showComment" checked>
+                        <label for="showComment">Показывать комментарий клиента</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="highlightPreorderRunner" checked>
+                        <label for="highlightPreorderRunner">Выделять предзаказ на бегунке</label>
+                    </div>
+                    <div class="checkbox-group" style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #2a2a40;">
+                        <input type="checkbox" id="allowReprintRunner" checked>
+                        <label for="allowReprintRunner">
+                            <strong>Разрешить повторную печать бегунков</strong>
+                            <span class="hint" style="display: block; margin-top: 4px;">Если выключено — повторная печать бегунков будет запрещена</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Настройки шрифтов бегунка -->
+            <div class="settings-card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="icon">🎨</span>
+                    <h2>Шрифты бегунка</h2>
+                </div>
+                <div class="card-body">
+                    <div class="font-settings">
+                        <div class="font-row">
+                            <span class="font-label">Номер заказа</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeOrderNum" value="42" min="20" max="72">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldOrderNum" checked> Жирный</label>
+                        </div>
+                        <div class="font-row">
+                            <span class="font-label">Тип заказа / Стол</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeType" value="28" min="14" max="48">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldType" checked> Жирный</label>
+                        </div>
+                        <div class="font-row">
+                            <span class="font-label">Время</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeTime" value="18" min="10" max="32">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldTime"> Жирный</label>
+                        </div>
+                        <div class="font-row">
+                            <span class="font-label">Товары (название)</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeItems" value="22" min="12" max="36">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldItems" checked> Жирный</label>
+                        </div>
+                        <div class="font-row">
+                            <span class="font-label">Товары (количество)</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeQty" value="18" min="10" max="28">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldQty"> Жирный</label>
+                        </div>
+                        <div class="font-row">
+                            <span class="font-label">Комментарий</span>
+                            <input type="number" class="font-size-input" id="runnerFontSizeComment" value="16" min="10" max="28">
+                            <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldComment"> Жирный</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Предпросмотр бегунка -->
+            <div class="settings-card" style="grid-column: 1 / -1;">
+                <div class="card-header">
+                    <span class="icon">👁️</span>
+                    <h2>Предпросмотр бегунка</h2>
+                </div>
+                <div class="card-body">
+                    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; display: flex; justify-content: center;">
+                        <div id="runnerPreview" class="preview-box kitchen-runner" style="background: white; width: 80mm; min-height: 250px; padding: 10px; font-family: 'Courier New', monospace; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <div style="height: 30mm;"></div>
+                            <div class="preview-order-num" style="text-align: center; font-size: 32px; font-weight: bold;">#152</div>
+                            <div style="text-align: center; font-size: 16px; margin: 5px 0;">🍽️ Зал • Стол 5</div>
+                            <div style="text-align: center; font-size: 14px; color: #666;">14:30</div>
+                            <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                            <div style="font-size: 16px; font-weight: bold; margin: 8px 0;">1 x Бургер Классический</div>
+                            <div style="font-size: 12px; color: #666; margin-left: 20px;">+ Бекон, + Сыр</div>
+                            <div style="font-size: 16px; font-weight: bold; margin: 8px 0;">2 x Картофель фри</div>
+                            <div style="font-size: 16px; font-weight: bold; margin: 8px 0;">1 x Кола 0.5л</div>
+                            <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+                            <div style="font-size: 12px; color: #666;">⏱️ Время: 15 мин</div>
+                            <div style="font-size: 11px; color: #888; margin-top: 4px;">💬 Без лука, пожалуйста</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" style="margin-top: 16px; width: 100%;" onclick="updateRunnerPreview()">🔄 Обновить предпросмотр</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Безопасность -->
+    <div id="security" class="tab-content">
+        <div class="settings-grid">
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🔐</span>
+                    <h2>Уровень безопасности</h2>
+                </div>
+                <div class="card-body">
+                    <p style="color: #888; margin-bottom: 16px; font-size: 13px;">Выберите уровень контроля за изменениями в заказах</p>
+                    
+                    <div class="security-level">
+                        <label>
+                            <input type="radio" name="securityLevel" value="low">
+                            <span>Низкий</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="securityLevel" value="medium" checked>
+                            <span>Средний</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="securityLevel" value="high">
+                            <span>Высокий</span>
+                        </label>
+                    </div>
+                    
+                    <div style="margin-top: 16px; padding: 12px; background: #16162a; border-radius: 8px;">
+                        <div id="securityDesc-medium">
+                            <strong>Средний уровень:</strong><br>
+                            • Подтверждение для удаления после печати<br>
+                            • Подтверждение для перепечатки чека<br>
+                            • Логирование всех изменений
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">📝</span>
+                    <h2>Изменения в заказе</h2>
+                </div>
+                <div class="card-body">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmDeletePrinted" checked>
+                        <label for="confirmDeletePrinted">
+                            Подтверждать удаление после печати
+                            <span class="hint">Требовать пароль/подтверждение</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmDeleteSent" checked>
+                        <label for="confirmDeleteSent">
+                            Подтверждать удаление после отправки
+                            <span class="hint">Обязательное подтверждение</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="allowEditPrinted">
+                        <label for="allowEditPrinted">
+                            Разрешить редактирование после печати
+                            <span class="hint">Можно менять количество</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="logAllChanges" checked>
+                        <label for="logAllChanges">
+                            Логировать все изменения
+                            <span class="hint">История кто и когда менял</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">🖨️</span>
+                    <h2>Перепечатка чеков</h2>
+                </div>
+                <div class="card-body">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmReprint" checked>
+                        <label for="confirmReprint">
+                            Подтверждать перепечатку
+                            <span class="hint">Запрашивать причину</span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">Максимум перепечаток</label>
+                        <input type="number" class="form-input" id="maxReprints" value="3" min="0">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="markReprint">
+                        <label for="markReprint">
+                            Помечать как "Копия"
+                            <span class="hint">На чеке будет отметка</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="notifyManagerReprint">
+                        <label for="notifyManagerReprint">
+                            Уведомлять менеджера
+                            <span class="hint">Отправлять alert при перепечатке</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="settings-card">
+                <div class="card-header">
+                    <span class="icon">💰</span>
+                    <h2>Финансовые операции</h2>
+                </div>
+                <div class="card-body">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmDiscount" checked>
+                        <label for="confirmDiscount">
+                            Подтверждать скидки
+                            <span class="hint">Требовать авторизацию</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmCancel" checked>
+                        <label for="confirmCancel">
+                            Подтверждать отмену заказа
+                            <span class="hint">Обязательно для всех</span>
+                        </label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="confirmRefund" checked>
+                        <label for="confirmRefund">
+                            Подтверждать возврат
+                            <span class="hint">Только с правами</span>
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label class="form-label">Максимальная скидка без подтверждения (%)</label>
+                        <input type="number" class="form-input" id="maxAutoDiscount" value="10" min="0" max="100">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button class="btn-save" onclick="saveSettings()">💾 Сохранить настройки</button>
+    
+    <script src="js/iframe-helper.js"></script>
+    <script>
+// ===== CORE FUNCTIONS =====
+function showTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId)?.classList.add('active');
+    btn?.classList.add('active');
+}
+
+function showNotification(message, type = 'info') {
+    const div = document.createElement('div');
+    div.style.cssText = 'position:fixed;top:20px;right:20px;padding:12px 20px;border-radius:8px;z-index:10000;font-size:14px;color:#fff;background:' + (type==='error'?'#e94560':type==='success'?'#4caf50':'#2196f3');
+    div.textContent = message;
+    document.body.appendChild(div);
+    setTimeout(() => div.remove(), 3000);
+}
+
+// ===== SAVE / LOAD =====
+function saveSettings() {
+    const venueName = document.getElementById('venueName');
+    const venueAddress = document.getElementById('venueAddress');
+    const venuePhone = document.getElementById('venuePhone');
+    const rHeader = document.getElementById('receiptHeader');
+    const rSubheader = document.getElementById('receiptSubheader');
+    const rFooter = document.getElementById('receiptFooter');
+    const rHeaderSize = document.getElementById('receiptHeaderFontSize');
+    const rBodySize = document.getElementById('receiptBodyFontSize');
+    const rWeight = document.getElementById('receiptFontWeight');
+    const showLogo = document.getElementById('showLogo');
+    const showWifi = document.getElementById('showWifi');
+    const wifiPass = document.getElementById('wifiPassword');
+    const showPayment = document.getElementById('showPaymentMethods');
+    const showOrderType = document.getElementById('showOrderType');
+    const showClient = document.getElementById('showClientInfo');
+    const printModeRadio = document.querySelector('input[name="printMode"]:checked');
+    
+    const settings = {
+        venue: {
+            name: venueName ? venueName.value : '',
+            address: venueAddress ? venueAddress.value : '',
+            phone: venuePhone ? venuePhone.value : '',
+            email: document.getElementById('venueEmail') ? document.getElementById('venueEmail').value : ''
+        },
+        printMode: printModeRadio ? printModeRadio.value : 'browser',
+        agentIp: document.getElementById('agentIpAddress')?.value || 'localhost',
+        receipts: {
+            header: rHeader ? rHeader.value : '',
+            subheader: rSubheader ? rSubheader.value : '',
+            footer: rFooter ? rFooter.value : '',
+            headerFontSize: rHeaderSize ? rHeaderSize.value : '24px',
+            bodyFontSize: rBodySize ? rBodySize.value : '14px',
+            fontWeight: rWeight ? rWeight.value : '700'
+        },
+        showLogo: showLogo ? showLogo.checked : false,
+        showWifi: showWifi ? showWifi.checked : false,
+        wifiPassword: wifiPass ? wifiPass.value : '',
+        showPaymentMethods: showPayment ? showPayment.checked : false,
+        showOrderType: showOrderType ? showOrderType.checked : false,
+        showClientInfo: showClient ? showClient.checked : false,
+        printers: {
+            receipt: {
+                ip: document.getElementById('agentReceiptPrinterIp')?.value || '192.168.1.100',
+                port: parseInt(document.getElementById('agentReceiptPrinterPort')?.value || 9100)
+            },
+            kitchen: {
+                ip: document.getElementById('agentKitchenPrinterIp')?.value || '192.168.1.101',
+                port: parseInt(document.getElementById('agentKitchenPrinterPort')?.value || 9100)
+            }
+        },
+        hours: {
+            mon: { enabled: document.getElementById('day_mon')?.checked, open: document.getElementById('open_mon')?.value, close: document.getElementById('close_mon')?.value },
+            tue: { enabled: document.getElementById('day_tue')?.checked, open: document.getElementById('open_tue')?.value, close: document.getElementById('close_tue')?.value },
+            wed: { enabled: document.getElementById('day_wed')?.checked, open: document.getElementById('open_wed')?.value, close: document.getElementById('close_wed')?.value },
+            thu: { enabled: document.getElementById('day_thu')?.checked, open: document.getElementById('open_thu')?.value, close: document.getElementById('close_thu')?.value },
+            fri: { enabled: document.getElementById('day_fri')?.checked, open: document.getElementById('open_fri')?.value, close: document.getElementById('close_fri')?.value },
+            sat: { enabled: document.getElementById('day_sat')?.checked, open: document.getElementById('open_sat')?.value, close: document.getElementById('close_sat')?.value },
+            sun: { enabled: document.getElementById('day_sun')?.checked, open: document.getElementById('open_sun')?.value, close: document.getElementById('close_sun')?.value }
+        },
+        sameHoursAllDays: document.getElementById('sameHoursAllDays')?.checked || false,
+        kitchen: {
+            allowReprintRunner: document.getElementById('allowReprintRunner')?.checked !== false
+        }
+    };
+    
+    console.log('Saving settings:', settings);
+    
+    fetch('/api/config/crm/settings', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(settings)
+    })
+    .then(() => {
+        showNotification('Сохранено!', 'success');
+        // Save to localStorage for PrintSystem
+        localStorage.setItem('crm_settings', JSON.stringify(settings));
+        // Save logo separately to localStorage
+        const logoSrc = document.getElementById('logoImage')?.src;
+        if (logoSrc && !logoSrc.includes('undefined')) {
+            localStorage.setItem('receiptLogo', logoSrc);
+        }
+    })
+    .catch(err => showNotification('Ошибка: ' + err.message, 'error'));
+}
+
+function loadSettings() {
+    fetch('/api/config/crm/settings')
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            console.log('Loaded:', data);
+            
+            // Venue
+            const venueName = document.getElementById('venueName');
+            const venueAddress = document.getElementById('venueAddress');
+            const venuePhone = document.getElementById('venuePhone');
+            if (venueName && data.venue?.name) venueName.value = data.venue.name;
+            if (venueAddress && data.venue?.address) venueAddress.value = data.venue.address;
+            if (venuePhone && data.venue?.phone) venuePhone.value = data.venue.phone;
+            const venueEmail = document.getElementById('venueEmail');
+            if (venueEmail && data.venue?.email) venueEmail.value = data.venue.email;
+            
+            // Receipts
+            const rHeader = document.getElementById('receiptHeader');
+            const rSubheader = document.getElementById('receiptSubheader');
+            const rFooter = document.getElementById('receiptFooter');
+            const rHeaderSize = document.getElementById('receiptHeaderFontSize');
+            const rBodySize = document.getElementById('receiptBodyFontSize');
+            const rWeight = document.getElementById('receiptFontWeight');
+            
+            if (rHeader && data.receipts?.header) rHeader.value = data.receipts.header;
+            if (rSubheader && data.receipts?.subheader) rSubheader.value = data.receipts.subheader;
+            if (rFooter && data.receipts?.footer) rFooter.value = data.receipts.footer;
+            if (rHeaderSize && data.receipts?.headerFontSize) rHeaderSize.value = data.receipts.headerFontSize;
+            if (rBodySize && data.receipts?.bodyFontSize) rBodySize.value = data.receipts.bodyFontSize;
+            if (rWeight && data.receipts?.fontWeight) rWeight.value = data.receipts.fontWeight;
+            
+            // Checkboxes - use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                const showLogo = document.getElementById('showLogo');
+                const showWifi = document.getElementById('showWifi');
+                const showPayment = document.getElementById('showPaymentMethods');
+                const showOrderType = document.getElementById('showOrderType');
+                const showClient = document.getElementById('showClientInfo');
+                const wifiPass = document.getElementById('wifiPassword');
+                
+                if (showLogo && data.showLogo !== undefined) showLogo.checked = data.showLogo;
+                if (showWifi && data.showWifi !== undefined) showWifi.checked = data.showWifi;
+                if (showPayment && data.showPaymentMethods !== undefined) showPayment.checked = data.showPaymentMethods;
+                if (showOrderType && data.showOrderType !== undefined) showOrderType.checked = data.showOrderType;
+                if (showClient && data.showClientInfo !== undefined) showClient.checked = data.showClientInfo;
+                if (wifiPass && data.wifiPassword) wifiPass.value = data.wifiPassword;
+            }, 100);
+            
+            // Printer settings
+            const receiptIp = document.getElementById('agentReceiptPrinterIp');
+            const receiptPort = document.getElementById('agentReceiptPrinterPort');
+            const kitchenIp = document.getElementById('agentKitchenPrinterIp');
+            const kitchenPort = document.getElementById('agentKitchenPrinterPort');
+            if (receiptIp && data.printers?.receipt?.ip) receiptIp.value = data.printers.receipt.ip;
+            if (receiptPort && data.printers?.receipt?.port) receiptPort.value = data.printers.receipt.port;
+            if (kitchenIp && data.printers?.kitchen?.ip) kitchenIp.value = data.printers.kitchen.ip;
+            if (kitchenPort && data.printers?.kitchen?.port) kitchenPort.value = data.printers.kitchen.port;
+            
+            // Agent IP
+            const agentIp = document.getElementById('agentIpAddress');
+            if (agentIp && data.agentIp) agentIp.value = data.agentIp;
+            
+            // Print mode
+            const mode = data.printMode || 'browser';
+            const radio = document.querySelector('input[name="printMode"][value="' + mode + '"]');
+            if (radio) radio.checked = true;
+            togglePrintMode();
+            
+            // Save to localStorage for PrintSystem to use
+            localStorage.setItem('crm_settings', JSON.stringify(data));
+            
+            // Logo from localStorage
+            const savedLogo = localStorage.getItem('receiptLogo');
+            if (savedLogo) {
+                const logoImg = document.getElementById('logoImage');
+                const logoPreview = document.getElementById('logoPreview');
+                const logoPlaceholder = document.getElementById('logoPlaceholder');
+                const removeBtn = document.getElementById('removeLogoBtn');
+                if (logoImg) logoImg.src = savedLogo;
+                if (logoPreview) logoPreview.style.display = 'block';
+                if (logoPlaceholder) logoPlaceholder.style.display = 'none';
+                if (removeBtn) removeBtn.style.display = 'block';
+            }
+            
+            updatePreview();
+
+            // Kitchen settings
+            setTimeout(() => {
+                const allowReprintRunner = document.getElementById('allowReprintRunner');
+                if (allowReprintRunner && data.kitchen?.allowReprintRunner !== undefined) {
+                    allowReprintRunner.checked = data.kitchen.allowReprintRunner;
+                }
+            }, 100);
+            
+            // Load runner font settings from localStorage
+            loadRunnerFontSettings();
+        })
+        .catch(err => console.log('Load error:', err));
+}
+
+// Load runner font settings from localStorage
+function loadRunnerFontSettings() {
+    // Default values
+    const defaults = {
+        orderNum: { size: '42px', bold: 'bold' },
+        type: { size: '28px', bold: 'bold' },
+        time: { size: '18px', bold: 'normal' },
+        items: { size: '22px', bold: 'bold' },
+        qty: { size: '18px', bold: 'normal' },
+        comment: { size: '16px', bold: 'normal' }
+    };
+
+    const saved = localStorage.getItem('runnerFontSettings');
+    const fonts = saved ? { ...defaults, ...JSON.parse(saved) } : defaults;
+
+    try {
+        // Extract numeric values from px strings
+        const getSize = (pxStr) => pxStr ? parseInt(pxStr) : null;
+        const isBold = (boldStr) => boldStr === 'bold' || boldStr === '900';
+
+        // Map settings to inputs
+        const mappings = [
+            { id: 'runnerFontSizeOrderNum', val: getSize(fonts.orderNum?.size) || 42 },
+            { id: 'runnerFontBoldOrderNum', val: isBold(fonts.orderNum?.bold), type: 'checkbox' },
+            { id: 'runnerFontSizeType', val: getSize(fonts.type?.size) || 28 },
+            { id: 'runnerFontBoldType', val: isBold(fonts.type?.bold), type: 'checkbox' },
+            { id: 'runnerFontSizeTime', val: getSize(fonts.time?.size) || 18 },
+            { id: 'runnerFontBoldTime', val: isBold(fonts.time?.bold), type: 'checkbox' },
+            { id: 'runnerFontSizeItems', val: getSize(fonts.items?.size) || 22 },
+            { id: 'runnerFontBoldItems', val: isBold(fonts.items?.bold), type: 'checkbox' },
+            { id: 'runnerFontSizeQty', val: getSize(fonts.qty?.size) || 18 },
+            { id: 'runnerFontBoldQty', val: isBold(fonts.qty?.bold), type: 'checkbox' },
+            { id: 'runnerFontSizeComment', val: getSize(fonts.comment?.size) || 16 },
+            { id: 'runnerFontBoldComment', val: isBold(fonts.comment?.bold), type: 'checkbox' }
+        ];
+
+        mappings.forEach(({ id, val, type }) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+
+            if (type === 'checkbox') {
+                el.checked = val;
+            } else {
+                el.value = val;
+            }
+        });
+
+        // Load top margin
+        const savedMargin = localStorage.getItem('runnerTopMargin');
+        const marginEl = document.getElementById('runnerTopMargin');
+        if (marginEl) {
+            marginEl.value = savedMargin || '30mm';
+        }
+
+        // Update preview after loading
+        setTimeout(updateRunnerPreview, 100);
+    } catch (e) {
+        console.error('Error loading runner font settings:', e);
+    }
+}
+
+// ===== PRINT MODE =====
+let currentPreviewTab = 'regular';
+function switchPreviewTab(tab) {
+    currentPreviewTab = tab;
+    const btnRegular = document.getElementById('previewTabRegular');
+    const btnPreorder = document.getElementById('previewTabPreorder');
+    if (btnRegular) btnRegular.className = tab === 'regular' ? 'btn btn-primary' : 'btn btn-secondary';
+    if (btnPreorder) btnPreorder.className = tab === 'preorder' ? 'btn btn-primary' : 'btn btn-secondary';
+    updatePreview();
+}
+
+function togglePrintMode() {
+    const mode = document.querySelector('input[name="printMode"]:checked')?.value || 'browser';
+    const browserDiv = document.getElementById('browserPrintSettings');
+    const agentDiv = document.getElementById('localAgentSettings');
+    if (browserDiv) browserDiv.style.display = mode === 'browser' ? 'block' : 'none';
+    if (agentDiv) agentDiv.style.display = mode === 'local_agent' ? 'block' : 'none';
+}
+
+function connectLocalAgent() {
+    checkAgentStatus();
+}
+
+// Get agent IP from settings
+function getAgentUrl() {
+    const ip = document.getElementById('agentIpAddress')?.value || 'localhost';
+    return `http://${ip}:8889`;
+}
+
+// Check agent status periodically
+async function checkAgentStatus() {
+    try {
+        const agentUrl = getAgentUrl();
+        const response = await fetch(agentUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({command: 'status'})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            updateAgentStatusUI(true, data);
+        } else {
+            updateAgentStatusUI(false);
+        }
+    } catch (e) {
+        updateAgentStatusUI(false);
+    }
+}
+
+function updateAgentStatusUI(connected, data) {
+    const icon = document.getElementById('agentStatusIcon');
+    const text = document.getElementById('agentStatusText');
+    const detail = document.getElementById('agentStatusDetail');
+    const box = document.getElementById('agentStatusBox');
+    
+    if (connected) {
+        if (icon) icon.textContent = '🟢';
+        if (text) text.textContent = 'Агент подключен';
+        if (detail) detail.textContent = 'Готов к печати';
+        if (box) box.style.background = '#1a3a1a';
+    } else {
+        if (icon) icon.textContent = '🔴';
+        if (text) text.textContent = 'Агент не подключен';
+        if (detail) detail.textContent = 'Запустите агент на ПК';
+        if (box) box.style.background = '#16162a';
+    }
+}
+
+// Auto-check agent status every 5 seconds when local_agent mode is selected
+setInterval(() => {
+    const mode = document.querySelector('input[name="printMode"]:checked')?.value;
+    if (mode === 'local_agent') {
+        checkAgentStatus();
+    }
+}, 5000);
+
+// Test print via local agent HTTP API
+async function testAgentPrint() {
+    try {
+        const agentUrl = getAgentUrl();
+        const response = await fetch(agentUrl, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({command: 'test_print', printer_type: 'receipt'})
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showNotification('Тестовая печать отправлена!', 'success');
+        } else {
+            showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+        }
+    } catch (e) {
+        showNotification('Агент не запущен. Проверьте IP и запустите агент.', 'error');
+    }
+}
+
+// ===== TEST PRINT =====
+function testPrint() {
+    const mode = document.querySelector('input[name="printMode"]:checked')?.value || 'browser';
+    
+    if (mode === 'local_agent') {
+        // Print via local agent with printer IP from settings
+        const printerIp = document.getElementById('agentReceiptPrinterIp')?.value || '192.168.1.100';
+        const printerPort = document.getElementById('agentReceiptPrinterPort')?.value || 9100;
+        
+        // Note: This runs from browser, so localhost is the user's PC
+        fetch('http://localhost:8765', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                oper: 'printReceipt',
+                printer_ip: printerIp,
+                printer_port: parseInt(printerPort),
+                order: {
+                    order_number: 'TEST',
+                    header: document.getElementById('receiptHeader')?.value || 'SOHO Cafe',
+                    items: [{name: 'Тестовый товар', qty: 1, price: 10.00, total: 10.00}],
+                    total: 10.00,
+                    date: new Date().toLocaleString('ru-RU')
+                }
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) showNotification('Чек отправлен на печать', 'success');
+            else showNotification('Ошибка: ' + (data.error || 'Неизвестная ошибка'), 'error');
+        })
+        .catch(err => showNotification('Ошибка подключения к агенту', 'error'));
+        return;
+    }
+    
+    if (mode === 'browser') {
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            showNotification('Разрешите всплывающие окна', 'error');
+            return;
+        }
+        
+        const header = document.getElementById('receiptHeader')?.value || 'SOHO Cafe';
+        const footer = document.getElementById('receiptFooter')?.value || '';
+        const fontWeight = document.getElementById('receiptFontWeight')?.value || '700';
+        
+        printWindow.document.write(`
+            <html><head><style>
+                body { width: 80mm; font-family: monospace; font-weight: ${fontWeight}; padding: 10px; }
+                .center { text-align: center; }
+                .header { font-size: 24px; font-weight: bold; }
+                .line { border-top: 2px dashed #000; margin: 10px 0; }
+            </style></head><body>
+                <div class="center header">${header}</div>
+                <div class="line"></div>
+                <div>Тестовая печать</div>
+                <div>${new Date().toLocaleString('ru-RU')}</div>
+                <div class="line"></div>
+                <div class="center">${footer}</div>
+            </body></html>
+        `);
+        printWindow.document.close();
+        printWindow.print();
+        showNotification('Диалог печати открыт', 'success');
+    } else {
+        showNotification('Для печати через агент запустите soho-print-agent.exe', 'info');
+    }
+}
+
+// ===== PREVIEW =====
+function updatePreview() {
+    const header = document.getElementById('receiptHeader')?.value || 'SOHO Cafe';
+    const subheader = document.getElementById('receiptSubheader')?.value || '';
+    const footer = document.getElementById('receiptFooter')?.value || '';
+    const headerSize = document.getElementById('receiptHeaderFontSize')?.value || '24px';
+    const bodySize = document.getElementById('receiptBodyFontSize')?.value || '14px';
+    const fontWeight = document.getElementById('receiptFontWeight')?.value || '700';
+    const showLogo = document.getElementById('showLogo')?.checked;
+    const showWifi = document.getElementById('showWifi')?.checked;
+    const wifiPass = document.getElementById('wifiPassword')?.value;
+    const showPayment = document.getElementById('showPaymentMethods')?.checked;
+    const showOrderType = document.getElementById('showOrderType')?.checked;
+    const showClient = document.getElementById('showClientInfo')?.checked;
+    
+    const preview = document.getElementById('receiptPreview');
+    if (!preview) return;
+    
+    // Update styles
+    preview.style.fontSize = bodySize;
+    preview.style.fontWeight = fontWeight;
+    
+    // Logo
+    const logoDiv = preview.querySelector('.preview-logo');
+    if (logoDiv) {
+        const savedLogo = localStorage.getItem('receiptLogo');
+        logoDiv.style.display = (showLogo && savedLogo) ? 'block' : 'none';
+        if (showLogo && savedLogo) logoDiv.querySelector('img').src = savedLogo;
+    }
+    
+    // Header
+    const headerEl = preview.querySelector('.preview-header');
+    if (headerEl) {
+        headerEl.textContent = header;
+        headerEl.style.fontSize = headerSize;
+    }
+    
+    // Subheader
+    const subEl = preview.querySelector('.preview-subheader');
+    if (subEl) {
+        subEl.textContent = subheader;
+        subEl.style.display = subheader ? 'block' : 'none';
+    }
+    
+    // Client info
+    const clientEl = preview.querySelector('.preview-client');
+    if (clientEl) clientEl.style.display = showClient ? 'block' : 'none';
+    
+    // Order type
+    const typeEl = preview.querySelector('.preview-order-type');
+    if (typeEl) typeEl.style.display = showOrderType ? 'block' : 'none';
+    
+    // Payment
+    const payEl = preview.querySelector('.preview-payment');
+    if (payEl) payEl.style.display = showPayment ? 'block' : 'none';
+    
+    // WiFi
+    const wifiEl = preview.querySelector('.preview-wifi');
+    if (wifiEl) {
+        wifiEl.style.display = (showWifi && wifiPass) ? 'block' : 'none';
+        if (showWifi && wifiPass) wifiEl.innerHTML = '<div>📶 Wi-Fi</div><div>Пароль: ' + wifiPass + '</div>';
+    }
+    
+    // Footer
+    const footerEl = preview.querySelector('.preview-footer');
+    if (footerEl) footerEl.textContent = footer;
+}
+
+// ===== RUNNER PREVIEW =====
+function updateRunnerPreview() {
+    // Get font settings
+    const fonts = {
+        orderNum: {
+            size: (document.getElementById('runnerFontSizeOrderNum')?.value || 42) + 'px',
+            bold: document.getElementById('runnerFontBoldOrderNum')?.checked ? 'bold' : 'normal'
+        },
+        type: {
+            size: (document.getElementById('runnerFontSizeType')?.value || 28) + 'px',
+            bold: document.getElementById('runnerFontBoldType')?.checked ? 'bold' : 'normal'
+        },
+        time: {
+            size: (document.getElementById('runnerFontSizeTime')?.value || 18) + 'px',
+            bold: document.getElementById('runnerFontBoldTime')?.checked ? 'bold' : 'normal'
+        },
+        items: {
+            size: (document.getElementById('runnerFontSizeItems')?.value || 22) + 'px',
+            bold: document.getElementById('runnerFontBoldItems')?.checked ? 'bold' : 'normal'
+        },
+        qty: {
+            size: (document.getElementById('runnerFontSizeQty')?.value || 18) + 'px',
+            bold: document.getElementById('runnerFontBoldQty')?.checked ? 'bold' : 'normal'
+        },
+        comment: {
+            size: (document.getElementById('runnerFontSizeComment')?.value || 16) + 'px',
+            bold: document.getElementById('runnerFontBoldComment')?.checked ? 'bold' : 'normal'
+        }
+    };
+    
+    const topMargin = document.getElementById('runnerTopMargin')?.value || '30mm';
+    
+    const preview = document.getElementById('runnerPreview');
+    if (!preview) return;
+    
+    // Apply top margin
+    const spacer = preview.querySelector('div:first-child');
+    if (spacer) spacer.style.height = topMargin;
+    
+    // Apply fonts to preview elements
+    const orderNum = preview.querySelector('.preview-order-num');
+    if (orderNum) {
+        orderNum.style.fontSize = fonts.orderNum.size;
+        orderNum.style.fontWeight = fonts.orderNum.bold;
+    }
+    
+    // Update preview HTML with table layout (name left, qty right)
+    preview.innerHTML = `
+        <div style="height: ${topMargin};"></div>
+        <div class="preview-order-num" style="text-align: center; font-size: ${fonts.orderNum.size}; font-weight: ${fonts.orderNum.bold};">#152</div>
+        <div style="text-align: center; font-size: ${fonts.type.size}; font-weight: ${fonts.type.bold}; margin: 5px 0;">🍽️ Зал • Стол 5</div>
+        <div style="text-align: center; font-size: ${fonts.time.size}; font-weight: ${fonts.time.bold}; color: #666;">Принят: 14:30</div>
+        <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 4px 0; font-size: ${fonts.items.size}; font-weight: ${fonts.items.bold}; vertical-align: top;">Бургер Классический</td>
+                <td style="padding: 4px 0; font-size: ${fonts.qty.size}; font-weight: ${fonts.qty.bold}; text-align: right; white-space: nowrap; width: 1px; padding-left: 10px;">1 шт</td>
+            </tr>
+            <tr>
+                <td style="padding: 4px 0; font-size: ${fonts.items.size}; font-weight: ${fonts.items.bold}; vertical-align: top;">Картофель фри</td>
+                <td style="padding: 4px 0; font-size: ${fonts.qty.size}; font-weight: ${fonts.qty.bold}; text-align: right; white-space: nowrap; width: 1px; padding-left: 10px;">2 шт</td>
+            </tr>
+            <tr>
+                <td style="padding: 4px 0; font-size: ${fonts.items.size}; font-weight: ${fonts.items.bold}; vertical-align: top;">Кола 0.5л</td>
+                <td style="padding: 4px 0; font-size: ${fonts.qty.size}; font-weight: ${fonts.qty.bold}; text-align: right; white-space: nowrap; width: 1px; padding-left: 10px;">1 шт</td>
+            </tr>
+        </table>
+        <div style="border-top: 2px dashed #000; margin: 10px 0;"></div>
+        <div style="font-size: ${fonts.comment.size}; font-weight: ${fonts.comment.bold}; padding: 8px; background: #f5f5f5; border: 2px solid #000;">
+            <div style="font-size: 12px; color: #666; margin-bottom: 4px;">💬 Комментарий:</div>
+            Без лука, пожалуйста
+        </div>
+    `;
+    
+    // Save settings
+    localStorage.setItem('runnerFontSettings', JSON.stringify(fonts));
+    localStorage.setItem('runnerTopMargin', topMargin);
+}
+
+// ===== LOGO UPLOAD =====
+function handleLogoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 500 * 1024) {
+        showNotification('Файл слишком большой (макс 500KB)', 'error');
+        return;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById('logoImage').src = e.target.result;
+        document.getElementById('logoPreview').style.display = 'block';
+        document.getElementById('logoPlaceholder').style.display = 'none';
+        document.getElementById('removeLogoBtn').style.display = 'block';
+        localStorage.setItem('receiptLogo', e.target.result);
+        updatePreview();
+        showNotification('Логотип загружен', 'success');
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeLogo() {
+    document.getElementById('logoImage').src = '';
+    document.getElementById('logoPreview').style.display = 'none';
+    document.getElementById('logoPlaceholder').style.display = 'block';
+    document.getElementById('removeLogoBtn').style.display = 'none';
+    document.getElementById('logoInput').value = '';
+    localStorage.removeItem('receiptLogo');
+    updatePreview();
+    showNotification('Логотип удален', 'info');
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+    loadSettings();
+
+    const logoArea = document.getElementById('logoUploadArea');
+    const logoInput = document.getElementById('logoInput');
+    if (logoArea && logoInput) {
+        logoArea.addEventListener('click', () => logoInput.click());
+    }
+
+    // Add auto-update for runner font settings
+    const runnerInputs = [
+        'runnerTopMargin',
+        'runnerFontSizeOrderNum', 'runnerFontBoldOrderNum',
+        'runnerFontSizeType', 'runnerFontBoldType',
+        'runnerFontSizeTime', 'runnerFontBoldTime',
+        'runnerFontSizeItems', 'runnerFontBoldItems',
+        'runnerFontSizeQty', 'runnerFontBoldQty',
+        'runnerFontSizeComment', 'runnerFontBoldComment'
+    ];
+
+    runnerInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('change', updateRunnerPreview);
+            // For number inputs, also update on input for live preview
+            if (el.type === 'number') {
+                el.addEventListener('input', debounce(updateRunnerPreview, 300));
+            }
+        }
+    });
+});
+
+// Debounce helper for live preview
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+    </script>
+</body>
+</html>

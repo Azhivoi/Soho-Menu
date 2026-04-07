@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ингредиенты - SOHO CRM</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .layout { display: flex; min-height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #1a1a2e;
+            border-right: 1px solid #333;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid #333;
+            margin-bottom: 20px;
+        }
+        .sidebar-header h1 {
+            font-size: 24px;
+            color: #e94560;
+            margin-bottom: 5px;
+        }
+        .sidebar-header span {
+            font-size: 12px;
+            color: #888;
+        }
+        .nav-section { margin-bottom: 10px; }
+        .nav-section-header {
+            padding: 12px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #aaa;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .nav-section-header:hover { background: #252538; color: #fff; }
+        .nav-section-header.active { background: #e94560; color: #fff; }
+        .nav-section-header .toggle-icon { font-size: 12px; transition: transform 0.2s; }
+        .nav-section-header.collapsed .toggle-icon { transform: rotate(-90deg); }
+        .nav-section-items { display: block; }
+        .nav-section-items.collapsed { display: none; }
+        .nav-item {
+            padding: 10px 20px 10px 40px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: block;
+            text-decoration: none;
+        }
+        .nav-item:hover { background: #252538; color: #fff; }
+        .nav-item.active { background: #252538; color: #e94560; border-left: 3px solid #e94560; }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 30px;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .page-header h2 { font-size: 28px; font-weight: 600; }
+        
+        /* Toolbar */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px 12px 45px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .search-box input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .filter-select {
+            padding: 12px 15px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        .btn-primary:hover { background: #d63a54; }
+        .btn-secondary {
+            background: #252538;
+            color: #fff;
+            border: 1px solid #444;
+        }
+        .btn-secondary:hover { background: #333; }
+        .btn-danger {
+            background: rgba(244, 67, 54, 0.2);
+            color: #f44336;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        .btn-danger:hover { background: rgba(244, 67, 54, 0.3); }
+        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #333;
+        }
+        .tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            color: #888;
+            font-size: 14px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: #fff; }
+        .tab.active {
+            color: #e94560;
+            border-bottom-color: #e94560;
+        }
+        
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a2e;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .data-table th {
+            background: #252538;
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+        }
+        .data-table tr:hover { background: #252538; }
+        .data-table td { font-size: 14px; }
+        .actions { display: flex; gap: 8px; }
+        
+        /* Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-success { background: rgba(76, 175, 80, 0.2); color: #4caf50; }
+        .badge-danger { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        
+        /* Drag and Drop */
+        .ingredient-row {
+            transition: all 0.2s;
+        }
+        .ingredient-row.dragging {
+            opacity: 0.5;
+            background: #252538;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .ingredient-row.drag-over {
+            border-top: 3px solid #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .drag-handle {
+            cursor: grab;
+            user-select: none;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        .badge-info { background: rgba(33, 150, 243, 0.2); color: #2196f3; }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: #1a1a2e;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 { font-size: 18px; }
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-close:hover { color: #fff; }
+        .modal-body {
+            padding: 25px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #aaa;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: #252538;
+            border: 1px solid #444;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .modal-footer {
+            padding: 20px 25px;
+            border-top: 1px solid #333;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        /* Categories list in modal */
+        .category-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #252538;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .category-item:hover { background: #333; }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>SOHO</h1>
+                <span>CRM Система</span>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>📊 Статистика</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-stats.html" class="nav-item">Продажи</a>
+                    <a href="crm-stats-customers.html" class="nav-item">Клиенты</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>📦 Склад</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-warehouse.html" class="nav-item">Остатки</a>
+                    <a href="crm-warehouse-invoices.html" class="nav-item">Накладные</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header active" onclick="toggleSection(this)">
+                    <span>🍽️ Меню</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items">
+                    <a href="crm-menu.html" class="nav-item">Обзор</a>
+                    <a href="crm-menu-ingredients.html" class="nav-item active">Ингредиенты</a>
+                    <a href="crm-menu-products.html" class="nav-item">Товары</a>
+                    <a href="crm-menu-categories.html" class="nav-item">Категории</a>
+                    <a href="crm-menu-semi.html" class="nav-item">Полуфабрикаты</a>
+                </div>
+            </div>
+            
+            <div class="nav-section">
+                <div class="nav-section-header" onclick="toggleSection(this)">
+                    <span>⚙️ Управление</span>
+                    <span class="toggle-icon">▼</span>
+                </div>
+                <div class="nav-section-items collapsed">
+                    <a href="crm-orders.html" class="nav-item">Заказы</a>
+                    <a href="crm-settings.html" class="nav-item">Настройки</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h2>🥕 Ингредиенты</h2>
+                <div class="page-actions">
+                    <button class="btn btn-secondary" onclick="exportIngredients()">📥 Экспорт CSV</button>
+                    <button class="btn btn-secondary" onclick="document.getElementById('importFile').click()">📤 Импорт CSV</button>
+                    <input type="file" id="importFile" accept=".csv" style="display:none" onchange="importIngredients(this)">
+                    <button class="btn btn-secondary" onclick="openCategoriesModal()">📂 Категории</button>
+                    <button class="btn btn-primary" onclick="openIngredientModal()">+ Новый ингредиент</button>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('all')">Все ингредиенты</div>
+                <div class="tab" onclick="switchTab('active')">Активные</div>
+                <div class="tab" onclick="switchTab('inactive')">Неактивные</div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Поиск ингредиентов..." onkeyup="searchIngredients()">
+                </div>
+                <select class="filter-select" id="categoryFilter" onchange="filterByCategory()">
+                    <option value="">Все категории</option>
+                </select>
+            </div>
+
+            <!-- Table -->
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Категория</th>
+                        <th>Ед. изм.</th>
+                        <th>Стоимость</th>
+                        <th>Потери %</th>
+                        <th>Срок годности</th>
+                        <th>Статус</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody id="ingredientsTable">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">Загрузка...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </main>
+    </div>
+
+    <!-- Ingredient Modal -->
+    <div class="modal" id="ingredientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Новый ингредиент</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="ingredientId">
+                <div class="form-group">
+                    <label>Название *</label>
+                    <input type="text" id="ingredientName" placeholder="Например: Помидоры свежие">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Категория</label>
+                        <select id="ingredientCategory">
+                            <option value="">Без категории</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Единица измерения *</label>
+                        <select id="ingredientUnit">
+                            <option value="">Выберите...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Потери при обработке (%)</label>
+                        <input type="number" id="ingredientLoss" placeholder="0" min="0" max="100" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Срок годности (дней)</label>
+                        <input type="number" id="ingredientShelfLife" placeholder="Например: 7" min="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Стоимость за единицу (BYN)</label>
+                        <input type="number" id="ingredientCost" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label>Поставщик</label>
+                        <input type="text" id="ingredientSupplier" placeholder="Например: ООО Продукты">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Условия хранения</label>
+                    <textarea id="ingredientStorage" placeholder="Например: При температуре +2...+6°C"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="ingredientActive" checked>
+                        <span class="toggle-slider"></span>
+                        <span>Активен</span>
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveIngredient()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Categories Modal -->
+    <div class="modal" id="categoriesModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Категории ингредиентов</h3>
+                <button class="modal-close" onclick="closeCategoriesModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Новая категория</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="newCategoryName" placeholder="Название категории" style="flex: 1;">
+                        <button class="btn btn-primary" onclick="addCategory()">Добавить</button>
+                    </div>
+                </div>
+                <div id="categoriesList" class="category-list">
+                    <!-- Categories loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCategoriesModal()">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== PAGE LOADED ===');
+        const API_URL = '/api';
+        let ingredients = [];
+        let categories = [];
+        let units = [];
+        let currentTab = 'all';
+        console.log('Variables initialized');
+
+        function toggleSection(header) {
+            header.classList.toggle('collapsed');
+            const items = header.nextElementSibling;
+            items.classList.toggle('collapsed');
+        }
+
+        async function loadData() {
+            try {
+                // Load categories
+                const catRes = await fetch(`${API_URL}/menu/ingredient-categories`);
+                categories = await catRes.json();
+                updateCategorySelects();
+
+                // Load units
+                const unitRes = await fetch(`${API_URL}/menu/units`);
+                units = await unitRes.json();
+                updateUnitSelect();
+
+                // Load ingredients
+                await loadIngredients();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Ошибка загрузки данных');
+            }
+        }
+
+        async function loadIngredients() {
+            try {
+                console.log('Loading ingredients...');
+                const params = new URLSearchParams();
+                if (currentTab === 'active') params.append('is_active', 'true');
+                if (currentTab === 'inactive') params.append('is_active', 'false');
+                
+                const search = document.getElementById('searchInput').value;
+                if (search) params.append('search', search);
+                
+                const categoryFilter = document.getElementById('categoryFilter').value;
+                if (categoryFilter) params.append('category_id', categoryFilter);
+
+                const url = `${API_URL}/menu/ingredients${params.toString() ? '?' + params.toString() : ''}`;
+                console.log('Fetching:', url);
+                const res = await fetch(url);
+                console.log('Response status:', res.status);
+                
+                ingredients = await res.json();
+                console.log('Loaded ingredients:', ingredients.length);
+                console.log('First ingredient:', ingredients[0]);
+                
+                renderIngredients();
+            } catch (error) {
+                console.error('Error loading ingredients:', error);
+                document.getElementById('ingredientsTable').innerHTML = `
+                    <tr><td colspan="8" style="text-align: center; padding: 40px; color: #f44336;">
+                        Ошибка загрузки: ${error.message}
+                    </td></tr>
+                `;
+            }
+        }
+
+        function updateCategorySelects() {
+            // Update filter
+            const filterSelect = document.getElementById('categoryFilter');
+            filterSelect.innerHTML = '<option value="">Все категории</option>';
+            categories.forEach(cat => {
+                filterSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+
+            // Update modal select
+            const modalSelect = document.getElementById('ingredientCategory');
+            modalSelect.innerHTML = '<option value="">Без категории</option>';
+            categories.forEach(cat => {
+                modalSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+        }
+
+        function updateUnitSelect() {
+            const select = document.getElementById('ingredientUnit');
+            select.innerHTML = '<option value="">Выберите...</option>';
+            units.forEach(unit => {
+                select.innerHTML += `<option value="${unit.id}">${unit.name} (${unit.abbreviation})</option>`;
+            });
+        }
+
+        // Drag and Drop state for ingredients
+        let draggedIngredientId = null;
+        
+        // Initialize drag and drop on table
+        function initDragAndDrop() {
+            const tbody = document.getElementById('ingredientsTable');
+            if (!tbody) return;
+            
+            // Use event delegation for dynamically created rows
+            tbody.addEventListener('dragstart', function(e) {
+                const row = e.target.closest('.ingredient-row');
+                if (!row) return;
+                const ingredientId = parseInt(row.dataset.ingredientId);
+                console.log('Delegated drag start:', ingredientId);
+                draggedIngredientId = ingredientId;
+                row.classList.add('dragging');
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/plain', ingredientId);
+            });
+            
+            tbody.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                const row = e.target.closest('.ingredient-row');
+                if (row && !row.classList.contains('dragging')) {
+                    row.classList.add('drag-over');
+                }
+            });
+            
+            tbody.addEventListener('dragleave', function(e) {
+                const row = e.target.closest('.ingredient-row');
+                if (row) {
+                    row.classList.remove('drag-over');
+                }
+            });
+            
+            tbody.addEventListener('drop', function(e) {
+                e.preventDefault();
+                const row = e.target.closest('.ingredient-row');
+                if (row) {
+                    row.classList.remove('drag-over');
+                }
+                
+                const targetId = row ? parseInt(row.dataset.ingredientId) : null;
+                console.log('Drop on:', targetId, 'dragged:', draggedIngredientId);
+                
+                if (draggedIngredientId && targetId && draggedIngredientId !== targetId) {
+                    reorderIngredients(draggedIngredientId, targetId);
+                }
+                draggedIngredientId = null;
+            });
+            
+            tbody.addEventListener('dragend', function(e) {
+                const row = e.target.closest('.ingredient-row');
+                if (row) {
+                    row.classList.remove('dragging');
+                }
+                document.querySelectorAll('.ingredient-row').forEach(r => {
+                    r.classList.remove('drag-over');
+                });
+            });
+        }
+        
+        function renderIngredients() {
+            console.log('renderIngredients called, count:', ingredients ? ingredients.length : 'null');
+            const tbody = document.getElementById('ingredientsTable');
+            
+            if (!ingredients || ingredients.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">🥕</div>
+                                <h3>Нет ингредиентов</h3>
+                                <p>Добавьте первый ингредиент, чтобы начать работу</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = ingredients.map((ing, index) => `
+                <tr class="ingredient-row" 
+                    draggable="true" 
+                    data-ingredient-id="${ing.id}"
+                    ondragstart="handleIngredientDragStart(event, ${ing.id})"
+                    ondragover="handleIngredientDragOver(event)"
+                    ondrop="handleIngredientDrop(event, ${ing.id})"
+                    ondragend="handleIngredientDragEnd(event)"
+                    style="cursor: move;">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="drag-handle" style="cursor: grab; color: #666; font-size: 16px;">☰</span>
+                            <strong>${ing.name}</strong>
+                        </div>
+                    </td>
+                    <td>${ing.category || '-'}</td>
+                    <td>${ing.unit || '-'}</td>
+                    <td>${ing.cost_per_unit ? parseFloat(ing.cost_per_unit).toFixed(2) + ' BYN' : '-'}</td>
+                    <td>${ing.processing_loss_percent > 0 ? ing.processing_loss_percent + '%' : '-'}</td>
+                    <td>${ing.shelf_life_days ? ing.shelf_life_days + ' дн.' : '-'}</td>
+                    <td>
+                        <span class="badge ${ing.is_active ? 'badge-success' : 'badge-danger'}">
+                            ${ing.is_active ? 'Активен' : 'Неактивен'}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="actions">
+                            <button class="btn btn-secondary btn-sm" onclick="editIngredient(${ing.id})">✏️</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteIngredient(${ing.id})">🗑️</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // Drag and Drop Handlers for ingredients
+        function handleIngredientDragStart(event, ingredientId) {
+            console.log('Drag start:', ingredientId);
+            draggedIngredientId = ingredientId;
+            event.target.classList.add('dragging');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', ingredientId);
+        }
+        
+        function handleIngredientDragOver(event) {
+            event.preventDefault();
+            event.dataTransfer.dropEffect = 'move';
+            const row = event.target.closest('tr');
+            if (row && !row.classList.contains('dragging')) {
+                row.classList.add('drag-over');
+            }
+        }
+        
+        function handleIngredientDragEnd(event) {
+            event.target.classList.remove('dragging');
+            document.querySelectorAll('.ingredient-row').forEach(row => {
+                row.classList.remove('drag-over');
+            });
+        }
+        
+        async function handleIngredientDrop(event, targetIngredientId) {
+            event.preventDefault();
+            const row = event.target.closest('tr');
+            if (row) {
+                row.classList.remove('drag-over');
+            }
+            
+            if (!draggedIngredientId || draggedIngredientId === targetIngredientId) {
+                return;
+            }
+            
+            await reorderIngredients(draggedIngredientId, targetIngredientId);
+        }
+        
+        async function reorderIngredients(draggedId, targetId) {
+            const draggedIndex = ingredients.findIndex(i => i.id === draggedId);
+            const targetIndex = ingredients.findIndex(i => i.id === targetId);
+            
+            if (draggedIndex === -1 || targetIndex === -1) return;
+            
+            // Reorder array
+            const [removed] = ingredients.splice(draggedIndex, 1);
+            ingredients.splice(targetIndex, 0, removed);
+            
+            // Re-render to show new order
+            renderIngredients();
+            
+            // Here you would typically save the new order to backend
+            // For now, just show success message
+            console.log('Ingredients reordered:', ingredients.map(i => i.name));
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            loadIngredients();
+        }
+
+        function searchIngredients() {
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(loadIngredients, 300);
+        }
+
+        function filterByCategory() {
+            loadIngredients();
+        }
+
+        function openIngredientModal(ingredientId = null) {
+            document.getElementById('modalTitle').textContent = ingredientId ? 'Редактировать ингредиент' : 'Новый ингредиент';
+            document.getElementById('ingredientId').value = ingredientId || '';
+            
+            if (ingredientId) {
+                const ing = ingredients.find(i => i.id === ingredientId);
+                if (ing) {
+                    document.getElementById('ingredientName').value = ing.name;
+                    // Find category and unit by name since API returns names not IDs
+                    const catSelect = document.getElementById('ingredientCategory');
+                    const unitSelect = document.getElementById('ingredientUnit');
+                    
+                    // Try to find matching option by text content
+                    for (let opt of catSelect.options) {
+                        if (opt.text === ing.category) {
+                            catSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                    for (let opt of unitSelect.options) {
+                        if (opt.text.includes(ing.unit)) {
+                            unitSelect.value = opt.value;
+                            break;
+                        }
+                    }
+                    
+                    document.getElementById('ingredientLoss').value = ing.processing_loss_percent || '';
+                    document.getElementById('ingredientShelfLife').value = ing.shelf_life_days || '';
+                    document.getElementById('ingredientStorage').value = ing.storage_conditions || '';
+                    document.getElementById('ingredientCost').value = ing.cost_per_unit || '';
+                    document.getElementById('ingredientSupplier').value = ing.supplier || '';
+                    document.getElementById('ingredientActive').checked = ing.is_active;
+                }
+            } else {
+                document.getElementById('ingredientName').value = '';
+                document.getElementById('ingredientCategory').value = '';
+                document.getElementById('ingredientUnit').value = '';
+                document.getElementById('ingredientLoss').value = '';
+                document.getElementById('ingredientShelfLife').value = '';
+                document.getElementById('ingredientStorage').value = '';
+                document.getElementById('ingredientCost').value = '';
+                document.getElementById('ingredientSupplier').value = '';
+                document.getElementById('ingredientActive').checked = true;
+            }
+            
+            document.getElementById('ingredientModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('ingredientModal').classList.remove('active');
+        }
+
+        async function saveIngredient() {
+            const id = document.getElementById('ingredientId').value;
+            const data = {
+                name: document.getElementById('ingredientName').value,
+                category_id: document.getElementById('ingredientCategory').value || null,
+                unit_id: document.getElementById('ingredientUnit').value,
+                processing_loss_percent: parseFloat(document.getElementById('ingredientLoss').value) || 0,
+                shelf_life_days: parseInt(document.getElementById('ingredientShelfLife').value) || null,
+                storage_conditions: document.getElementById('ingredientStorage').value || null,
+                cost_per_unit: parseFloat(document.getElementById('ingredientCost').value) || null,
+                supplier: document.getElementById('ingredientSupplier').value || null,
+                is_active: document.getElementById('ingredientActive').checked
+            };
+
+            if (!data.name || !data.unit_id) {
+                alert('Заполните обязательные поля');
+                return;
+            }
+
+            try {
+                const url = id ? `${API_URL}/menu/ingredients/${id}` : `${API_URL}/menu/ingredients`;
+                const method = id ? 'PUT' : 'POST';
+                
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (res.ok) {
+                    closeModal();
+                    loadIngredients();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка сохранения');
+                }
+            } catch (error) {
+                console.error('Error saving ingredient:', error);
+                alert('Ошибка сохранения');
+            }
+        }
+
+        async function editIngredient(id) {
+            openIngredientModal(id);
+        }
+
+        async function deleteIngredient(id) {
+            if (!confirm('Удалить ингредиент?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/menu/ingredients/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadIngredients();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка удаления');
+                }
+            } catch (error) {
+                console.error('Error deleting ingredient:', error);
+                alert('Ошибка удаления');
+            }
+        }
+
+        // Categories Modal
+        function openCategoriesModal() {
+            renderCategoriesList();
+            document.getElementById('categoriesModal').classList.add('active');
+        }
+
+        function closeCategoriesModal() {
+            document.getElementById('categoriesModal').classList.remove('active');
+        }
+
+        function renderCategoriesList() {
+            const container = document.getElementById('categoriesList');
+            if (categories.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 20px;">Нет категорий</p>';
+                return;
+            }
+            container.innerHTML = categories.map(cat => `
+                <div class="category-item">
+                    <span>${cat.name}</span>
+                    <button class="btn btn-danger btn-sm" onclick="deleteCategory(${cat.id})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        async function addCategory() {
+            const name = document.getElementById('newCategoryName').value;
+            if (!name) return;
+
+            try {
+                const res = await fetch(`${API_URL}/menu/ingredient-categories`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+
+                if (res.ok) {
+                    document.getElementById('newCategoryName').value = '';
+                    const catRes = await fetch(`${API_URL}/menu/ingredient-categories`);
+                    categories = await catRes.json();
+                    updateCategorySelects();
+                    renderCategoriesList();
+                }
+            } catch (error) {
+                console.error('Error adding category:', error);
+            }
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Удалить категорию?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/menu/ingredient-categories/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    categories = categories.filter(c => c.id !== id);
+                    updateCategorySelects();
+                    renderCategoriesList();
+                } else {
+                    const err = await res.json();
+                    alert(err.detail || 'Ошибка удаления');
+                }
+            } catch (error) {
+                console.error('Error deleting category:', error);
+            }
+        }
+
+        function showError(msg) {
+            document.getElementById('ingredientsTable').innerHTML = `
+                <tr><td colspan="7" style="text-align: center; padding: 40px; color: #f44336;">${msg}</td></tr>
+            `;
+        }
+
+        // Export / Import
+        function exportIngredients() {
+            window.open(`${API_URL}/menu/ingredients/export`, '_blank');
+        }
+
+        async function importIngredients(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch(`${API_URL}/menu/ingredients/import`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await res.json();
+                alert(`Импорт завершен:\nДобавлено: ${result.imported}\nОбновлено: ${result.updated}\nОшибок: ${result.errors.length}`);
+                
+                if (result.errors.length > 0) {
+                    console.error('Import errors:', result.errors);
+                }
+                
+                loadIngredients();
+            } catch (error) {
+                console.error('Import error:', error);
+                alert('Ошибка импорта');
+            }
+
+            input.value = '';
+        }
+
+        // Close modals on outside click
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Load data on page load
+        loadData().then(() => {
+            initDragAndDrop();
+        });
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

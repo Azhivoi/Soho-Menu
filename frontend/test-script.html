@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Test</title>
+</head>
+<body>
+    <h1>Test Page</h1>
+    <script>
+        console.log('Script loaded');
+        function test() {
+            const html = `
+                <html>
+                <head></head>
+                <body>
+                    <scr" + "ipt>
+                        console.log('inner script');
+                    </scr" + "ipt>
+                </body>
+                </html>
+            `;
+            console.log(html);
+        }
+        test();
+    </script>
+</body>
+</html>

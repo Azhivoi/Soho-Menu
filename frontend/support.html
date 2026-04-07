@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поддержка - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .support-page {
+            padding: 80px 16px 195px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .go-home-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .go-profile-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .footer-links-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            z-index: 90;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        .footer-links-bar a {
+            pointer-events: auto;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .contact-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .contact-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .contact-title {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        .contact-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 16px;
+        }
+        .contact-btn {
+            display: inline-block;
+            padding: 12px 32px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .hours-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .hours-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .hours-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .hours-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="support-page">
+        <div class="page-header">
+            <h1 class="page-title">Поддержка</h1>
+        </div>
+        
+        <div class="contact-card">
+            <div class="contact-icon">📞</div>
+            <div class="contact-title">Телефон для заказов</div>
+            <div class="contact-value">+375 (29) 116-77-55</div>
+            <a href="tel:+375291167755" class="contact-btn">Позвонить</a>
+        </div>
+        
+        <div class="hours-card">
+            <div class="hours-title">🕐 Режим работы</div>
+            <div class="hours-row">
+                <span>Воскресенье - Четверг</span>
+                <span>11:00 - 22:00</span>
+            </div>
+            <div class="hours-row">
+                <span>Пятница - Суббота</span>
+                <span>11:00 - 23:00</span>
+            </div>
+        </div>
+        
+        <div class="contact-card">
+            <div class="contact-icon">📍</div>
+            <div class="contact-title">Адрес</div>
+            <div style="font-size: 16px; margin-bottom: 16px;">
+                г. Смолевичи, ул. Лявданского, д. 1, пав. 114<br>
+                первый этаж, Кафе "Soho.by"
+            </div>
+        </div>
+    </div>
+
+    <button class="go-home-btn" onclick="window.location.href='/'">🏠 В главное меню</button>
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+
+    <div class="footer-links-bar">
+        <a href="/about.html">О нас</a>
+        <a href="/delivery.html">Доставка</a>
+        <a href="/promotions.html">Акции</a>
+        <a href="/offer.html">Оферта</a>
+    </div>
+</body>
+</html>

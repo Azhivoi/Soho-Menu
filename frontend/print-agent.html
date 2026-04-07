@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOHO Print Agent</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: #1a1a2e;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-dot.offline {
+            background: #f44336;
+            animation: none;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .content {
+            flex: 1;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .printer-card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .printer-card h3 {
+            font-size: 14px;
+            color: #a0a0b0;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .printer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .printer-icon {
+            width: 48px;
+            height: 48px;
+            background: #252538;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+        
+        .printer-icon.connected {
+            background: #1b5e20;
+        }
+        
+        .printer-icon.error {
+            background: #b71c1c;
+        }
+        
+        .printer-details {
+            flex: 1;
+        }
+        
+        .printer-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .printer-address {
+            font-size: 13px;
+            color: #888;
+            font-family: monospace;
+        }
+        
+        .printer-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: #2a2a40;
+        }
+        
+        .printer-status.online {
+            background: #1b5e20;
+            color: #81c784;
+        }
+        
+        .printer-status.error {
+            background: #b71c1c;
+            color: #ef9a9a;
+        }
+        
+        .test-btn {
+            width: 100%;
+            padding: 12px;
+            background: #e94560;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .test-btn:hover {
+            background: #d63a54;
+        }
+        
+        .test-btn:disabled {
+            background: #444;
+            cursor: not-allowed;
+        }
+        
+        .log-section {
+            grid-column: 1 / -1;
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        
+        .log-section h3 {
+            font-size: 14px;
+            color: #a0a0b0;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .log-container {
+            background: #0f0f1a;
+            border-radius: 8px;
+            padding: 12px;
+            height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        
+        .log-entry {
+            padding: 4px 0;
+            border-bottom: 1px solid #1a1a2e;
+        }
+        
+        .log-time {
+            color: #666;
+        }
+        
+        .log-success { color: #4CAF50; }
+        .log-error { color: #f44336; }
+        .log-info { color: #2196f3; }
+        
+        .minimize-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 8px;
+            font-size: 18px;
+        }
+        
+        .minimize-btn:hover {
+            color: #fff;
+        }
+        
+        .hidden { display: none !important; }
+        
+        .mini-mode {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 300px;
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+        
+        .mini-mode .content { display: none; }
+        .mini-mode .header { border: none; padding: 0 0 12px 0; }
+        .mini-mode .mini-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #888;
+        }
+        
+        .expand-btn {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🖨️ SOHO Print Agent</h1>
+        <div class="status">
+            <span class="status-dot" id="crmStatusDot"></span>
+            <span id="crmStatusText">Подключение...</span>
+            <button class="minimize-btn" onclick="toggleMinimize()" title="Свернуть">_</button>
+        </div>
+    </div>
+    
+    <div class="content" id="mainContent">
+        <div class="printer-card">
+            <h3>🧾 Чековый принтер</h3>
+            <div class="printer-info">
+                <div class="printer-icon" id="receiptIcon">🧾</div>
+                <div class="printer-details">
+                    <div class="printer-name">Чековый принтер</div>
+                    <div class="printer-address" id="receiptAddress">Загрузка...</div>
+                </div>
+                <span class="printer-status" id="receiptStatus">Проверка...</span>
+            </div>
+            <button class="test-btn" id="receiptTestBtn" onclick="testPrinter('receipt')">
+                🖨️ Печать тестового чека
+            </button>
+        </div>
+        
+        <div class="printer-card">
+            <h3>👨‍🍳 Кухонный принтер</h3>
+            <div class="printer-info">
+                <div class="printer-icon" id="kitchenIcon">👨‍🍳</div>
+                <div class="printer-details">
+                    <div class="printer-name">Кухонный принтер</div>
+                    <div class="printer-address" id="kitchenAddress">Загрузка...</div>
+                </div>
+                <span class="printer-status" id="kitchenStatus">Проверка...</span>
+            </div>
+            <button class="test-btn" id="kitchenTestBtn" onclick="testPrinter('kitchen')">
+                🖨️ Печать тестового бегунка
+            </button>
+        </div>
+        
+        <div class="log-section">
+            <h3>📋 Журнал событий</h3>
+            <div class="log-container" id="logContainer"></div>
+        </div>
+    </div>
+    
+    <div class="mini-status hidden" id="miniStatus">
+        <span class="status-dot" id="miniStatusDot"></span>
+        <span id="miniStatusText">Подключение...</span>
+    </div>
+    <button class="expand-btn hidden" id="expandBtn" onclick="toggleMinimize()">Развернуть</button>
+
+    <script>
+        // ESC/POS команды
+        const ESC = 0x1B;
+        const GS = 0x1D;
+        const CMD = {
+            INIT: new Uint8Array([ESC, 0x40]),
+            ALIGN_LEFT: new Uint8Array([ESC, 0x61, 0x00]),
+            ALIGN_CENTER: new Uint8Array([ESC, 0x61, 0x01]),
+            ALIGN_RIGHT: new Uint8Array([ESC, 0x61, 0x02]),
+            BOLD_ON: new Uint8Array([ESC, 0x45, 0x01]),
+            BOLD_OFF: new Uint8Array([ESC, 0x45, 0x00]),
+            DOUBLE_HEIGHT: new Uint8Array([GS, 0x21, 0x01]),
+            DOUBLE_WIDTH: new Uint8Array([GS, 0x21, 0x10]),
+            DOUBLE_BOTH: new Uint8Array([GS, 0x21, 0x11]),
+            NORMAL_SIZE: new Uint8Array([GS, 0x21, 0x00]),
+            CUT_PARTIAL: new Uint8Array([GS, 0x56, 0x01]),
+            OPEN_DRAWER: new Uint8Array([ESC, 0x70, 0x00, 0x19, 0xFA]),
+            LF: new Uint8Array([0x0A]),
+        };
+        
+        // Конфигурация
+        let config = {
+            receipt: { ip: '192.168.1.100', port: 9100 },
+            kitchen: { ip: '192.168.1.101', port: 9100 }
+        };
+        
+        let printerSockets = {
+            receipt: null,
+            kitchen: null
+        };
+        
+        // Логирование
+        function log(message, type = 'info') {
+            const container = document.getElementById('logContainer');
+            const time = new Date().toLocaleTimeString('ru-RU');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="log-time">[${time}]</span> <span class="log-${type}">${message}</span>`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+        
+        // Загрузка настроек с CRM
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/config/crm/settings');
+                if (res.ok) {
+                    const data = await res.json();
+                    const printers = data.printers || {};
+                    
+                    config.receipt.ip = printers.receipt?.ip || config.receipt.ip;
+                    config.receipt.port = printers.receipt?.port || config.receipt.port;
+                    config.kitchen.ip = printers.kitchen?.ip || config.kitchen.ip;
+                    config.kitchen.port = printers.kitchen?.port || config.kitchen.port;
+                    
+                    updateUI();
+                    log('Настройки принтеров загружены из CRM', 'success');
+                    return true;
+                }
+            } catch (e) {
+                log('Ошибка загрузки настроек: ' + e.message, 'error');
+            }
+            return false;
+        }
+        
+        // Обновление UI
+        function updateUI() {
+            document.getElementById('receiptAddress').textContent = `${config.receipt.ip}:${config.receipt.port}`;
+            document.getElementById('kitchenAddress').textContent = `${config.kitchen.ip}:${config.kitchen.port}`;
+        }
+        
+        // Проверка подключения к принтеру (через backend API)
+        async function checkPrinter(type) {
+            const statusEl = document.getElementById(type + 'Status');
+            const iconEl = document.getElementById(type + 'Icon');
+            const btnEl = document.getElementById(type + 'TestBtn');
+            
+            statusEl.textContent = 'Проверка...';
+            statusEl.className = 'printer-status';
+            
+            // Просто показываем что настройки загружены
+            // Реальная проверка будет при печати
+            statusEl.textContent = 'Готов';
+            statusEl.classList.add('online');
+            iconEl.classList.add('connected');
+            btnEl.disabled = false;
+        }
+        
+        // Тестовая печать (через backend API)
+        async function testPrinter(type) {
+            const btn = document.getElementById(type + 'TestBtn');
+            btn.disabled = true;
+            
+            log(`Отправка тестовой печати на ${type}...`, 'info');
+            
+            try {
+                const res = await fetch('/api/print/agent/print-test', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({printer_type: type})
+                });
+                
+                if (res.ok) {
+                    const result = await res.json();
+                    log(`✅ ${result.message}`, 'success');
+                } else {
+                    const err = await res.json();
+                    log(`❌ Ошибка: ${err.detail}`, 'error');
+                }
+            } catch (e) {
+                log(`❌ Ошибка соединения: ${e.message}`, 'error');
+            }
+            
+            btn.disabled = false;
+        }
+        
+        // Сворачивание/разворачивание
+        function toggleMinimize() {
+            document.body.classList.toggle('mini-mode');
+            document.getElementById('mainContent').classList.toggle('hidden');
+            document.getElementById('miniStatus').classList.toggle('hidden');
+            document.getElementById('expandBtn').classList.toggle('hidden');
+        }
+        
+        // Обновление статуса CRM
+        function updateCRMStatus(connected) {
+            const dot = document.getElementById('crmStatusDot');
+            const text = document.getElementById('crmStatusText');
+            const miniDot = document.getElementById('miniStatusDot');
+            const miniText = document.getElementById('miniStatusText');
+            
+            if (connected) {
+                dot.classList.remove('offline');
+                text.textContent = 'Подключено к CRM';
+                miniDot.classList.remove('offline');
+                miniText.textContent = 'CRM онлайн';
+            } else {
+                dot.classList.add('offline');
+                text.textContent = 'Нет связи с CRM';
+                miniDot.classList.add('offline');
+                miniText.textContent = 'CRM офлайн';
+            }
+        }
+        
+        // Инициализация
+        async function init() {
+            log('Запуск Print Agent...', 'info');
+            
+            // Загружаем настройки
+            await loadSettings();
+            
+            // Проверяем принтеры
+            await checkPrinter('receipt');
+            await checkPrinter('kitchen');
+            
+            // Обновляем статус CRM
+            updateCRMStatus(true);
+            
+            // Периодическая проверка
+            setInterval(() => {
+                checkPrinter('receipt');
+                checkPrinter('kitchen');
+            }, 30000);
+            
+            log('Print Agent готов к работе', 'success');
+        }
+        
+        // Запускаем
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>SOHO Admin - CRM</title>
+    
+    <style>
+        :root {
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #1a1a1a;
+            --bg-card: #242424;
+            --bg-hover: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent-color: #e94560;
+            --accent-hover: #ff6b6b;
+            --border-color: #333333;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --error: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Layout */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: 900;
+        }
+        
+        .sidebar-logo span:first-child {
+            color: var(--accent-color);
+        }
+        
+        .sidebar-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 16px 0;
+        }
+        
+        .sidebar-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .sidebar-item:hover,
+        .sidebar-item.active {
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--text-primary);
+            border-left-color: var(--accent-color);
+        }
+        
+        .sidebar-icon {
+            font-size: 20px;
+            width: 24px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 24px;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+        }
+        
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .stat-change {
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        
+        .stat-change.positive {
+            color: var(--success);
+        }
+        
+        /* Filters */
+        .filters-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            color: white;
+        }
+        
+        /* Orders Table */
+        .orders-table {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            display: grid;
+            grid-template-columns: 120px 1fr 140px 100px 140px 100px;
+            padding: 16px 20px;
+            background: rgba(255,255,255,0.03);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .order-row {
+            display: grid;
+            grid-template-columns: 120px 1fr 140px 100px 140px 100px;
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .order-row:hover {
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .order-number {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .order-customer {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .customer-name {
+            font-weight: 500;
+        }
+        
+        .customer-phone {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .order-address {
+            font-size: 14px;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .order-amount {
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .order-time {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .order-status {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-new {
+            background: rgba(233, 69, 96, 0.2);
+            color: var(--accent-color);
+        }
+        
+        .status-confirmed {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+        
+        .status-cooking {
+            background: rgba(255, 152, 0, 0.2);
+            color: var(--warning);
+        }
+        
+        .status-delivering {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196f3;
+        }
+        
+        .status-delivered {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--success);
+        }
+        
+        .status-cancelled {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--error);
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 24px;
+        }
+        
+        .order-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .detail-item {
+            background: rgba(255,255,255,0.03);
+            padding: 16px;
+            border-radius: 12px;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        
+        .detail-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .order-items-list {
+            margin: 20px 0;
+        }
+        
+        .order-item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .order-item-info {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .order-item-qty {
+            color: var(--text-secondary);
+        }
+        
+        .order-item-name {
+            font-weight: 500;
+        }
+        
+        .order-item-price {
+            font-weight: 600;
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 0;
+            font-size: 18px;
+            font-weight: 700;
+            border-top: 2px solid var(--border-color);
+            margin-top: 12px;
+        }
+        
+        .status-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .status-btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .status-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+                z-index: 100;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .table-header,
+            .order-row {
+                grid-template-columns: 80px 1fr 80px 80px;
+                font-size: 13px;
+            }
+            
+            .table-header > *:nth-child(3),
+            .order-row > *:nth-child(3),
+            .table-header > *:nth-child(5),
+            .order-row > *:nth-child(5) {
+                display: none;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <span>SOHO</span><span>ADMIN</span>
+                </div>
+                <div class="sidebar-subtitle">CRM System</div>
+            </div>
+            
+            <ul class="sidebar-menu">
+                <li class="sidebar-item active" data-page="orders">
+                    <span class="sidebar-icon">📦</span>
+                    <span>Заказы</span>
+                </li>
+                <li class="sidebar-item" data-page="menu">
+                    <span class="sidebar-icon">🍽️</span>
+                    <span>Меню</span>
+                </li>
+                <li class="sidebar-item" data-page="customers">
+                    <span class="sidebar-icon">👥</span>
+                    <span>Клиенты</span>
+                </li>
+                <li class="sidebar-item" data-page="analytics">
+                    <span class="sidebar-icon">📊</span>
+                    <span>Аналитика</span>
+                </li>
+                <li class="sidebar-item" data-page="settings">
+                    <span class="sidebar-icon">⚙️</span>
+                    <span>Настройки</span>
+                </li>
+            </ul>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Заказы</h1>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Новые заказы</div>
+                    <div class="stat-value" id="statNew">0</div>
+                    <div class="stat-change positive">+3 сегодня</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">В работе</div>
+                    <div class="stat-value" id="statActive">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Выручка сегодня</div>
+                    <div class="stat-value" id="statRevenue">0 BYN</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Заказов сегодня</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-bar">
+                <button class="filter-btn active" data-filter="all">Все</button>
+                <button class="filter-btn" data-filter="new">Новые</button>
+                <button class="filter-btn" data-filter="confirmed">Подтверждены</button>
+                <button class="filter-btn" data-filter="cooking">Готовятся</button>
+                <button class="filter-btn" data-filter="delivering">В пути</button>
+                <button class="filter-btn" data-filter="delivered">Доставлены</button>
+            </div>
+            
+            <!-- Orders Table -->
+            <div class="orders-table">
+                <div class="table-header">
+                    <div>№ Заказа</div>
+                    <div>Клиент</div>
+                    <div>Адрес</div>
+                    <div>Сумма</div>
+                    <div>Время</div>
+                    <div>Статус</div>
+                </div>
+                <div id="ordersList">
+                    <!-- Orders loaded via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Order Detail Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Заказ <span id="modalOrderNumber"></span></h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Order details loaded via JS -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API base URL
+        const API_URL = '/api';
+        
+        // Status translations
+        const STATUS_NAMES = {
+            'new': 'Новый',
+            'confirmed': 'Подтверждён',
+            'cooking': 'Готовится',
+            'delivering': 'В пути',
+            'delivered': 'Доставлен',
+            'cancelled': 'Отменён'
+        };
+        
+        // Current filter
+        let currentFilter = 'all';
+        let orders = [];
+        
+        // Load orders
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_URL}/orders/list`);
+                orders = await response.json();
+                renderOrders();
+                updateStats();
+            } catch (err) {
+                console.error('Error loading orders:', err);
+            }
+        }
+        
+        // Render orders list
+        function renderOrders() {
+            const container = document.getElementById('ordersList');
+            
+            let filteredOrders = orders;
+            if (currentFilter !== 'all') {
+                filteredOrders = orders.filter(o => o.status === currentFilter);
+            }
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: var(--text-secondary);">
+                        Нет заказов
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = filteredOrders.map(order => `
+                <div class="order-row" onclick="openOrderModal(${order.id})">
+                    <div class="order-number">${order.order_number}</div>
+                    <div class="order-customer">
+                        <div class="customer-name">${order.customer_name}</div>
+                        <div class="customer-phone">${order.delivery_phone || ''}</div>
+                    </div>
+                    <div class="order-address">${order.delivery_address || 'Самовывоз'}</div>
+                    <div class="order-amount">${parseFloat(order.total_amount).toFixed(2)} BYN</div>
+                    <div class="order-time">${formatTime(order.created_at)}</div>
+                    <div>
+                        <span class="order-status status-${order.status}">
+                            ${STATUS_NAMES[order.status] || order.status}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Update stats
+        function updateStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const todayOrders = orders.filter(o => o.created_at.startsWith(today));
+            
+            document.getElementById('statNew').textContent = orders.filter(o => o.status === 'new').length;
+            document.getElementById('statActive').textContent = orders.filter(o => 
+                ['confirmed', 'cooking', 'delivering'].includes(o.status)
+            ).length;
+            document.getElementById('statRevenue').textContent = 
+                todayOrders.reduce((sum, o) => sum + parseFloat(o.total_amount), 0).toFixed(2) + ' BYN';
+            document.getElementById('statTotal').textContent = todayOrders.length;
+        }
+        
+        // Format time
+        function formatTime(isoString) {
+            const date = new Date(isoString);
+            return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Open order modal
+        async function openOrderModal(orderId) {
+            try {
+                const response = await fetch(`${API_URL}/orders/${orderId}`);
+                const order = await response.json();
+                
+                document.getElementById('modalOrderNumber').textContent = order.order_number;
+                
+                document.getElementById('modalBody').innerHTML = `
+                    <div class="order-details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Клиент</div>
+                            <div class="detail-value">${order.customer_name}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Телефон</div>
+                            <div class="detail-value">${order.delivery_phone}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Адрес</div>
+                            <div class="detail-value">${order.delivery_address || 'Самовывоз'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Сумма</div>
+                            <div class="detail-value">${parseFloat(order.total_amount).toFixed(2)} BYN</div>
+                        </div>
+                    </div>
+                    
+                    <div class="order-items-list">
+                        ${order.items.map(item => `
+                            <div class="order-item-row">
+                                <div class="order-item-info">
+                                    <span class="order-item-qty">${item.quantity}×</span>
+                                    <span class="order-item-name">Товар #${item.product_id}</span>
+                                </div>
+                                <span class="order-item-price">${parseFloat(item.total_price).toFixed(2)} BYN</span>
+                            </div>
+                        `).join('')}
+                        <div class="order-total">
+                            <span>Итого</span>
+                            <span>${parseFloat(order.total_amount).toFixed(2)} BYN</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                            Текущий статус: <span class="order-status status-${order.status}">${STATUS_NAMES[order.status]}</span>
+                        </div>
+                        <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">
+                            Изменить статус:
+                        </div>
+                        <div class="status-actions">
+                            ${order.status !== 'confirmed' ? `<button class="status-btn" onclick="updateStatus(${order.id}, 'confirmed')">Подтвердить</button>` : ''}
+                            ${order.status !== 'cooking' ? `<button class="status-btn" onclick="updateStatus(${order.id}, 'cooking')">Готовится</button>` : ''}
+                            ${order.status !== 'delivering' ? `<button class="status-btn" onclick="updateStatus(${order.id}, 'delivering')">В пути</button>` : ''}
+                            ${order.status !== 'delivered' ? `<button class="status-btn" onclick="updateStatus(${order.id}, 'delivered')">Доставлен</button>` : ''}
+                            ${order.status !== 'cancelled' ? `<button class="status-btn" style="background: var(--error);" onclick="updateStatus(${order.id}, 'cancelled')">Отменить</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('orderModal').classList.add('active');
+            } catch (err) {
+                console.error('Error loading order:', err);
+            }
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('orderModal').classList.remove('active');
+        }
+        
+        // Update order status
+        async function updateStatus(orderId, status) {
+            try {
+                const response = await fetch(`${API_URL}/orders/${orderId}/status?status=${status}`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    // Reload orders and close modal
+                    await loadOrders();
+                    closeModal();
+                }
+            } catch (err) {
+                console.error('Error updating status:', err);
+            }
+        }
+        
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderOrders();
+            });
+        });
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadOrders, 30000);
+        
+        // Initial load
+        loadOrders();
+    </script>
+</body>
+</html>

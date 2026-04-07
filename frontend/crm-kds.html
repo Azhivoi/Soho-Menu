@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KDS | SOHO Кухня</title>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #141419;
+            --bg-card: #1e1e26;
+            --accent-red: #e94560;
+            --accent-orange: #f39c12;
+            --accent-green: #00d9a5;
+            --accent-blue: #3498db;
+            --text-primary: #ffffff;
+            --text-secondary: #8a8a9a;
+            --border-color: #2a2a35;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* KDS Layout */
+        .kds-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        /* Header */
+        .kds-header {
+            height: 70px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+        }
+        
+        .kds-logo {
+            font-size: 28px;
+            font-weight: 800;
+        }
+        
+        .kds-logo span { color: var(--accent-red); }
+        
+        .kds-info {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        
+        .kds-time {
+            font-size: 32px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .kds-stats {
+            display: flex;
+            gap: 24px;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            min-width: 80px;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-orange);
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+        
+        .kds-controls {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .control-btn {
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover { background: var(--border-color); }
+        
+        .control-btn.sound {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+        
+        /* Main Content */
+        .kds-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            padding: 16px;
+            overflow: hidden;
+        }
+        
+        /* Columns */
+        .kds-column {
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .column-header {
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .column-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .column-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        
+        .column-new .column-icon { background: rgba(233, 69, 96, 0.2); color: var(--accent-red); }
+        .column-cooking .column-icon { background: rgba(243, 156, 18, 0.2); color: var(--accent-orange); }
+        .column-ready .column-icon { background: rgba(0, 217, 165, 0.2); color: var(--accent-green); }
+        
+        .column-count {
+            padding: 4px 12px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .column-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .column-content::-webkit-scrollbar { width: 4px; }
+        .column-content::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 2px;
+        }
+        
+        /* Order Card */
+        .order-card {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 16px;
+            border-left: 4px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .order-card:hover { transform: translateY(-2px); }
+        
+        .order-card.new { border-left-color: var(--accent-red); animation: pulse-new 2s infinite; }
+        .order-card.cooking { border-left-color: var(--accent-orange); }
+        .order-card.ready { border-left-color: var(--accent-green); }
+        
+        @keyframes pulse-new {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(233, 69, 96, 0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(233, 69, 96, 0); }
+        }
+        
+        .order-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .order-number {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+        
+        .order-time {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
+        }
+        
+        .order-time.urgent {
+            color: var(--accent-red);
+            font-weight: 600;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .order-type {
+            display: inline-block;
+            padding: 4px 10px;
+            background: var(--bg-secondary);
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+        
+        .order-type.delivery { color: var(--accent-blue); }
+        .order-type.pickup { color: var(--accent-green); }
+        .order-type.dinein { color: var(--accent-orange); }
+        
+        .scheduled-time {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--accent-orange);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        
+        /* Items List */
+        .order-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .order-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .order-item:last-child { border-bottom: none; }
+        
+        .item-qty {
+            width: 28px;
+            height: 28px;
+            background: var(--accent-red);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        
+        .item-name {
+            flex: 1;
+            font-size: 14px;
+        }
+        
+        .item-modifiers {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        /* Order Actions */
+        .order-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .action-btn.start {
+            background: var(--accent-orange);
+            color: #000;
+        }
+        
+        .action-btn.ready {
+            background: var(--accent-green);
+            color: #000;
+        }
+        
+        .action-btn.done {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        .action-btn:hover { filter: brightness(1.1); }
+        
+        /* Empty State */
+        .empty-column {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.3;
+        }
+        
+        /* Sound Toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+        
+        .sound-toggle.muted { color: var(--accent-red); }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .kds-content { grid-template-columns: 1fr 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            .kds-content { grid-template-columns: 1fr; }
+            .kds-header { flex-wrap: wrap; height: auto; padding: 12px; }
+            .kds-time { font-size: 24px; }
+        }
+        
+        /* Fullscreen button */
+        .fullscreen-btn {
+            padding: 12px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 14px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="kds-container">
+        <!-- Header -->
+        <header class="kds-header">
+            <div class="kds-logo"><span>SOHO</span> KDS</div>
+            
+            <div class="kds-info">
+                <div class="kds-time" id="currentTime">00:00</div>
+                <div class="kds-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="newCount">0</div>
+                        <div class="stat-label">Новые</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="cookingCount">0</div>
+                        <div class="stat-label">В работе</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="readyCount">0</div>
+                        <div class="stat-label">Готовы</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="kds-controls">
+                <button class="fullscreen-btn" onclick="toggleFullscreen()">⛶ На весь экран</button>
+            </div>
+        </header>
+        
+        <!-- Main Content -->
+        <main class="kds-content">
+            <!-- New Orders Column -->
+            <div class="kds-column column-new">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">🔴</div>
+                        <span>Новые заказы</span>
+                    </div>
+                    <div class="column-count" id="newBadge">0</div>
+                </div>
+                <div class="column-content" id="newColumn">
+                    <div class="empty-column">
+                        <div class="empty-icon">📭</div>
+                        <p>Нет новых заказов</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Cooking Column -->
+            <div class="kds-column column-cooking">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">👨‍🍳</div>
+                        <span>Готовятся</span>
+                    </div>
+                    <div class="column-count" id="cookingBadge">0</div>
+                </div>
+                <div class="column-content" id="cookingColumn">
+                    <div class="empty-column">
+                        <div class="empty-icon">⏳</div>
+                        <p>Нет заказов в работе</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ready Column -->
+            <div class="kds-column column-ready">
+                <div class="column-header">
+                    <div class="column-title">
+                        <div class="column-icon">✅</div>
+                        <span>Готовы к выдаче</span>
+                    </div>
+                    <div class="column-count" id="readyBadge">0</div>
+                </div>
+                <div class="column-content" id="readyColumn">
+                    <div class="empty-column">
+                        <div class="empty-icon">🎉</div>
+                        <p>Нет готовых заказов</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Sound Toggle -->
+    <button class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔔</button>
+    
+    <script>
+        // State
+        let orders = [];
+        let soundEnabled = true;
+        let lastOrderCount = 0;
+        
+        // Audio context for beep
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playBeep() {
+            if (!soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = 800;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+        
+        // Product and variants cache
+        let productNames = {};
+        let variantNames = {};
+        
+        // Load product names and variants
+        async function loadProductNames() {
+            try {
+                const response = await fetch('/api/menu/public/menu');
+                const categories = await response.json();
+                
+                categories.forEach(cat => {
+                    cat.products?.forEach(prod => {
+                        productNames[prod.id] = prod.name_ru || prod.name;
+                        // Cache variant names
+                        prod.variants?.forEach(variant => {
+                            variantNames[variant.id] = {
+                                name: variant.name,
+                                productName: prod.name_ru || prod.name
+                            };
+                        });
+                    });
+                });
+            } catch (err) {
+                console.error('Load products error:', err);
+            }
+        }
+        
+        // Load orders
+        async function loadOrders() {
+            try {
+                const response = await fetch('/api/orders/list?limit=100');
+                const newOrders = await response.json();
+                
+                // Check for new orders
+                if (newOrders.length > lastOrderCount && lastOrderCount > 0) {
+                    playBeep();
+                }
+                lastOrderCount = newOrders.length;
+                
+                orders = newOrders;
+                renderOrders();
+                updateStats();
+            } catch (err) {
+                console.error('KDS load error:', err);
+            }
+        }
+        
+        // Render orders by status
+        function renderOrders() {
+            // Only show orders that are accepted by operator (cooking or higher)
+            // New orders (status='new') stay in CRM until operator accepts them
+            const newOrders = orders.filter(o => o.status === 'accepted'); // Waiting to start cooking
+            const cookingOrders = orders.filter(o => o.status === 'cooking' || o.status === 'confirmed');
+            const readyOrders = orders.filter(o => o.status === 'ready');
+            
+            renderColumn('newColumn', newOrders, 'new');
+            renderColumn('cookingColumn', cookingOrders, 'cooking');
+            renderColumn('readyColumn', readyOrders, 'ready');
+        }
+        
+        // Render single column
+        function renderColumn(columnId, columnOrders, status) {
+            const column = document.getElementById(columnId);
+            
+            if (columnOrders.length === 0) {
+                const emptyMessages = {
+                    new: { icon: '📭', text: 'Нет новых заказов' },
+                    cooking: { icon: '⏳', text: 'Нет заказов в работе' },
+                    ready: { icon: '🎉', text: 'Нет готовых заказов' }
+                };
+                const empty = emptyMessages[status];
+                column.innerHTML = `
+                    <div class="empty-column">
+                        <div class="empty-icon">${empty.icon}</div>
+                        <p>${empty.text}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            column.innerHTML = columnOrders.map(order => {
+                // Fix timezone - treat server time as local
+                const orderDate = new Date(order.created_at);
+                const localOrderDate = new Date(orderDate.getTime() + (3 * 60 * 60 * 1000)); // Add 3 hours for MSK
+                const timeDiff = Math.floor((Date.now() - localOrderDate.getTime()) / 60000);
+                const isUrgent = timeDiff > 20;
+                const orderTime = localOrderDate.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+                
+                // Format order type
+                let orderTypeText = '🚚 Доставка';
+                let orderTypeClass = 'delivery';
+                if (order.order_type === 'pickup') {
+                    orderTypeText = '🏪 Самовывоз';
+                    orderTypeClass = 'pickup';
+                } else if (order.order_type === 'dine_in' || order.table_number) {
+                    orderTypeText = `🍽️ Стол ${order.table_number || ''}`;
+                    orderTypeClass = 'dinein';
+                }
+                
+                // Scheduled time display
+                let scheduledHtml = '';
+                if (order.scheduled_time) {
+                    const scheduledTime = new Date(order.scheduled_time).toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+                    scheduledHtml = `<div class="scheduled-time">⏰ К ${scheduledTime}</div>`;
+                }
+                
+                return `
+                    <div class="order-card ${status}">
+                        <div class="order-header">
+                            <div class="order-number">#${order.order_number || order.id}</div>
+                            <div class="order-time ${isUrgent ? 'urgent' : ''}">
+                                ${orderTime} (${timeDiff} мин)
+                            </div>
+                        </div>
+                        <div class="order-type ${orderTypeClass}">
+                            ${orderTypeText}
+                        </div>
+                        ${scheduledHtml}
+                        <div class="order-items">
+                            ${(order.items || []).map(item => {
+                                const variantInfo = variantNames[item.variant_id];
+                                let itemName = productNames[item.product_id] || 'Товар #' + item.product_id;
+                                if (variantInfo && variantInfo.name && variantInfo.name !== 'Стандарт') {
+                                    itemName = `${variantInfo.productName} - ${variantInfo.name}`;
+                                }
+                                return `
+                                    <div class="order-item">
+                                        <div class="item-qty">${item.quantity}</div>
+                                        <div class="item-name">${itemName}</div>
+                                    </div>
+                                `;
+                            }).join('') || '<div class="order-item">Заказ без позиций</div>'}
+                        </div>
+                        ${getActionButtons(order.id, status)}
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Get action buttons based on status
+        function getActionButtons(orderId, status) {
+            if (status === 'new') {
+                return `
+                    <div class="order-actions">
+                        <button class="action-btn start" onclick="updateStatus(${orderId}, 'cooking')">
+                            👨‍🍳 В работу
+                        </button>
+                    </div>
+                `;
+            } else if (status === 'cooking') {
+                return `
+                    <div class="order-actions">
+                        <button class="action-btn ready" onclick="updateStatus(${orderId}, 'ready')">
+                            ✅ Готово
+                        </button>
+                    </div>
+                `;
+            } else if (status === 'ready') {
+                return `
+                    <div class="order-actions">
+                        <button class="action-btn done" onclick="updateStatus(${orderId}, 'delivered')">
+                            📦 Выдано
+                        </button>
+                    </div>
+                `;
+            }
+            return '';
+        }
+        
+        // Update order status
+        async function updateStatus(orderId, newStatus) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}/status?status=${newStatus}`, {
+                    method: 'PATCH'
+                });
+                
+                if (response.ok) {
+                    // Play success sound
+                    if (soundEnabled) {
+                        const osc = audioContext.createOscillator();
+                        const gain = audioContext.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioContext.destination);
+                        osc.frequency.value = newStatus === 'ready' ? 1200 : 600;
+                        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                        osc.start();
+                        osc.stop(audioContext.currentTime + 0.2);
+                    }
+                    
+                    loadOrders();
+                }
+            } catch (err) {
+                console.error('Status update error:', err);
+            }
+        }
+        
+        // Update stats
+        function updateStats() {
+            const newOrders = orders.filter(o => o.status === 'new').length;
+            const cookingOrders = orders.filter(o => o.status === 'cooking' || o.status === 'confirmed').length;
+            const readyOrders = orders.filter(o => o.status === 'ready').length;
+            
+            document.getElementById('newCount').textContent = newOrders;
+            document.getElementById('newBadge').textContent = newOrders;
+            document.getElementById('cookingCount').textContent = cookingOrders;
+            document.getElementById('cookingBadge').textContent = cookingOrders;
+            document.getElementById('readyCount').textContent = readyOrders;
+            document.getElementById('readyBadge').textContent = readyOrders;
+        }
+        
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = 
+                now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // Toggle sound
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggle');
+            btn.textContent = soundEnabled ? '🔔' : '🔕';
+            btn.classList.toggle('muted', !soundEnabled);
+        }
+        
+        // Toggle fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        }
+        
+        // Initialize
+        setInterval(updateTime, 1000);
+        setInterval(loadOrders, 10000); // Refresh every 10 seconds
+        updateTime();
+        loadProductNames().then(() => loadOrders());
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

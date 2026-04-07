@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Оформление заказа - SOHO Cafe</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .time-option {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+            margin-bottom: 12px;
+        }
+        .time-option input[type="radio"] {
+            margin-top: 2px;
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-color);
+        }
+        .time-option.selected {
+            border-color: var(--accent-color);
+        }
+        .checkout-page {
+            padding: 80px 16px 100px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .checkout-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .checkout-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .checkout-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+        
+        .form-group textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .delivery-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .delivery-option {
+            flex: 1;
+            min-width: 140px;
+            padding: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .delivery-option.active {
+            border-color: var(--accent-color);
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .delivery-option .icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .delivery-option .label {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .payment-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .payment-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        
+        .payment-option.active {
+            border-color: var(--accent-color);
+        }
+        
+        .payment-option .radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            position: relative;
+        }
+        
+        .payment-option.active .radio::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            background: var(--accent-color);
+            border-radius: 50%;
+        }
+        
+        .payment-option .icon {
+            font-size: 24px;
+        }
+        
+        .payment-option .info {
+            flex: 1;
+        }
+        
+        .payment-option .name {
+            font-weight: 500;
+        }
+        
+        .payment-option .desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+        
+        .order-items {
+            margin-bottom: 16px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-item-info {
+            flex: 1;
+        }
+        
+        .order-item-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .order-item-variant {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        
+        .order-item-qty {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-right: 12px;
+        }
+        
+        .order-item-price {
+            font-weight: 600;
+        }
+        
+        .order-summary {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 16px;
+        }
+        
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .summary-row.total {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .place-order-btn {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px 24px;
+            background: linear-gradient(to top, var(--bg-primary) 80%, transparent);
+        }
+        
+        .place-order-btn button {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: block;
+            padding: 16px 24px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .place-order-btn button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .empty-cart-message {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .empty-cart-message .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-cart-message h2 {
+            margin-bottom: 8px;
+        }
+        
+        .empty-cart-message p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .go-menu-btn {
+            padding: 14px 32px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="checkout-page" id="checkoutPage">
+        <div class="checkout-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <h1 class="checkout-title">Оформление заказа</h1>
+        </div>
+        
+        <div id="checkoutContent">
+            <!-- Content loaded via JS -->
+        </div>
+    </div>
+    
+    <script src="/js/checkout.js"></script>
+</body>
+</html>

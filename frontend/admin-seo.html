@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SEO Настройки - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #1a1a2e;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .form-container {
+            max-width: 700px;
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 15px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .char-count {
+            font-size: 12px;
+            color: #666;
+            text-align: right;
+            margin-top: 4px;
+        }
+        
+        .char-count.warning {
+            color: #ff9800;
+        }
+        
+        .char-count.error {
+            color: #e94560;
+        }
+        
+        .preview-box {
+            background: #0f0f1a;
+            border: 1px solid #333;
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        
+        .preview-title {
+            color: #8ab4f8;
+            font-size: 18px;
+            text-decoration: underline;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+        
+        .preview-url {
+            color: #dadce0;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .preview-desc {
+            color: #bdc1c6;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .save-btn:hover {
+            background: #45a049;
+        }
+        
+        .info-text {
+            font-size: 13px;
+            color: #888;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background: #1a1a2e;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #888;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .tab-btn.active {
+            background: #e94560;
+            color: #fff;
+            border-color: #e94560;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <button class="back-btn" onclick="history.back()">←</button>
+        <h1 class="page-title">SEO Настройки сайта</h1>
+    </div>
+    
+    <div class="tabs">
+        <button class="tab-btn active" onclick="showTab('main')">🏠 Главная страница</button>
+        <button class="tab-btn" onclick="showTab('global')">🌐 Общие настройки</button>
+    </div>
+    
+    <div id="mainTab" class="tab-content active">
+        <div class="form-container">
+            <h2 class="section-title">Мета-теги главной страницы</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Title (заголовок вкладки браузера)</label>
+                <input type="text" id="mainTitle" class="form-input" maxlength="70" placeholder="Soho.By - Кафе и Доставка">
+                <div class="char-count" id="titleCount">0 / 70</div>
+                <p class="info-text">Рекомендуется до 60 символов. Это текст, который виден во вкладке браузера и в поисковой выдаче.</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Meta Description (описание для поисковиков)</label>
+                <textarea id="mainDesc" class="form-input form-textarea" maxlength="160" placeholder="Закажите вкусную еду с доставкой..."></textarea>
+                <div class="char-count" id="descCount">0 / 160</div>
+                <p class="info-text">Рекомендуется до 160 символов. Это описание появляется в поисковой выдаче под заголовком.</p>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Meta Keywords (ключевые слова через запятую)</label>
+                <input type="text" id="mainKeywords" class="form-input" placeholder="доставка еды, кафе, суши, пицца">
+                <p class="info-text">Необязательное поле. Ключевые слова для поисковых систем.</p>
+            </div>
+            
+            <h3 class="section-title" style="margin-top: 30px;">🔍 Предпросмотр в поиске Google</h3>
+            <div class="preview-box">
+                <div class="preview-title" id="previewTitle">Soho.By - Кафе и Доставка</div>
+                <div class="preview-url">https://soho.by ›</div>
+                <div class="preview-desc" id="previewDesc">Закажите вкусную еду с доставкой в Soho.By. Суши, пицца, бургеры и многое другое. Быстрая доставка, свежие продукты.</div>
+            </div>
+            
+            <button class="save-btn" onclick="saveSEO('main')" style="margin-top: 24px;">💾 Сохранить настройки</button>
+        </div>
+    </div>
+    
+    <div id="globalTab" class="tab-content">
+        <div class="form-container">
+            <h2 class="section-title">Общие настройки сайта</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Название сайта</label>
+                <input type="text" id="siteName" class="form-input" placeholder="Soho.By">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Город (для локального SEO)</label>
+                <input type="text" id="siteCity" class="form-input" placeholder="Минск">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Регион/Область</label>
+                <input type="text" id="siteRegion" class="form-input" placeholder="Минская область">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Адрес</label>
+                <input type="text" id="siteAddress" class="form-input" placeholder="ул. Примерная, 10">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Телефон</label>
+                <input type="tel" id="sitePhone" class="form-input" placeholder="+375 (29) 123-45-67">
+            </div>
+            
+            <button class="save-btn" onclick="saveSEO('global')">💾 Сохранить настройки</button>
+        </div>
+    </div>
+    
+    <script>
+        // Load SEO settings
+        async function loadSEO() {
+            try {
+                const response = await fetch('/api/content/seo');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Main page
+                    if (data.main) {
+                        document.getElementById('mainTitle').value = data.main.title || '';
+                        document.getElementById('mainDesc').value = data.main.description || '';
+                        document.getElementById('mainKeywords').value = data.main.keywords || '';
+                        updatePreview();
+                        updateCounts();
+                    }
+                    
+                    // Global
+                    if (data.global) {
+                        document.getElementById('siteName').value = data.global.site_name || '';
+                        document.getElementById('siteCity').value = data.global.city || '';
+                        document.getElementById('siteRegion').value = data.global.region || '';
+                        document.getElementById('siteAddress').value = data.global.address || '';
+                        document.getElementById('sitePhone').value = data.global.phone || '';
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading SEO:', err);
+            }
+        }
+        
+        // Update preview
+        function updatePreview() {
+            const title = document.getElementById('mainTitle').value || 'Soho.By - Кафе и Доставка';
+            const desc = document.getElementById('mainDesc').value || 'Закажите вкусную еду с доставкой...';
+            
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDesc').textContent = desc;
+        }
+        
+        // Update character counts
+        function updateCounts() {
+            const titleLen = document.getElementById('mainTitle').value.length;
+            const descLen = document.getElementById('mainDesc').value.length;
+            
+            const titleCount = document.getElementById('titleCount');
+            const descCount = document.getElementById('descCount');
+            
+            titleCount.textContent = `${titleLen} / 70`;
+            descCount.textContent = `${descLen} / 160`;
+            
+            // Color warnings
+            titleCount.className = 'char-count' + (titleLen > 60 ? ' warning' : '') + (titleLen > 70 ? ' error' : '');
+            descCount.className = 'char-count' + (descLen > 155 ? ' warning' : '') + (descLen > 160 ? ' error' : '');
+        }
+        
+        // Event listeners
+        document.getElementById('mainTitle').addEventListener('input', () => { updatePreview(); updateCounts(); });
+        document.getElementById('mainDesc').addEventListener('input', () => { updatePreview(); updateCounts(); });
+        
+        // Tab switching
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + 'Tab').classList.add('active');
+        }
+        
+        // Save SEO settings
+        async function saveSEO(type) {
+            let data = {};
+            
+            if (type === 'main') {
+                data = {
+                    main: {
+                        title: document.getElementById('mainTitle').value,
+                        description: document.getElementById('mainDesc').value,
+                        keywords: document.getElementById('mainKeywords').value
+                    }
+                };
+            } else {
+                data = {
+                    global: {
+                        site_name: document.getElementById('siteName').value,
+                        city: document.getElementById('siteCity').value,
+                        region: document.getElementById('siteRegion').value,
+                        address: document.getElementById('siteAddress').value,
+                        phone: document.getElementById('sitePhone').value
+                    }
+                };
+            }
+            
+            try {
+                const response = await fetch('/api/content/seo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('✅ SEO настройки сохранены!');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                alert('❌ Ошибка: ' + err.message);
+            }
+        }
+        
+        // Load on start
+        loadSEO();
+    </script>
+</body>
+</html>

@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOHO CRM - Оформление заказа</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        /* Top Navigation */
+        .top-nav {
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0;
+            height: 50px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            padding: 0 20px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            transition: background 0.2s;
+        }
+        
+        .nav-item:hover, .nav-item.active {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .nav-item i {
+            font-size: 18px;
+        }
+        
+        .nav-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+        }
+        
+        .phone-btn {
+            background: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+        
+        .user-menu {
+            padding: 0 20px;
+            cursor: pointer;
+        }
+        
+        /* Sub Navigation */
+        .sub-nav {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            padding: 0 20px;
+        }
+        
+        .sub-tab {
+            padding: 12px 24px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            color: #666;
+        }
+        
+        .sub-tab.active {
+            color: #e94560;
+            border-bottom-color: #e94560;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            height: calc(100vh - 100px);
+        }
+        
+        /* Left Panel - Cart */
+        .cart-panel {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .cart-header {
+            padding: 15px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #ddd;
+            font-weight: 600;
+        }
+        
+        .cart-items {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+        
+        .cart-item {
+            display: grid;
+            grid-template-columns: 1fr 80px 60px 70px;
+            gap: 8px;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .cart-item-name {
+            font-size: 14px;
+        }
+        
+        .cart-item-qty {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .qty-btn {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        
+        .cart-item-price, .cart-item-total {
+            text-align: right;
+            font-size: 14px;
+        }
+        
+        .cart-footer {
+            padding: 15px;
+            background: #f8f9fa;
+            border-top: 1px solid #ddd;
+        }
+        
+        .cart-total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .cart-total-row.total {
+            font-size: 18px;
+            font-weight: 700;
+            color: #e94560;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+        
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .cart-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .cart-btn.discount {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .cart-btn.delete {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .cart-btn.save {
+            background: #27ae60;
+            color: white;
+            flex: 2;
+        }
+        
+        /* Middle Panel - Categories */
+        .categories-panel {
+            width: 180px;
+            background: #f8f9fa;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        
+        .category-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .category-btn:hover, .category-btn.active {
+            background: #e94560;
+            color: white;
+        }
+        
+        /* Right Panel - Products */
+        .products-panel {
+            flex: 1;
+            background: white;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+        }
+        
+        .product-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .product-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #e94560;
+        }
+        
+        .product-name {
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .product-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #e94560;
+        }
+        
+        /* Details Tab Content */
+        .details-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .details-content.active {
+            display: block;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .form-group {
+            flex: 1;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        /* Marks Tab Content */
+        .marks-content {
+            display: none;
+            padding: 20px;
+            background: white;
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .marks-content.active {
+            display: block;
+        }
+        
+        .mark-tag {
+            display: inline-block;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 20px;
+            background: #ecf0f1;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .mark-tag.active {
+            background: #e94560;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .cart-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+        <div class="nav-item active" onclick="newOrder()">
+            <span>➕</span> Новый заказ
+        </div>
+        <div class="nav-item" onclick="showOrders()">
+            <span>📋</span> Заказы
+        </div>
+        <div class="nav-item" onclick="showReferences()">
+            <span>📚</span> Справочники
+        </div>
+        <div class="nav-item" onclick="showWarehouse()">
+            <span>📦</span> Склад
+        </div>
+        <div class="nav-item" onclick="showMoney()">
+            <span>💰</span> Деньги
+        </div>
+        <div class="nav-item" onclick="showStats()">
+            <span>📊</span> Статистика
+        </div>
+        <div class="nav-item" onclick="showSettings()">
+            <span>⚙️</span> Настройки
+        </div>
+        <div class="nav-right">
+            <div class="phone-btn">📞 +375291167755</div>
+            <div class="user-menu">👤 Админ ▼</div>
+        </div>
+    </nav>
+
+    <!-- Sub Navigation -->
+    <div class="sub-nav" style="display: flex; align-items: center; gap: 20px; padding: 10px 20px;">
+        <div style="display: flex; gap: 5px;">
+            <div class="sub-tab active" onclick="switchTab('order')">Заказ</div>
+            <div class="sub-tab" onclick="switchTab('details')">Детали</div>
+            <div class="sub-tab" onclick="switchTab('marks')">Отметки</div>
+        </div>
+        <!-- Search Box -->
+        <div class="search-container" style="position: relative; width: 300px;">
+            <input type="text" 
+                   id="productSearch" 
+                   placeholder="🔍 Поиск товара..." 
+                   style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;"
+                   oninput="searchProducts(this.value)">
+            <div id="searchResults" 
+                 style="display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ddd; border-top: none; max-height: 300px; overflow-y: auto; z-index: 100; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px;">
+                <!-- Search results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Left Panel - Cart -->
+        <div class="cart-panel" id="cartPanel">
+            <div class="cart-header">Заказ №<span id="orderNumber">---</span></div>
+            <div class="cart-items" id="cartItems">
+                <div class="cart-item">
+                    <div class="cart-item-name">Карбонара - 30см</div>
+                    <div class="cart-item-qty">
+                        <button class="qty-btn">−</button>
+                        <span>1</span>
+                        <button class="qty-btn">+</button>
+                    </div>
+                    <div class="cart-item-price">25</div>
+                    <div class="cart-item-total">25</div>
+                </div>
+                <div class="cart-item">
+                    <div class="cart-item-name">Пепперони - 30см</div>
+                    <div class="cart-item-qty">
+                        <button class="qty-btn">−</button>
+                        <span>1</span>
+                        <button class="qty-btn">+</button>
+                    </div>
+                    <div class="cart-item-price">22</div>
+                    <div class="cart-item-total">22</div>
+                </div>
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total-row">
+                    <span>Всего:</span>
+                    <span id="cartSubtotal">47 Br</span>
+                </div>
+                <div class="cart-total-row total">
+                    <span>К оплате:</span>
+                    <span id="cartTotal">47 Br</span>
+                </div>
+                <div class="cart-actions">
+                    <button class="cart-btn discount" onclick="applyDiscount()" id="discountBtn">%</button>
+                    <button class="cart-btn delete" onclick="clearCart()" id="deleteBtn">🗑</button>
+                    <button class="cart-btn print" onclick="printReceipt()" id="printBtn" style="background: #3498db;">🖨️ Печать</button>
+                    <button class="cart-btn save" onclick="saveOrder()" id="saveBtn">Отправить на кухню</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Panel - Categories -->
+        <div class="categories-panel" id="categoriesPanel">
+            <button class="category-btn active" onclick="filterCategory('all')">Все</button>
+            <button class="category-btn" onclick="filterCategory('pizza')">🍕 Пицца</button>
+            <button class="category-btn" onclick="filterCategory('sushi')">🍣 Суши</button>
+            <button class="category-btn" onclick="filterCategory('wok')">🍜 Wok</button>
+            <button class="category-btn" onclick="filterCategory('burgers')">🍔 Бургеры</button>
+            <button class="category-btn" onclick="filterCategory('salads')">🥗 Салаты</button>
+            <button class="category-btn" onclick="filterCategory('drinks')">🥤 Напитки</button>
+            <button class="category-btn" onclick="filterCategory('sauces')">🥫 Соусы</button>
+        </div>
+
+        <!-- Right Panel - Products -->
+        <div class="products-panel" id="productsPanel">
+            <div class="products-grid" id="productsGrid">
+                <!-- Products loaded dynamically -->
+            </div>
+        </div>
+
+        <!-- Details Tab -->
+        <div class="details-content" id="detailsContent">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Карта клиента</label>
+                    <input type="text" placeholder="Номер карты">
+                </div>
+                <div class="form-group">
+                    <label>Телефон *</label>
+                    <input type="tel" id="clientPhone" placeholder="+375 (XX) XXX-XX-XX">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Имя клиента</label>
+                    <input type="text" id="clientName" placeholder="Имя">
+                </div>
+                <div class="form-group">
+                    <label>Улица</label>
+                    <input type="text" id="clientStreet" placeholder="Улица">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Дом</label>
+                    <input type="text" id="clientHouse" placeholder="Дом">
+                </div>
+                <div class="form-group">
+                    <label>Подъезд</label>
+                    <input type="text" id="clientEntrance" placeholder="Подъезд">
+                </div>
+                <div class="form-group">
+                    <label>Этаж</label>
+                    <input type="text" id="clientFloor" placeholder="Этаж">
+                </div>
+                <div class="form-group">
+                    <label>Квартира/Офис</label>
+                    <input type="text" id="clientApartment" placeholder="Кв/офис">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Примечание</label>
+                    <textarea id="orderComment" placeholder="Особые пожелания..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Marks Tab -->
+        <div class="marks-content" id="marksContent">
+            <h3 style="margin-bottom: 15px;">Время предзаказа</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <input type="datetime-local" id="preorderTime">
+                </div>
+            </div>
+            
+            <h3 style="margin: 20px 0 15px;">Способ оплаты</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <select id="paymentMethod">
+                        <option value="cash">Наличными</option>
+                        <option value="card">Картой</option>
+                        <option value="online">Онлайн</option>
+                    </select>
+                </div>
+            </div>
+            
+            <h3 style="margin: 20px 0 15px;">Тип заказа</h3>
+            <div class="order-type-selector" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 8px;" onclick="selectOrderType('delivery')">
+                    <input type="radio" name="orderType" value="delivery" checked> 🚚 Доставка
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 8px;" onclick="selectOrderType('pickup')">
+                    <input type="radio" name="orderType" value="pickup"> 🏪 Самовывоз
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; border: 2px solid #ddd; border-radius: 8px;" onclick="selectOrderType('dine_in')">
+                    <input type="radio" name="orderType" value="dine_in"> 🍽️ Стол
+                </label>
+            </div>
+            
+            <!-- Table fields (hidden by default) -->
+            <div id="tableFields" style="display: none; margin-bottom: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Номер стола *</label>
+                        <input type="number" id="tableNumber" placeholder="№ стола" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>Количество персон</label>
+                        <input type="number" id="personCount" placeholder="Кол-во" min="1" value="1">
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin: 20px 0 15px;">Метки</h3>
+            <div>
+                <span class="mark-tag" onclick="toggleMark(this)">✅ ОПЛАЧЕНО</span>
+                <span class="mark-tag" onclick="toggleMark(this)">📱 Приложение</span>
+                <span class="mark-tag" onclick="toggleMark(this)">🌐 Сайт</span>
+                <span class="mark-tag" onclick="toggleMark(this)">📞 Телефон</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load products on page load
+        async function loadProducts() {
+            try {
+                console.log('loadProducts starting...');
+                const response = await fetch('/api/menu/categories');
+                const categories = await response.json();
+                console.log('loadProducts: got', categories.length, 'categories');
+
+                // Cache all products for search
+                allProducts = [];
+                categories.forEach(cat => {
+                    cat.products?.forEach(product => {
+                        if (product.variants && product.variants.length > 0) {
+                            allProducts.push(product);
+                        }
+                    });
+                });
+                console.log('loadProducts: cached', allProducts.length, 'products for search');
+
+                const grid = document.getElementById('productsGrid');
+                if (!grid) {
+                    console.error('productsGrid not found!');
+                    return;
+                }
+                grid.innerHTML = '';
+
+                let productCount = 0;
+                categories.forEach(cat => {
+                    cat.products?.forEach(product => {
+                        // Skip products without variants
+                        if (!product.variants || product.variants.length === 0) return;
+
+                        // Show all variants as separate items (Frontpad style)
+                        product.variants.forEach(variant => {
+                            const card = document.createElement('div');
+                            card.className = 'product-card';
+                            const displayName = product.variants.length > 1 
+                                ? `${product.name_ru} - ${variant.name_ru}` 
+                                : product.name_ru;
+                            card.onclick = () => addToCartVariant(product, variant);
+                            card.innerHTML = `
+                                <div class="product-name">${displayName}</div>
+                                <div class="product-price">${variant.price.toFixed(2)} Br</div>
+                            `;
+                            grid.appendChild(card);
+                            productCount++;
+                        });
+                    });
+                });
+                console.log('loadProducts: rendered', productCount, 'variant items');
+            } catch (err) {
+                console.error('Error loading products:', err);
+                showNotification('Ошибка загрузки товаров', 'error');
+            }
+        }
+
+        // Tab switching
+        function switchTab(tab) {
+            document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Hide all content
+            document.getElementById('cartPanel').style.display = 'none';
+            document.getElementById('categoriesPanel').style.display = 'none';
+            document.getElementById('productsPanel').style.display = 'none';
+            document.getElementById('detailsContent').classList.remove('active');
+            document.getElementById('marksContent').classList.remove('active');
+            
+            // Show selected content
+            if (tab === 'order') {
+                document.getElementById('cartPanel').style.display = 'flex';
+                document.getElementById('categoriesPanel').style.display = 'block';
+                document.getElementById('productsPanel').style.display = 'block';
+            } else if (tab === 'details') {
+                document.getElementById('detailsContent').classList.add('active');
+            } else if (tab === 'marks') {
+                document.getElementById('marksContent').classList.add('active');
+            }
+        }
+
+        // Product names cache
+        let productNames = {};
+        
+        // Load product names
+        async function loadProductNames() {
+            try {
+                const response = await fetch('/api/menu/categories');
+                const categories = await response.json();
+                
+                categories.forEach(cat => {
+                    cat.products?.forEach(prod => {
+                        productNames[prod.id] = prod.name_ru;
+                    });
+                });
+            } catch (err) {
+                console.error('Load product names error:', err);
+            }
+        }
+        
+        // Cart and kitchen state
+        let cart = [];
+        let sentToKitchen = false;
+        let sentItems = []; // Items already sent to kitchen
+        let newAdditions = []; // New items added after sending
+        let loadedOrderId = null; // ID of loaded order from website
+        
+        function addToCart(product) {
+            console.log('addToCart called:', product);
+            
+            // Validate product has variants
+            if (!product.variants || product.variants.length === 0) {
+                console.error('Product has no variants:', product);
+                showNotification('Ошибка: у товара нет цены', 'error');
+                return;
+            }
+            
+            console.log('Adding to cart, sentToKitchen:', sentToKitchen);
+            
+            if (sentToKitchen) {
+                // Adding to already sent order - mark as addition
+                const existing = newAdditions.find(item => item.name === product.name_ru);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    newAdditions.push({
+                        name: product.name_ru,
+                        price: product.variants[0].price,
+                        qty: 1,
+                        isAddition: true,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+                showNotification('Товар добавлен в дополнение к заказу');
+            } else {
+                // Normal cart addition
+                const existing = cart.find(item => item.name === product.name_ru);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    cart.push({
+                        product_id: product.id,
+                        variant_id: product.variants[0].id,
+                        name: product.name_ru,
+                        price: product.variants[0].price,
+                        qty: 1,
+                        sentToKitchen: false
+                    });
+                }
+            }
+            renderCart();
+        }
+        
+        // Add specific variant to cart
+        function addToCartVariant(product, variant) {
+            console.log('addToCartVariant called:', product.name_ru, variant.name_ru);
+            
+            const displayName = product.variants.length > 1 
+                ? `${product.name_ru} - ${variant.name_ru}` 
+                : product.name_ru;
+            
+            if (sentToKitchen) {
+                const existing = newAdditions.find(item => item.name === displayName);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    newAdditions.push({
+                        product_id: product.id,
+                        variant_id: variant.id,
+                        name: displayName,
+                        price: variant.price,
+                        qty: 1,
+                        isAddition: true,
+                        addedAt: new Date().toISOString()
+                    });
+                }
+                showNotification('Товар добавлен в дополнение к заказу');
+            } else {
+                const existing = cart.find(item => item.name === displayName);
+                if (existing) {
+                    existing.qty++;
+                } else {
+                    cart.push({
+                        product_id: product.id,
+                        variant_id: variant.id,
+                        name: displayName,
+                        price: variant.price,
+                        qty: 1,
+                        sentToKitchen: false
+                    });
+                }
+            }
+            renderCart();
+        }
+
+        // Render cart
+        function renderCart() {
+            console.log('renderCart called, cart:', cart, 'sentItems:', sentItems, 'newAdditions:', newAdditions);
+            const container = document.getElementById('cartItems');
+            if (!container) {
+                console.error('cartItems container not found!');
+                return;
+            }
+            let html = '';
+            
+            // Render sent items (locked)
+            if (sentItems.length > 0) {
+                html += '<div style="background: #fff3e0; padding: 8px; margin-bottom: 10px; border-radius: 4px; font-size: 12px; color: #e65100;">🔒 Отправлено на кухню</div>';
+                html += sentItems.map((item, index) => `
+                    <div class="cart-item" style="opacity: 0.7; background: #f5f5f5;">
+                        <div class="cart-item-name">🔒 ${item.name}</div>
+                        <div class="cart-item-qty">
+                            <span>${item.qty}</span>
+                        </div>
+                        <div class="cart-item-price">${item.price}</div>
+                        <div class="cart-item-total">${(item.price * item.qty).toFixed(2)}</div>
+                    </div>
+                `).join('');
+            }
+            
+            // Render new additions (if any)
+            if (newAdditions.length > 0) {
+                html += '<div style="background: #e8f5e9; padding: 8px; margin: 10px 0; border-radius: 4px; font-size: 12px; color: #2e7d32;">➕ Дополнение к заказу</div>';
+                html += newAdditions.map((item, index) => `
+                    <div class="cart-item" style="background: #e8f5e9;">
+                        <div class="cart-item-name">➕ ${item.name}</div>
+                        <div class="cart-item-qty">
+                            <button class="qty-btn" onclick="changeNewQty(${index}, -1)">−</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn" onclick="changeNewQty(${index}, 1)">+</button>
+                        </div>
+                        <div class="cart-item-price">${item.price}</div>
+                        <div class="cart-item-total">${(item.price * item.qty).toFixed(2)}</div>
+                    </div>
+                `).join('');
+            }
+            
+            // Render regular cart items
+            if (cart.length > 0 && !sentToKitchen) {
+                html += cart.map((item, index) => `
+                    <div class="cart-item">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-qty">
+                            <button class="qty-btn" onclick="changeQty(${index}, -1)">−</button>
+                            <span>${item.qty}</span>
+                            <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
+                        </div>
+                        <div class="cart-item-price">${item.price}</div>
+                        <div class="cart-item-total">${(item.price * item.qty).toFixed(2)}</div>
+                        <button class="qty-btn" onclick="removeFromCart(${index})" style="background: #e74c3c; color: white; margin-left: 8px;" title="Удалить">×</button>
+                    </div>
+                `).join('');
+            }
+            
+            container.innerHTML = html || '<p style="padding: 20px; text-align: center; color: #999;">Корзина пуста</p>';
+            
+            // Calculate total
+            const sentTotal = sentItems.reduce((sum, item) => sum + item.price * item.qty, 0);
+            const cartTotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+            const additionsTotal = newAdditions.reduce((sum, item) => sum + item.price * item.qty, 0);
+            const total = sentTotal + cartTotal + additionsTotal;
+            
+            document.getElementById('cartSubtotal').textContent = total.toFixed(2) + ' Br';
+            document.getElementById('cartTotal').textContent = total.toFixed(2) + ' Br';
+            
+            // Update save button text
+            const saveBtn = document.querySelector('.cart-btn.save');
+            if (saveBtn) {
+                if (sentToKitchen && newAdditions.length > 0) {
+                    saveBtn.textContent = 'Отправить дополнение';
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                } else if (sentToKitchen) {
+                    saveBtn.textContent = 'Заказ отправлен';
+                    saveBtn.disabled = true;
+                    saveBtn.style.opacity = '0.5';
+                } else if (loadedOrderId && cart.length === 0) {
+                    // Editing existing order, no new items
+                    saveBtn.textContent = 'Сохранить';
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                } else {
+                    saveBtn.textContent = 'Отправить на кухню';
+                    saveBtn.disabled = false;
+                    saveBtn.style.opacity = '1';
+                }
+            }
+        }
+
+        // Change quantity in cart
+        function changeQty(index, delta) {
+            if (sentToKitchen) {
+                showNotification('❌ Нельзя изменить - заказ уже на кухне', 'error');
+                return;
+            }
+            cart[index].qty = Math.max(1, cart[index].qty + delta);
+            renderCart();
+        }
+
+        // Remove item from cart
+        function removeFromCart(index) {
+            if (sentToKitchen) {
+                showNotification('❌ Нельзя удалить - заказ уже на кухне', 'error');
+                return;
+            }
+            cart.splice(index, 1);
+            renderCart();
+            showNotification('Позиция удалена', 'info');
+        }
+
+        // Change quantity in new additions
+        function changeNewQty(index, delta) {
+            newAdditions[index].qty = Math.max(1, newAdditions[index].qty + delta);
+            if (newAdditions[index].qty === 0) {
+                newAdditions.splice(index, 1);
+            }
+            renderCart();
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                padding: 15px 20px;
+                background: ${type === 'error' ? '#e74c3c' : '#27ae60'};
+                color: white;
+                border-radius: 4px;
+                z-index: 1000;
+                animation: slideIn 0.3s ease;
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Toggle mark
+        function toggleMark(el) {
+            el.classList.toggle('active');
+        }
+
+        // Filter category
+        function filterCategory(cat) {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            // TODO: Filter products
+        }
+
+        // Search products
+        let allProducts = []; // Cache all products for search
+        
+        function searchProducts(query) {
+            const resultsContainer = document.getElementById('searchResults');
+            
+            if (!query || query.length < 2) {
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            
+            const lowerQuery = query.toLowerCase();
+            
+            // Find matching variants (not just products)
+            let matches = [];
+            allProducts.forEach(product => {
+                product.variants?.forEach(variant => {
+                    const fullName = product.variants.length > 1 
+                        ? `${product.name_ru} - ${variant.name_ru}`
+                        : product.name_ru;
+                    
+                    if (fullName.toLowerCase().includes(lowerQuery) || 
+                        product.name_ru.toLowerCase().includes(lowerQuery)) {
+                        matches.push({
+                            product: product,
+                            variant: variant,
+                            displayName: fullName
+                        });
+                    }
+                });
+            });
+            
+            matches = matches.slice(0, 15); // Limit to 15 results
+            
+            if (matches.length === 0) {
+                resultsContainer.innerHTML = '<div style="padding: 10px; color: #999;">Ничего не найдено</div>';
+            } else {
+                resultsContainer.innerHTML = matches.map(match => {
+                    return `
+                        <div class="search-result-item" 
+                             style="padding: 10px; border-bottom: 1px solid #eee; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                             onclick="addVariantToCart(${match.product.id}, ${match.variant.id}); document.getElementById('searchResults').style.display='none'; document.getElementById('productSearch').value='';"
+                             onmouseover="this.style.background='#f5f5f5'"
+                             onmouseout="this.style.background='white'">
+                            <span>${match.displayName}</span>
+                            <span style="color: #27ae60; font-weight: 600;">${match.variant.price.toFixed(2)} Br</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            resultsContainer.style.display = 'block';
+        }
+        
+        // Add specific variant from search
+        function addVariantToCart(productId, variantId) {
+            const product = allProducts.find(p => p.id === productId);
+            const variant = product?.variants?.find(v => v.id === variantId);
+            if (product && variant) {
+                addToCartVariant(product, variant);
+            }
+        }
+        
+        // Hide search results when clicking outside
+        document.addEventListener('click', function(e) {
+            const searchContainer = document.querySelector('.search-container');
+            if (searchContainer && !searchContainer.contains(e.target)) {
+                document.getElementById('searchResults').style.display = 'none';
+            }
+        });
+
+        // Save/Send order to kitchen
+        function saveOrder() {
+            console.log('saveOrder called, cart:', cart, 'cart.length:', cart.length, 'loadedOrderId:', loadedOrderId, 'sentToKitchen:', sentToKitchen);
+            
+            // If order is already sent to kitchen and no new items, do nothing
+            if (sentToKitchen && newAdditions.length === 0) {
+                showNotification('Заказ уже отправлен на кухню', 'info');
+                return;
+            }
+            
+            // If we have a loaded order with no new items, save order data changes
+            if (loadedOrderId && (!cart || cart.length === 0) && !sentToKitchen) {
+                // Update order details (phone, address, comment, etc.)
+                const updateData = {
+                    customer_name: document.getElementById('clientName')?.value || 'Гость',
+                    customer_phone: document.getElementById('clientPhone')?.value || '',
+                    comment: document.getElementById('orderComment')?.value || ''
+                };
+                
+                fetch(`/api/orders/${loadedOrderId}`, {
+                    method: 'PATCH',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(updateData)
+                })
+                .then(() => fetch(`/api/orders/${loadedOrderId}/status?status=cooking`, {method: 'PATCH'}))
+                .then(() => {
+                    showNotification('✅ Заказ сохранен и отправлен на кухню!', 'success');
+                    sentToKitchen = true;
+                    renderCart();
+                    setTimeout(() => window.location.href = 'crm-orders.html', 1000);
+                }).catch(err => {
+                    console.error('Error:', err);
+                    showNotification('❌ Ошибка сохранения', 'error');
+                });
+                return;
+            }
+            
+            if (sentToKitchen && newAdditions.length === 0) {
+                showNotification('Заказ уже отправлен на кухню', 'info');
+                return;
+            }
+            
+            if (sentToKitchen && newAdditions.length > 0) {
+                // Sending new additions to kitchen (no confirmation)
+                sentItems = [...sentItems, ...newAdditions.map(item => ({...item, sentAt: new Date().toISOString()}))];
+                newAdditions = [];
+                showNotification('✅ Дополнение отправлено на кухню!', 'success');
+                renderCart();
+                return;
+            }
+            
+            // First time sending to kitchen
+            if (!cart || cart.length === 0) {
+                console.log('Cart is empty! cart:', cart);
+                showNotification('❌ Корзина пуста', 'error');
+                return;
+            }
+            
+            // Prepare order data
+            const orderData = {
+                customer_name: document.getElementById('clientName')?.value || 'Гость',
+                customer_phone: document.getElementById('clientPhone')?.value || '',
+                delivery_type: 'pickup',
+                delivery_zone: 'city',
+                delivery_time_type: 'asap',
+                address: 'Самовывоз',
+                payment_type: 'cash',
+                comment: document.getElementById('orderComment')?.value || '',
+                items: cart.map(item => ({
+                    product_id: item.product_id || 1,
+                    variant_id: item.variant_id || 1,
+                    quantity: item.qty,
+                    price: item.price
+                })),
+                subtotal_amount: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
+                delivery_fee: 0,
+                total_amount: cart.reduce((sum, item) => sum + item.price * item.qty, 0)
+            };
+            
+            // If editing existing order, add items to it
+            const url = loadedOrderId 
+                ? `/api/orders/${loadedOrderId}/add-items` 
+                : '/api/orders/';
+            const method = loadedOrderId ? 'PATCH' : 'POST';
+            
+            fetch(url, {
+                method: method,
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(orderData)
+            })
+            .then(r => r.json())
+            .then(result => {
+                sentToKitchen = true;
+                sentItems = [...sentItems, ...cart.map(item => ({...item, sentAt: new Date().toISOString()}))];
+                cart = [];
+                
+                if (loadedOrderId) {
+                    showNotification('✅ Позиции добавлены к заказу!', 'success');
+                } else {
+                    showNotification('✅ Заказ создан и отправлен на кухню!', 'success');
+                    loadedOrderId = result.order_id;
+                }
+                
+                renderCart();
+                
+                // Add visual indicator
+                document.querySelector('.cart-header').innerHTML = 
+                    `Заказ №<span id="orderNumber">${result.order_number || result.order_id || loadedOrderId}</span> <span style="color: #27ae60;">✓ На кухне</span>`;
+                
+                // Redirect to orders list after 1 second
+                setTimeout(() => {
+                    window.location.href = 'crm-orders.html';
+                }, 1000);
+            })
+            .catch(err => {
+                console.error('Create order error:', err);
+                showNotification('❌ Ошибка создания заказа', 'error');
+            });
+        }
+
+        // Apply discount
+        function applyDiscount() {
+            if (sentToKitchen) {
+                showNotification('❌ Нельзя применить скидку - заказ уже на кухне', 'error');
+                return;
+            }
+            const discount = prompt('Введите скидку (%):');
+            if (discount && !isNaN(discount)) {
+                showNotification(`Скидка ${discount}% применена`, 'success');
+            }
+        }
+        
+        // Clear cart
+        function clearCart() {
+            if (sentToKitchen) {
+                showNotification('❌ Нельзя очистить - заказ уже на кухне', 'error');
+                return;
+            }
+            if (confirm('Очистить корзину?')) {
+                cart = [];
+                renderCart();
+                showNotification('Корзина очищена', 'info');
+            }
+        }
+
+        // Print receipt
+        function printReceipt() {
+            const orderNumber = document.getElementById('orderNumber')?.textContent || '---';
+            const total = document.getElementById('cartTotal')?.textContent || '0';
+            const items = [...sentItems, ...newAdditions, ...cart];
+            
+            if (items.length === 0) {
+                showNotification('❌ Нет товаров для печати', 'error');
+                return;
+            }
+            
+            const date = new Date().toLocaleString('ru-RU');
+            
+            const receipt = `
+╔════════════════════════════════════╗
+║         SOHO CAFE                  ║
+║     Чек №${orderNumber.padEnd(25)}║
+║     ${date.padEnd(32)}║
+╠════════════════════════════════════╣
+║ Товар              Кол-во    Сумма ║
+╠════════════════════════════════════╣
+${items.map(item => {
+    const name = (item.name || 'Товар').substring(0, 18).padEnd(18);
+    const qty = (item.quantity || 1).toString().padStart(4);
+    const sum = ((item.price || 0) * (item.quantity || 1)).toFixed(2).padStart(8);
+    return `║ ${name} ${qty} ${sum} BYN ║`;
+}).join('\n')}
+╠════════════════════════════════════╣
+║ ИТОГО:${total.toString().padStart(32)}║
+╚════════════════════════════════════╝
+            `;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <pre style="font-family: monospace; font-size: 14px; padding: 20px;">${receipt}</pre>
+                <script>window.print(); setTimeout(() => window.close(), 500);<\/script>
+            `);
+            printWindow.document.close();
+            
+            showNotification('🖨️ Чек отправлен на печать', 'success');
+        }
+
+        // Navigation functions
+        function newOrder() { location.reload(); }
+        function showOrders() { window.location.href = 'crm-orders.html'; }
+        function showReferences() { window.location.href = 'crm-products.html'; }
+        function showWarehouse() { window.location.href = 'crm-inventory.html'; }
+        function showMoney() { alert('Деньги - в разработке'); }
+        function showStats() { alert('Статистика - в разработке'); }
+        function showSettings() { alert('Настройки - в разработке'); }
+
+        // Load order from API
+        async function loadOrder(orderId) {
+            try {
+                const response = await fetch(`/api/orders/${orderId}`);
+                const order = await response.json();
+                
+                // Fill customer info
+                document.getElementById('clientName').value = order.customer_name || '';
+                document.getElementById('clientPhone').value = order.delivery_phone || '';
+                document.getElementById('orderComment').value = order.comment || '';
+                
+                // Fill order number
+                document.getElementById('orderNumber').textContent = order.order_number || order.id;
+                
+                // Fill items into cart
+                console.log('loadOrder: order.items:', order.items);
+                if (order.items && order.items.length > 0) {
+                    cart = order.items.map(item => ({
+                        product_id: item.product_id,
+                        variant_id: item.variant_id,
+                        name: item.name || productNames[item.product_id] || `Товар #${item.product_id}`,
+                        price: item.price,
+                        qty: item.quantity
+                    }));
+                    console.log('loadOrder: cart filled:', cart);
+                    renderCart();
+                    console.log('loadOrder: renderCart called');
+                } else {
+                    console.log('loadOrder: no items in order');
+                }
+                
+                // Store loaded order ID and check if already sent to kitchen
+                loadedOrderId = order.id;
+                window.loadedOrder = order; // Debug
+                
+                // If order is already being processed, mark as sent
+                if (order.status && order.status !== 'new') {
+                    sentToKitchen = true;
+                    sentItems = order.items?.map(item => ({
+                        ...item,
+                        name: productNames[item.product_id] || `Товар #${item.product_id}`,
+                        qty: item.quantity,
+                        sentAt: order.created_at
+                    })) || [];
+                    cart = [];
+                    console.log('Order already sent to kitchen, status:', order.status);
+                }
+                
+                console.log('loadOrder SUCCESS: loadedOrderId set to', loadedOrderId);
+                
+                showNotification(`Заказ ${order.order_number || order.id} загружен`, 'success');
+            } catch (err) {
+                console.error('Load order error:', err);
+                showNotification('Ошибка загрузки заказа', 'error');
+            }
+        }
+        
+        // Check for order ID in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const orderId = urlParams.get('order');
+
+        // Reset state for new order
+        if (!orderId) {
+            sentToKitchen = false;
+            sentItems = [];
+            newAdditions = [];
+            cart = [];
+            loadedOrderId = null;
+            // Get next order number from API
+            fetch('/api/orders/next-number')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('orderNumber').textContent = data.next_number;
+                })
+                .catch(() => {
+                    // Fallback if API fails
+                    document.getElementById('orderNumber').textContent = '---';
+                });
+            console.log('New order mode: state reset');
+        }
+
+        // Phone mask +375(XX) XXX-XX-XX
+        function formatPhoneNumber(input) {
+            let value = input.value.replace(/\D/g, '');
+            if (value.startsWith('80')) value = value.substring(2);
+            let formatted = '';
+            if (value.length > 0) {
+                formatted = '+375';
+                if (value.length > 3) formatted += '(' + value.substring(3, 5) + ')';
+                if (value.length > 5) formatted += ' ' + value.substring(5, 8);
+                if (value.length > 8) formatted += '-' + value.substring(8, 10);
+                if (value.length > 10) formatted += '-' + value.substring(10, 12);
+            }
+            input.value = formatted;
+        }
+        
+        // Setup phone masks
+        function setupPhoneMasks() {
+            const phoneInputs = document.querySelectorAll('input[type="tel"], #clientPhone');
+            phoneInputs.forEach(input => {
+                input.addEventListener('input', function() { formatPhoneNumber(this); });
+                input.addEventListener('focus', function() { if (!this.value) this.value = '+375('; });
+            });
+        }
+
+        // Select order type
+        function selectOrderType(type) {
+            const tableFields = document.getElementById('tableFields');
+            const radioButtons = document.querySelectorAll('input[name="orderType"]');
+            
+            // Update radio buttons
+            radioButtons.forEach(radio => {
+                radio.checked = (radio.value === type);
+            });
+            
+            // Show/hide table fields
+            if (type === 'dine_in') {
+                tableFields.style.display = 'block';
+            } else {
+                tableFields.style.display = 'none';
+            }
+        }
+        
+        // Load products and order (if editing)
+        loadProductNames().then(() => {
+            if (orderId) {
+                loadOrder(orderId);
+            }
+            loadProducts();
+            renderCart();
+            setupPhoneMasks();
+        });
+    </script>
+    <style>
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .top-nav {
+                height: auto;
+                flex-wrap: wrap;
+                padding: 5px;
+            }
+            .nav-item {
+                padding: 8px 12px;
+                height: 36px;
+                font-size: 12px;
+            }
+            .sub-nav {
+                flex-direction: column;
+                gap: 10px;
+                padding: 10px;
+            }
+            .search-container {
+                width: 100% !important;
+            }
+            .main-content {
+                flex-direction: column;
+            }
+            .cart-panel, .categories-panel, .products-panel {
+                width: 100%;
+            }
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .cart-item {
+                flex-wrap: wrap;
+            }
+            .cart-actions {
+                flex-wrap: wrap;
+            }
+            .cart-btn {
+                flex: 1;
+                min-width: 80px;
+            }
+            /* Single column form layout */
+            .form-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .form-group {
+                width: 100%;
+            }
+        }
+    </style>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

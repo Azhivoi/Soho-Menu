@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOHO CRM - Товары</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; min-height: 100vh; }
+        .top-nav { background: #2c3e50; color: white; display: flex; align-items: center; padding: 0; height: 50px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-item { padding: 0 20px; height: 50px; display: flex; align-items: center; gap: 8px; cursor: pointer; border-right: 1px solid rgba(255,255,255,0.1); transition: background 0.2s; text-decoration: none; color: white; }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); }
+        .nav-right { margin-left: auto; display: flex; align-items: center; }
+        .phone-btn { background: #27ae60; color: white; padding: 8px 16px; border-radius: 4px; margin-right: 10px; cursor: pointer; }
+        .user-menu { padding: 0 20px; cursor: pointer; }
+        .main-content { display: flex; height: calc(100vh - 50px); }
+        .sidebar { width: 220px; background: white; border-right: 1px solid #ddd; overflow-y: auto; }
+        .sidebar-header { padding: 15px; font-size: 18px; font-weight: 600; border-bottom: 1px solid #eee; display: flex; align-items: center; gap: 10px; }
+        .category-list { list-style: none; }
+        .category-item { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #f5f5f5; font-size: 14px; transition: all 0.2s; }
+        .category-item:hover, .category-item.active { background: #e3f2fd; color: #1976d2; }
+        .content-panel { flex: 1; background: #f5f5f5; overflow-y: auto; padding: 20px; }
+        .content-header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .content-title { font-size: 24px; font-weight: 600; }
+        .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #27ae60; color: white; }
+        .products-table-container { background: white; border-radius: 8px; overflow: hidden; }
+        .products-table { width: 100%; border-collapse: collapse; }
+        .products-table th { background: #f8f9fa; padding: 12px 15px; text-align: left; font-size: 13px; color: #666; font-weight: 600; border-bottom: 2px solid #ddd; }
+        .products-table td { padding: 12px 15px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .inline-input { width: 80px; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; text-align: right; }
+        .markup-input { color: #27ae60; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <a href="crm-order.html" class="nav-item">➕ Новый заказ</a>
+        <a href="crm-orders.html" class="nav-item">📋 Заказы</a>
+        <a href="crm-products.html" class="nav-item active">📚 Справочники</a>
+        <div class="nav-right">
+            <div class="phone-btn">📞 +375291167755</div>
+            <div class="user-menu">👤 Админ ▼</div>
+        </div>
+    </nav>
+    <div class="main-content">
+        <aside class="sidebar">
+            <div class="sidebar-header">📁 Категории</div>
+            <ul class="category-list">
+                <li class="category-item active">Все товары</li>
+                <li class="category-item">🍕 Пицца</li>
+                <li class="category-item">🍣 Суши</li>
+            </ul>
+        </aside>
+        <div class="content-panel">
+            <div class="content-header">
+                <h1 class="content-title">Товары</h1>
+                <button class="btn btn-primary">➕ Новый товар</button>
+            </div>
+            <div class="products-table-container">
+                <table class="products-table">
+                    <thead>
+                        <tr><th>Наименование</th><th>Себестоимость</th><th>Цена</th><th>Наценка %</th></tr>
+                    </thead>
+                    <tbody id="productsTableBody">
+                        <!-- Products loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+<script>
+let products = [];
+
+// Load products from API
+async function loadProducts() {
+    try {
+        const response = await fetch('/api/menu/categories');
+        const categories = await response.json();
+        
+        products = [];
+        categories.forEach(cat => {
+            cat.products?.forEach(prod => {
+                const variant = prod.variants?.[0];
+                if (variant) {
+                    // Calculate cost and markup from price
+                    const price = parseFloat(variant.price) || 0;
+                    // Assume 30% cost ratio if not set
+                    const cost = price * 0.3;
+                    const markup = ((price / cost - 1) * 100);
+                    
+                    products.push({
+                        id: prod.id,
+                        name: prod.name_ru,
+                        category: cat.name_ru,
+                        cost: cost.toFixed(2),
+                        price: price.toFixed(2),
+                        markup: markup.toFixed(0)
+                    });
+                }
+            });
+        });
+        
+        renderTable();
+    } catch (err) {
+        console.error('Load products error:', err);
+    }
+}
+
+// Render table
+function renderTable() {
+    const tbody = document.getElementById('productsTableBody');
+    tbody.innerHTML = products.map(p => `
+        <tr data-id="${p.id}">
+            <td>${p.name}</td>
+            <td>
+                <input type="number" class="inline-input cost-input" 
+                       value="${p.cost}" step="0.01" min="0"
+                       onchange="updatePrice(${p.id})"> Br
+            </td>
+            <td>
+                <input type="number" class="inline-input price-input" 
+                       value="${p.price}" step="0.01" min="0"
+                       onchange="updateMarkup(${p.id})"> Br
+            </td>
+            <td>
+                <input type="number" class="inline-input markup-input" 
+                       value="${p.markup}" step="1" min="0"
+                       onchange="updateFromMarkup(${p.id})"> %
+            </td>
+        </tr>
+    `).join('');
+}
+
+// Update price when cost or markup changes
+function updatePrice(id) {
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
+    const markup = parseFloat(row.querySelector('.markup-input').value) || 0;
+    
+    const price = cost * (1 + markup / 100);
+    row.querySelector('.price-input').value = price.toFixed(2);
+    
+    saveToServer(id, cost, price);
+}
+
+// Update markup when price changes
+function updateMarkup(id) {
+    const row = document.querySelector(`tr[data-id="${id}"]`);
+    const cost = parseFloat(row.querySelector('.cost-input').value) || 0;
+    const price = parseFloat(row.querySelector('.price-input').value) || 0;
+    
+    if (cost > 0) {
+        const markup = ((price / cost - 1) * 100);
+        row.querySelector('.markup-input').value = markup.toFixed(0);
+    }
+    
+    saveToServer(id, cost, price);
+}
+
+// Update price when markup changes directly
+function updateFromMarkup(id) {
+    updatePrice(id);
+}
+
+// Save to server (mock for now)
+function saveToServer(id, cost, price) {
+    console.log(`Save product ${id}: cost=${cost}, price=${price}`);
+    // TODO: Implement API call to save changes
+    // fetch(`/api/products/${id}`, { method: 'PATCH', body: JSON.stringify({ cost, price }) })
+}
+
+// Initial load
+loadProducts();
+</script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

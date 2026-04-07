@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Заказы | SOHO CRM</title>
+    <link rel="stylesheet" href="/css/crm-style.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #16162a;
+            --accent: #e94560;
+            --accent-hover: #ff6b6b;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --border: #2a2a40;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+            --info: #2196f3;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        
+        /* Top Bar */
+        .top-bar {
+            background: var(--bg-secondary);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .top-bar h1 { font-size: 20px; font-weight: 600; }
+        .top-bar-actions { display: flex; gap: 12px; }
+        
+        /* Stats Bar */
+        .stats-bar {
+            background: var(--bg-secondary);
+            padding: 16px 24px;
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .stat-item { display: flex; flex-direction: column; }
+        .stat-value { font-size: 24px; font-weight: 700; color: var(--accent); }
+        .stat-label { font-size: 12px; color: var(--text-secondary); }
+        
+        /* Filters */
+        .filters-bar {
+            padding: 16px 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .filter-btn {
+            padding: 8px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        .filter-select, .filter-date {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+        
+        /* Orders Table */
+        .orders-container {
+            padding: 0;
+        }
+        .order-row {
+            display: grid;
+            grid-template-columns: 80px 120px 1fr 150px 100px 200px;
+            gap: 16px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .order-row:hover { background: var(--bg-card); }
+        .order-row.header {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            cursor: default;
+        }
+        
+        /* Order Number with Status */
+        .order-num {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.new { background: var(--info); box-shadow: 0 0 8px var(--info); }
+        .status-dot.cooking { background: var(--warning); box-shadow: 0 0 8px var(--warning); }
+        .status-dot.ready { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .status-dot.delivered { background: #9c27b0; }
+        .status-dot.cancelled { background: var(--danger); }
+        .order-number { font-weight: 600; font-size: 14px; }
+        
+        /* Time */
+        .order-time { font-size: 13px; color: var(--text-secondary); }
+        .order-time .time-ago { font-size: 11px; color: var(--accent); }
+        
+        /* Customer */
+        .order-customer { display: flex; flex-direction: column; }
+        .customer-name { font-weight: 500; }
+        .customer-phone { font-size: 12px; color: var(--text-secondary); }
+        .customer-address {
+            font-size: 11px;
+            color: var(--text-secondary);
+            max-width: 300px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        /* Type */
+        .order-type {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            text-align: center;
+        }
+        .type-delivery { background: #2196f333; color: #64b5f6; }
+        .type-pickup { background: #4caf5033; color: #81c784; }
+        .type-dinein { background: #ff980033; color: #ffb74d; }
+        
+        /* Amount */
+        .order-amount { font-weight: 600; font-size: 15px; }
+        
+        /* Actions */
+        .order-actions { display: flex; gap: 8px; }
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: none;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .action-btn:hover { background: var(--accent); color: white; }
+        
+        /* Status Selector */
+        .status-select {
+            padding: 6px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* Expanded Order Details */
+        .order-details {
+            grid-column: 1 / -1;
+            background: var(--bg-primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+            display: none;
+        }
+        .order-row.expanded .order-details { display: block; }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .items-list {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .item-row:last-child { border-bottom: none; }
+        .item-name { display: flex; align-items: center; gap: 8px; }
+        .item-qty { color: var(--accent); font-weight: 600; }
+        
+        .order-marks {
+            background: var(--bg-card);
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .mark-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 13px;
+        }
+        
+        /* Mobile */
+        @media (max-width: 768px) {
+            .order-row {
+                grid-template-columns: 60px 1fr auto;
+                gap: 12px;
+            }
+            .order-row.header { display: none; }
+            .order-type, .customer-address { display: none; }
+            .details-grid { grid-template-columns: 1fr; }
+        }
+        
+        /* Print Button */
+        .btn-print {
+            background: var(--success) !important;
+        }
+        .btn-phone {
+            background: var(--info) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <h1>📋 Заказы</h1>
+        <div class="top-bar-actions">
+            <button class="filter-btn" onclick="window.location.href='crm-new-order.html'">+ Новый заказ</button>
+            <button class="filter-btn" onclick="loadOrders()">🔄 Обновить</button>
+        </div>
+    </div>
+    
+    <div class="stats-bar">
+        <div class="stat-item">
+            <span class="stat-value" id="statTotal">0</span>
+            <span class="stat-label">Всего заказов</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="statNew">0</span>
+            <span class="stat-label">Новые</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="statCooking">0</span>
+            <span class="stat-label">Готовятся</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="statReady">0</span>
+            <span class="stat-label">Готовы</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-value" id="statSum">0 Br</span>
+            <span class="stat-label">Сумма</span>
+        </div>
+    </div>
+    
+    <div class="filters-bar">
+        <input type="date" class="filter-date" id="filterDate" onchange="loadOrders()">
+        <select class="filter-select" id="filterStatus" onchange="loadOrders()">
+            <option value="">Все статусы</option>
+            <option value="new">Новые</option>
+            <option value="cooking">Готовятся</option>
+            <option value="ready">Готовы</option>
+            <option value="delivered">Выданы</option>
+            <option value="cancelled">Отменены</option>
+        </select>
+        <select class="filter-select" id="filterType" onchange="loadOrders()">
+            <option value="">Все типы</option>
+            <option value="delivery">Доставка</option>
+            <option value="pickup">Самовывоз</option>
+            <option value="dinein">В зале</option>
+        </select>
+    </div>
+    
+    <div class="orders-container" id="ordersContainer">
+        <div class="order-row header">
+            <div>№ / Статус</div>
+            <div>Время</div>
+            <div>Клиент</div>
+            <div>Тип</div>
+            <div>Сумма</div>
+            <div>Действия</div>
+        </div>
+        <div id="ordersList"></div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+        let orders = [];
+        let marks = [];
+        
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('filterDate').valueAsDate = new Date();
+            loadMarks();
+            loadOrders();
+            setInterval(loadOrders, 30000); // Auto refresh
+        });
+        
+        async function loadMarks() {
+            try {
+                const res = await fetch(`${API_URL}/orders/marks`);
+                marks = await res.json();
+            } catch (e) { console.error('Failed to load marks', e); }
+        }
+        
+        async function loadOrders() {
+            try {
+                const params = new URLSearchParams();
+                const date = document.getElementById('filterDate').value;
+                const status = document.getElementById('filterStatus').value;
+                const type = document.getElementById('filterType').value;
+                
+                if (date) params.append('date', date);
+                if (status) params.append('status', status);
+                if (type) params.append('order_type', type);
+                params.append('limit', '100');
+                
+                const res = await fetch(`${API_URL}/orders/list?${params}`);
+                const data = await res.json();
+                orders = data.orders || [];
+                
+                updateStats(data);
+                renderOrders();
+            } catch (e) {
+                console.error('Failed to load orders', e);
+                showToast('Ошибка загрузки заказов');
+            }
+        }
+        
+        function updateStats(data) {
+            document.getElementById('statTotal').textContent = data.total || 0;
+            document.getElementById('statNew').textContent = data.by_status?.new || 0;
+            document.getElementById('statCooking').textContent = data.by_status?.cooking || 0;
+            document.getElementById('statReady').textContent = data.by_status?.ready || 0;
+            document.getElementById('statSum').textContent = (data.total_sum || 0).toFixed(2) + ' Br';
+        }
+        
+        function renderOrders() {
+            const container = document.getElementById('ordersList');
+            container.innerHTML = orders.map(order => renderOrderRow(order)).join('');
+        }
+        
+        function renderOrderRow(order) {
+            const statusClass = getStatusClass(order.status);
+            const statusDot = getStatusDot(order.status);
+            const typeClass = `type-${order.order_type || 'delivery'}`;
+            const typeText = getTypeText(order.order_type);
+            const timeAgo = getTimeAgo(order.created_at);
+            const items = order.items || [];
+            
+            // Parse marks from comment if any
+            const orderMarks = parseMarksFromComment(order.comment);
+            
+            return `
+                <div class="order-row" data-order-id="${order.id}" onclick="toggleDetails(${order.id})">
+                    <div class="order-num">
+                        <span class="status-dot ${statusDot}"></span>
+                        <span class="order-number">#${order.id}</span>
+                    </div>
+                    <div class="order-time">
+                        <div>${formatTime(order.created_at)}</div>
+                        <div class="time-ago">${timeAgo}</div>
+                    </div>
+                    <div class="order-customer">
+                        <span class="customer-name">${order.customer_name || 'Гость'}</span>
+                        <span class="customer-phone">${order.customer_phone || ''}</span>
+                        ${order.delivery_address ? `<span class="customer-address">${order.delivery_address}</span>` : ''}
+                    </div>
+                    <div>
+                        <span class="order-type ${typeClass}">${typeText}</span>
+                    </div>
+                    <div class="order-amount">${order.total_amount?.toFixed(2) || '0.00'} Br</div>
+                    <div class="order-actions" onclick="event.stopPropagation()">
+                        ${order.customer_phone ? `<button class="action-btn btn-phone" onclick="callCustomer('${order.customer_phone}')">📞</button>` : ''}
+                        <button class="action-btn btn-print" onclick="printOrder(${order.id})">🖨️</button>
+                        <select class="status-select" onchange="updateStatus(${order.id}, this.value)">
+                            <option value="new" ${order.status === 'new' ? 'selected' : ''}>Новый</option>
+                            <option value="cooking" ${order.status === 'cooking' ? 'selected' : ''}>Готовится</option>
+                            <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Готов</option>
+                            <option value="delivered" ${order.status === 'delivered' ? 'selected' : ''}>Выдан</option>
+                            <option value="cancelled" ${order.status === 'cancelled' ? 'selected' : ''}>Отмена</option>
+                        </select>
+                    </div>
+                    <div class="order-details" id="details-${order.id}">
+                        <div class="details-grid">
+                            <div class="items-list">
+                                <h4>🍽️ Заказ</h4>
+                                ${items.map(item => `
+                                    <div class="item-row">
+                                        <span class="item-name">
+                                            <span class="item-qty">${item.quantity}x</span>
+                                            ${item.product_name}
+                                            ${item.variation_name ? `<small>(${item.variation_name})</small>` : ''}
+                                        </span>
+                                        <span>${item.price?.toFixed(2)} Br</span>
+                                    </div>
+                                `).join('')}
+                                <div class="item-row" style="margin-top: 8px; padding-top: 8px; border-top: 2px solid var(--border);">
+                                    <span><strong>Итого</strong></span>
+                                    <span><strong>${order.total_amount?.toFixed(2)} Br</strong></span>
+                                </div>
+                            </div>
+                            <div>
+                                ${orderMarks.length > 0 ? `
+                                    <div class="order-marks">
+                                        <h4>🏷️ Метки</h4>
+                                        ${orderMarks.map(m => `
+                                            <div class="mark-item">
+                                                <span>${m.name}</span>
+                                                <span style="color: var(--accent)">${m.value}</span>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                ${order.comment ? `
+                                    <div class="order-marks" style="margin-top: 12px;">
+                                        <h4>💬 Комментарий</h4>
+                                        <p style="font-size: 13px; color: var(--text-secondary);">${order.comment}</p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function toggleDetails(orderId) {
+            const row = document.querySelector(`[data-order-id="${orderId}"]`);
+            row.classList.toggle('expanded');
+        }
+        
+        function parseMarksFromComment(comment) {
+            if (!comment) return [];
+            const orderMarks = [];
+            marks.forEach(mark => {
+                const regex = new RegExp(`🏷️ ${mark.name}: ([^🏷️]+)`);
+                const match = comment.match(regex);
+                if (match) {
+                    orderMarks.push({ name: mark.name, value: match[1].trim() });
+                }
+            });
+            return orderMarks;
+        }
+        
+        function getStatusClass(status) {
+            const map = { new: 'new', cooking: 'cooking', ready: 'ready', delivered: 'delivered', cancelled: 'cancelled' };
+            return map[status] || 'new';
+        }
+        
+        function getStatusDot(status) {
+            return getStatusClass(status);
+        }
+        
+        function getTypeText(type) {
+            const map = { delivery: 'Доставка', pickup: 'Самовывоз', dinein: 'В зале' };
+            return map[type] || type;
+        }
+        
+        function formatTime(iso) {
+            if (!iso) return '--:--';
+            const d = new Date(iso);
+            return d.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function getTimeAgo(iso) {
+            if (!iso) return '';
+            const diff = Math.floor((Date.now() - new Date(iso)) / 60000);
+            if (diff < 1) return 'только что';
+            if (diff < 60) return `${diff} мин назад`;
+            const hours = Math.floor(diff / 60);
+            return `${hours} ч ${diff % 60} мин`;
+        }
+        
+        async function updateStatus(orderId, status) {
+            try {
+                const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status })
+                });
+                if (res.ok) {
+                    showToast('Статус обновлён');
+                    loadOrders();
+                }
+            } catch (e) {
+                showToast('Ошибка обновления статуса');
+            }
+        }
+        
+        function callCustomer(phone) {
+            window.open(`tel:${phone}`);
+        }
+        
+        function printOrder(orderId) {
+            window.open(`/crm-receipt-template.html?order_id=${orderId}`, '_blank');
+        }
+        
+        function showToast(msg) {
+            // Simple alert for now, can be replaced with proper toast
+            console.log(msg);
+        }
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Редактор Promo - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: #1a1a2e;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        
+        .form-container {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 24px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 15px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+            font-family: monospace;
+        }
+        
+        .css-editor {
+            min-height: 300px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        
+        .logo-preview {
+            width: 150px;
+            height: 150px;
+            border-radius: 20px;
+            object-fit: cover;
+            margin-bottom: 12px;
+            background: #0f0f1a;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type=file] {
+            position: absolute;
+            left: -9999px;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #e94560;
+            color: #fff;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .custom-fields-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+        }
+        
+        .custom-field {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        
+        .custom-field input {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .btn-small {
+            padding: 8px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .btn-add {
+            background: #4CAF50;
+            color: #fff;
+        }
+        
+        .btn-remove {
+            background: #e94560;
+            color: #fff;
+        }
+        
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            background: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .save-btn:hover {
+            background: #45a049;
+        }
+        
+        .preview-link {
+            display: inline-block;
+            margin-top: 16px;
+            color: #e94560;
+            text-decoration: none;
+        }
+        
+        .preview-link:hover {
+            text-decoration: underline;
+        }
+        
+        .field-type-select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <button class="back-btn" onclick="history.back()">←</button>
+        <h1 class="page-title">Редактор Promo страницы</h1>
+    </div>
+    
+    <div class="main-layout">
+        <div class="form-container">
+            <h2 class="section-title">📄 Основной контент</h2>
+            
+            <div class="form-group">
+                <label class="form-label">Логотип</label>
+                <img id="logoPreview" src="/uploads/logo.png" class="logo-preview">
+                <div class="file-input-wrapper">
+                    <input type="file" id="logoInput" accept="image/*">
+                    <label for="logoInput" class="file-input-label">📷 Загрузить логотип</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Заголовок</label>
+                <input type="text" id="titleInput" class="form-input" value="Кафе и Доставка Soho.By">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Описание</label>
+                <textarea id="descInput" class="form-input form-textarea">Выбирайте: сайт или приложение! Посетите наш Instagram</textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ссылка на приложение</label>
+                <input type="url" id="appUrlInput" class="form-input" value="https://foodpicasso.com/x/2307x621">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ссылка на сайт</label>
+                <input type="url" id="siteUrlInput" class="form-input" value="https://soho.by/">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Ссылка на Instagram</label>
+                <input type="url" id="instaUrlInput" class="form-input" value="https://www.instagram.com/cafe_soho.by">
+            </div>
+            
+            <!-- Custom Fields Section -->
+            <div class="custom-fields-section">
+                <h2 class="section-title">➕ Дополнительные поля</h2>
+                <div id="customFieldsContainer"></div>
+                <button class="btn-small btn-add" onclick="addCustomField()">+ Добавить поле</button>
+            </div>
+            
+            <button class="save-btn" onclick="savePromoContent()">💾 Сохранить изменения</button>
+            <a href="/promo.html" target="_blank" class="preview-link">👁️ Предпросмотр страницы</a>
+        </div>
+        
+        <div class="form-container">
+            <h2 class="section-title">🎨 CSS Редактор</h2>
+            <div class="form-group">
+                <label class="form-label">Пользовательские стили</label>
+                <textarea id="cssEditor" class="form-input css-editor" placeholder="/* Ваши CSS стили */
+body {
+    background: #FFDF00;
+}
+
+.card {
+    border-radius: 20px;
+}"></textarea>
+            </div>
+            <p style="color: #888; font-size: 13px; margin-top: 10px;">
+                💡 Подсказка: Используйте CSS для кастомизации внешнего вида страницы. 
+                Ваши стили будут добавлены после основных стилей.
+            </p>
+        </div>
+    </div>
+    
+    <script>
+        let logoBase64 = null;
+        let customFields = [];
+        
+        // Load current content
+        async function loadContent() {
+            try {
+                const response = await fetch('/api/content/promo');
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    if (data.logo) {
+                        document.getElementById('logoPreview').src = data.logo;
+                    }
+                    if (data.title) {
+                        document.getElementById('titleInput').value = data.title;
+                    }
+                    if (data.description) {
+                        document.getElementById('descInput').value = data.description;
+                    }
+                    if (data.app_url) {
+                        document.getElementById('appUrlInput').value = data.app_url;
+                    }
+                    if (data.site_url) {
+                        document.getElementById('siteUrlInput').value = data.site_url;
+                    }
+                    if (data.instagram_url) {
+                        document.getElementById('instaUrlInput').value = data.instagram_url;
+                    }
+                    if (data.custom_css) {
+                        document.getElementById('cssEditor').value = data.custom_css;
+                    }
+                    if (data.custom_fields) {
+                        customFields = data.custom_fields;
+                        renderCustomFields();
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading content:', err);
+            }
+        }
+        
+        // Handle logo upload
+        document.getElementById('logoInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    logoBase64 = e.target.result;
+                    document.getElementById('logoPreview').src = logoBase64;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Add custom field
+        function addCustomField(field = { name: '', value: '', type: 'text', url: '' }) {
+            const container = document.getElementById('customFieldsContainer');
+            const index = customFields.length;
+            customFields.push(field);
+            
+            const div = document.createElement('div');
+            div.className = 'custom-field';
+            div.dataset.index = index;
+            div.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr 100px 40px; gap: 8px; margin-bottom: 12px; align-items: center;';
+            div.innerHTML = `
+                <input type="text" placeholder="Название поля" value="${field.name}" onchange="updateCustomField(${index}, 'name', this.value)">
+                <input type="text" placeholder="Значение (текст или URL)" value="${field.value}" onchange="updateCustomField(${index}, 'value', this.value)">
+                <select class="field-type-select" onchange="updateCustomField(${index}, 'type', this.value); toggleUrlField(${index})">
+                    <option value="text" ${field.type === 'text' ? 'selected' : ''}>Текст</option>
+                    <option value="button" ${field.type === 'button' ? 'selected' : ''}>Кнопка</option>
+                </select>
+                <button class="btn-small btn-remove" onclick="removeCustomField(${index})">✕</button>
+                <input type="url" placeholder="URL для кнопки (если кнопка)" value="${field.url || ''}" onchange="updateCustomField(${index}, 'url', this.value)" style="grid-column: 1 / -2; margin-top: 5px; ${field.type === 'button' ? '' : 'display: none;'}" class="url-input">
+            `;
+            container.appendChild(div);
+        }
+        
+        // Toggle URL field visibility
+        function toggleUrlField(index) {
+            const div = document.querySelector(`div[data-index="${index}"]`);
+            const urlInput = div.querySelector('.url-input');
+            const typeSelect = div.querySelector('select');
+            if (urlInput) {
+                urlInput.style.display = typeSelect.value === 'button' ? 'block' : 'none';
+            }
+        }
+        
+        // Update custom field
+        function updateCustomField(index, key, value) {
+            if (customFields[index]) {
+                customFields[index][key] = value;
+            }
+        }
+        
+        // Remove custom field
+        function removeCustomField(index) {
+            customFields.splice(index, 1);
+            renderCustomFields();
+        }
+        
+        // Render all custom fields
+        function renderCustomFields() {
+            const container = document.getElementById('customFieldsContainer');
+            container.innerHTML = '';
+            customFields.forEach((field, index) => {
+                const div = document.createElement('div');
+                div.className = 'custom-field';
+                div.dataset.index = index;
+                div.style.cssText = 'display: grid; grid-template-columns: 1fr 1fr 100px 40px; gap: 8px; margin-bottom: 12px; align-items: center;';
+                div.innerHTML = `
+                    <input type="text" placeholder="Название поля" value="${field.name}" onchange="updateCustomField(${index}, 'name', this.value)">
+                    <input type="text" placeholder="Значение (текст или URL)" value="${field.value}" onchange="updateCustomField(${index}, 'value', this.value)">
+                    <select class="field-type-select" onchange="updateCustomField(${index}, 'type', this.value); toggleUrlField(${index})">
+                        <option value="text" ${field.type === 'text' ? 'selected' : ''}>Текст</option>
+                        <option value="button" ${field.type === 'button' ? 'selected' : ''}>Кнопка</option>
+                    </select>
+                    <button class="btn-small btn-remove" onclick="removeCustomField(${index})">✕</button>
+                    <input type="url" placeholder="URL для кнопки (если кнопка)" value="${field.url || ''}" onchange="updateCustomField(${index}, 'url', this.value)" style="grid-column: 1 / -2; margin-top: 5px; ${field.type === 'button' ? '' : 'display: none;'}" class="url-input">
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        // Save content
+        async function savePromoContent() {
+            // Filter out empty fields
+            const filteredFields = customFields.filter(f => f.name.trim() !== '');
+            
+            const data = {
+                logo: logoBase64 || document.getElementById('logoPreview').src,
+                title: document.getElementById('titleInput').value,
+                description: document.getElementById('descInput').value,
+                app_url: document.getElementById('appUrlInput').value,
+                site_url: document.getElementById('siteUrlInput').value,
+                instagram_url: document.getElementById('instaUrlInput').value,
+                custom_css: document.getElementById('cssEditor').value,
+                custom_fields: filteredFields
+            };
+            
+            try {
+                const response = await fetch('/api/content/promo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Сохранено успешно!');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                alert('❌ Ошибка: ' + err.message);
+            }
+        }
+        
+        // Load on start
+        loadContent();
+    </script>
+</body>
+</html>

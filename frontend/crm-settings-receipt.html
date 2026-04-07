@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки чеков - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .page-header p {
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 24px;
+            max-width: 1200px;
+        }
+        
+        .settings-section {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            padding: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #a0a0b0;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: #252538;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .form-textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .logo-upload {
+            border: 2px dashed #2a2a40;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logo-upload:hover {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.05);
+        }
+        
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            margin-bottom: 12px;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #e94560;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        
+        .btn-primary:hover {
+            background: #ff5773;
+        }
+        
+        .btn-secondary {
+            background: #2a2a40;
+            color: #fff;
+        }
+        
+        /* Preview */
+        .preview-section {
+            position: sticky;
+            top: 24px;
+        }
+        
+        .receipt-preview {
+            background: #fff;
+            color: #000;
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .receipt-preview .logo {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .receipt-preview .shop-name {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        .receipt-preview .shop-info {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .receipt-preview .line {
+            border-top: 1px dashed #000;
+            margin: 8px 0;
+        }
+        
+        .receipt-preview table {
+            width: 100%;
+            font-size: 11px;
+        }
+        
+        .receipt-preview th {
+            text-align: left;
+            border-bottom: 1px solid #000;
+        }
+        
+        .receipt-preview td {
+            padding: 2px 0;
+        }
+        
+        .receipt-preview .total-row {
+            font-weight: bold;
+            border-top: 1px solid #000;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+        
+        .font-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .font-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #252538;
+            border-radius: 8px;
+        }
+        
+        .font-label {
+            flex: 1;
+            font-size: 14px;
+            color: #fff;
+        }
+        
+        .font-size-input {
+            width: 70px;
+            padding: 8px 12px;
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 14px;
+            text-align: center;
+        }
+        
+        .font-bold-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #a0a0b0;
+            cursor: pointer;
+        }
+        
+        .font-bold-label input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #e94560;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>🧾 Настройки чеков</h1>
+        <p>Настройте внешний вид печатных чеков</p>
+    </div>
+    
+    <div class="content-grid">
+        <div class="settings-section">
+            <div class="section-title">Шапка чека</div>
+            
+            <div class="form-group">
+                <label class="form-label">Логотип (Base64 или URL)</label>
+                <div class="logo-upload" onclick="document.getElementById('logoInput').click()">
+                    <img id="logoPreview" class="logo-preview" style="display:none;">
+                    <div id="logoPlaceholder">📷 Нажмите для загрузки логотипа</div>
+                </div>
+                <input type="file" id="logoInput" accept="image/*" style="display:none;" onchange="handleLogoUpload(event)">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Название заведения</label>
+                <input type="text" class="form-input" id="shopName" value="SOHO.by">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Адрес</label>
+                <input type="text" class="form-input" id="shopAddress" value="Лявданского 1, пав. 114">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Телефон</label>
+                <input type="text" class="form-input" id="shopPhone" value="+375(29) 116-77-55">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Дополнительная информация</label>
+                <input type="text" class="form-input" id="shopExtra" placeholder="Например: УНП, часы работы">
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <div class="settings-section">
+                <div class="section-title">Предпросмотр</div>
+                <div class="receipt-preview" id="receiptPreview">
+                    <div class="logo">SOHO.by</div>
+                    <div class="shop-name">SOHO.by</div>
+                    <div class="shop-info">Лявданского 1, пав. 114<br>+375(29) 116-77-55</div>
+                    <div class="line"></div>
+                    <div>26.03.2026 19:52</div>
+                    <div>## 2567</div>
+                    <div class="line"></div>
+                    <table>
+                        <tr><th>Наименование</th><th>Кол.</th><th>Сумма</th></tr>
+                        <tr><td>Филадельфия</td><td>1</td><td>150</td></tr>
+                        <tr><td>Калифорния</td><td>2</td><td>500</td></tr>
+                        <tr><td>Coca Cola</td><td>1</td><td>0</td></tr>
+                    </table>
+                    <div class="line"></div>
+                    <table>
+                        <tr class="total-row"><td>ИТОГО</td><td></td><td>650</td></tr>
+                        <tr><td>Скидка</td><td></td><td>10%</td></tr>
+                        <tr class="total-row"><td>К ОПЛАТЕ</td><td></td><td>585</td></tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="content-grid" style="margin-top: 24px;">
+        <div class="settings-section">
+            <div class="section-title">Подвал чека</div>
+            
+            <div class="form-group">
+                <label class="form-label">Текст подвала</label>
+                <textarea class="form-input form-textarea" id="footerText" placeholder="Спасибо за заказ! Ждем вас снова!"></textarea>
+            </div>
+            
+            <div class="section-title" style="margin-top: 24px;">Настройки шрифтов</div>
+            
+            <div class="font-settings">
+                <div class="font-row">
+                    <span class="font-label">Название заведения</span>
+                    <input type="number" class="font-size-input" id="fontSizeShopName" value="24" min="10" max="48">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldShopName" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Инфо (адрес, телефон)</span>
+                    <input type="number" class="font-size-input" id="fontSizeShopInfo" value="12" min="8" max="24">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldShopInfo"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Дата и время</span>
+                    <input type="number" class="font-size-input" id="fontSizeDateTime" value="14" min="8" max="24">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldDateTime"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Номер заказа</span>
+                    <input type="number" class="font-size-input" id="fontSizeOrderNum" value="18" min="10" max="36">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldOrderNum" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Товары (названия)</span>
+                    <input type="number" class="font-size-input" id="fontSizeItems" value="14" min="8" max="24">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldItems"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Итоговые суммы</span>
+                    <input type="number" class="font-size-input" id="fontSizeTotal" value="16" min="10" max="28">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldTotal" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Данные клиента</span>
+                    <input type="number" class="font-size-input" id="fontSizeClient" value="12" min="8" max="20">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldClient"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Подвал</span>
+                    <input type="number" class="font-size-input" id="fontSizeFooter" value="11" min="8" max="20">
+                    <label class="font-bold-label"><input type="checkbox" id="fontBoldFooter"> Жирный</label>
+                </div>
+            </div>
+            
+            <div class="section-title" style="margin-top: 24px;">Настройки шрифтов бегунка (кухня)</div>
+            
+            <div class="font-settings" id="runnerFontSettings">
+                <div class="font-row">
+                    <span class="font-label">Номер заказа</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeOrderNum" value="42" min="20" max="72">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldOrderNum" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Тип заказа</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeType" value="20" min="12" max="36">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldType" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Время</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeTime" value="16" min="10" max="28">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldTime"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Названия товаров</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeItems" value="18" min="12" max="32">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldItems" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Количество</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeQty" value="14" min="10" max="24">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldQty"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Комментарий</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizeComment" value="16" min="10" max="28">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldComment"> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Предзаказ (время)</span>
+                    <input type="number" class="font-size-input" id="runnerFontSizePreorder" value="16" min="10" max="28">
+                    <label class="font-bold-label"><input type="checkbox" id="runnerFontBoldPreorder" checked> Жирный</label>
+                </div>
+                <div class="font-row">
+                    <span class="font-label">Верхний отступ</span>
+                    <input type="number" class="font-size-input" id="runnerTopMargin" value="25" min="0" max="50" style="width: 80px;">
+                    <span style="margin-left: 8px; color: #666;">мм</span>
+                </div>
+            </div>
+            
+            <div class="section-title" style="margin-top: 24px;">Отображаемые поля</div>
+            
+            <div class="checkbox-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showClientName" checked>
+                    <span>Имя клиента</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showBonusInfo" checked>
+                    <span>Бонусные баллы</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showAddress" checked>
+                    <span>Адрес доставки (детально)</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showPhone" checked>
+                    <span>Телефон клиента</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showComment" checked>
+                    <span>Комментарий к заказу</span>
+                </label>
+                <label class="checkbox-label">
+                    <input type="checkbox" id="showPreorderTime" checked>
+                    <span>Время предзаказа</span>
+                </label>
+            </div>
+            
+            <div class="actions">
+                <button class="btn btn-primary" onclick="saveSettings()">💾 Сохранить</button>
+                <button class="btn btn-secondary" onclick="testPrint()">🖨️ Тестовая печать</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/iframe-helper.js"></script>
+    <script>
+        let logoBase64 = '';
+        
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                logoBase64 = e.target.result;
+                document.getElementById('logoPreview').src = logoBase64;
+                document.getElementById('logoPreview').style.display = 'block';
+                document.getElementById('logoPlaceholder').style.display = 'none';
+                updatePreview();
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updatePreview() {
+            const shopName = document.getElementById('shopName').value;
+            const address = document.getElementById('shopAddress').value;
+            const phone = document.getElementById('shopPhone').value;
+            
+            // Get font settings
+            const fontShopName = document.getElementById('fontSizeShopName').value + 'px';
+            const fontShopInfo = document.getElementById('fontSizeShopInfo').value + 'px';
+            const fontDateTime = document.getElementById('fontSizeDateTime').value + 'px';
+            const fontOrderNum = document.getElementById('fontSizeOrderNum').value + 'px';
+            const fontItems = document.getElementById('fontSizeItems').value + 'px';
+            const fontTotal = document.getElementById('fontSizeTotal').value + 'px';
+            
+            const boldShopName = document.getElementById('fontBoldShopName').checked ? 'bold' : 'normal';
+            const boldShopInfo = document.getElementById('fontBoldShopInfo').checked ? 'bold' : 'normal';
+            const boldDateTime = document.getElementById('fontBoldDateTime').checked ? 'bold' : 'normal';
+            const boldOrderNum = document.getElementById('fontBoldOrderNum').checked ? 'bold' : 'normal';
+            const boldItems = document.getElementById('fontBoldItems').checked ? 'bold' : 'normal';
+            const boldTotal = document.getElementById('fontBoldTotal').checked ? 'bold' : 'normal';
+            
+            let logoHtml = `<div style="font-size:${fontShopName};font-weight:${boldShopName};text-align:center;margin-bottom:8px;">${shopName}</div>`;
+            if (logoBase64) {
+                logoHtml = `<div style="text-align:center;margin-bottom:8px;"><img src="${logoBase64}" style="max-width:150px;max-height:60px;"></div><div style="font-size:${fontShopName};font-weight:${boldShopName};text-align:center;">${shopName}</div>`;
+            }
+            
+            document.getElementById('receiptPreview').innerHTML = `
+                ${logoHtml}
+                <div style="font-size:${fontShopInfo};font-weight:${boldShopInfo};text-align:center;">${address}<br>${phone}</div>
+                <div class="line"></div>
+                <div style="font-size:${fontDateTime};font-weight:${boldDateTime};">26.03.2026 19:52</div>
+                <div style="font-size:${fontOrderNum};font-weight:${boldOrderNum};">## 2567</div>
+                <div class="line"></div>
+                <table style="font-size:${fontItems};font-weight:${boldItems};">
+                    <tr style="border-bottom:1px solid #000;"><th>Наименование</th><th>Кол.</th><th>Сумма</th></tr>
+                    <tr><td>Филадельфия</td><td>1</td><td>150</td></tr>
+                    <tr><td>Калифорния</td><td>2</td><td>500</td></tr>
+                    <tr><td>Coca Cola</td><td>1</td><td>0</td></tr>
+                </table>
+                <div class="line"></div>
+                <table style="font-size:${fontTotal};font-weight:${boldTotal};">
+                    <tr style="border-top:1px solid #000;"><td>ИТОГО</td><td></td><td>650</td></tr>
+                    <tr><td>Скидка</td><td></td><td>10%</td></tr>
+                    <tr style="border-top:1px solid #000;"><td>К ОПЛАТЕ</td><td></td><td>585</td></tr>
+                </table>
+            `;
+        }
+        
+        async function saveSettings() {
+            const settings = {
+                logo: logoBase64,
+                shopName: document.getElementById('shopName').value,
+                shopAddress: document.getElementById('shopAddress').value,
+                shopPhone: document.getElementById('shopPhone').value,
+                shopExtra: document.getElementById('shopExtra').value,
+                footerText: document.getElementById('footerText').value,
+                // Font settings
+                fonts: {
+                    shopName: { size: parseInt(document.getElementById('fontSizeShopName').value) || 24, bold: document.getElementById('fontBoldShopName').checked },
+                    shopInfo: { size: parseInt(document.getElementById('fontSizeShopInfo').value) || 12, bold: document.getElementById('fontBoldShopInfo').checked },
+                    dateTime: { size: parseInt(document.getElementById('fontSizeDateTime').value) || 14, bold: document.getElementById('fontBoldDateTime').checked },
+                    orderNum: { size: parseInt(document.getElementById('fontSizeOrderNum').value) || 18, bold: document.getElementById('fontBoldOrderNum').checked },
+                    items: { size: parseInt(document.getElementById('fontSizeItems').value) || 14, bold: document.getElementById('fontBoldItems').checked },
+                    total: { size: parseInt(document.getElementById('fontSizeTotal').value) || 16, bold: document.getElementById('fontBoldTotal').checked },
+                    client: { size: parseInt(document.getElementById('fontSizeClient').value) || 12, bold: document.getElementById('fontBoldClient').checked },
+                    footer: { size: parseInt(document.getElementById('fontSizeFooter').value) || 11, bold: document.getElementById('fontBoldFooter').checked }
+                },
+                showClientName: document.getElementById('showClientName').checked,
+                showBonusInfo: document.getElementById('showBonusInfo').checked,
+                showAddress: document.getElementById('showAddress').checked,
+                showPhone: document.getElementById('showPhone').checked,
+                showComment: document.getElementById('showComment').checked,
+                showPreorderTime: document.getElementById('showPreorderTime').checked
+            };
+            
+            // Save to server
+            try {
+                const response = await fetch('/api/settings/receipt', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                
+                if (response.ok) {
+                    // Also save to localStorage as backup
+                    localStorage.setItem('sohoReceiptSettings', JSON.stringify(settings));
+                    
+                    // Save runner font settings
+                    await saveRunnerSettings();
+                    
+                    alert('Настройки сохранены на сервере!');
+                } else {
+                    const error = await response.json();
+                    alert('Ошибка сохранения: ' + (error.detail || 'Не удалось сохранить'));
+                }
+            } catch (err) {
+                console.error('Save error:', err);
+                // Fallback to localStorage
+                localStorage.setItem('sohoReceiptSettings', JSON.stringify(settings));
+                alert('Настройки сохранены локально (сервер недоступен)');
+            }
+        }
+        
+        async function saveRunnerSettings() {
+            const runnerSettings = {
+                orderNum: {
+                    size: document.getElementById('runnerFontSizeOrderNum').value + 'px',
+                    bold: document.getElementById('runnerFontBoldOrderNum').checked ? '900' : 'normal'
+                },
+                type: {
+                    size: document.getElementById('runnerFontSizeType').value + 'px',
+                    bold: document.getElementById('runnerFontBoldType').checked ? 'bold' : 'normal'
+                },
+                time: {
+                    size: document.getElementById('runnerFontSizeTime').value + 'px',
+                    bold: document.getElementById('runnerFontBoldTime').checked ? 'bold' : 'normal'
+                },
+                items: {
+                    size: document.getElementById('runnerFontSizeItems').value + 'px',
+                    bold: document.getElementById('runnerFontBoldItems').checked ? 'bold' : 'normal'
+                },
+                qty: {
+                    size: document.getElementById('runnerFontSizeQty').value + 'px',
+                    bold: document.getElementById('runnerFontBoldQty').checked ? 'bold' : 'normal'
+                },
+                comment: {
+                    size: document.getElementById('runnerFontSizeComment').value + 'px',
+                    bold: document.getElementById('runnerFontBoldComment').checked ? 'bold' : 'normal'
+                },
+                preorder: {
+                    size: document.getElementById('runnerFontSizePreorder').value + 'px',
+                    bold: document.getElementById('runnerFontBoldPreorder').checked ? 'bold' : 'normal'
+                },
+                topMargin: document.getElementById('runnerTopMargin').value + 'mm'
+            };
+            
+            try {
+                const response = await fetch('/api/settings/runner-fonts', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(runnerSettings)
+                });
+                
+                if (!response.ok) {
+                    console.error('Failed to save runner settings');
+                }
+            } catch (err) {
+                console.error('Error saving runner settings:', err);
+            }
+        }
+        
+        function testPrint() {
+            // Create test order with current settings
+            const testOrder = {
+                orderNumber: 'TEST-001',
+                date: new Date().toLocaleDateString('ru-RU'),
+                time: new Date().toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}),
+                customer: 'Тестовый Клиент',
+                phone: '+375 (29) 123-45-67',
+                address: 'ул. Примерная, д. 10, пд. 2, эт. 5, кв. 15',
+                items: [
+                    { name: 'Филадельфия ролл', quantity: 2, price: 25.50, total: 51.00 },
+                    { name: 'Калифорния ролл', quantity: 1, price: 22.00, total: 22.00 },
+                    { name: 'Coca-Cola 0.5л', quantity: 2, price: 5.00, total: 10.00 }
+                ],
+                total: 83.00,
+                discount_percent: 10,
+                comment: 'Тестовый комментарий к заказу',
+                bonus_earned: 4
+            };
+            
+            // Use PrintSystem if available
+            if (typeof PrintSystem !== 'undefined') {
+                PrintSystem.printReceipt(testOrder);
+            } else {
+                // Fallback: open print window directly
+                alert('PrintSystem не загружен. Открываю тестовую печать...');
+            }
+        }
+        
+        // Load saved settings from server
+        async function loadSettings() {
+            try {
+                // Load receipt settings
+                const response = await fetch('/api/settings/receipt');
+                if (response.ok) {
+                    const settings = await response.json();
+                    applySettings(settings);
+                    // Backup to localStorage
+                    localStorage.setItem('sohoReceiptSettings', JSON.stringify(settings));
+                } else {
+                    throw new Error('Server error');
+                }
+                
+                // Load runner font settings
+                const runnerResponse = await fetch('/api/settings/runner-fonts');
+                if (runnerResponse.ok) {
+                    const runnerSettings = await runnerResponse.json();
+                    applyRunnerSettings(runnerSettings);
+                }
+            } catch (err) {
+                console.log('Loading from localStorage:', err);
+                // Fallback to localStorage
+                const saved = localStorage.getItem('sohoReceiptSettings');
+                if (saved) {
+                    applySettings(JSON.parse(saved));
+                }
+            }
+            updatePreview();
+        }
+        
+        function applySettings(settings) {
+            document.getElementById('shopName').value = settings.shopName || 'SOHO.by';
+            document.getElementById('shopAddress').value = settings.shopAddress || '';
+            document.getElementById('shopPhone').value = settings.shopPhone || '';
+            document.getElementById('shopExtra').value = settings.shopExtra || '';
+            document.getElementById('footerText').value = settings.footerText || '';
+            
+            // Load font settings
+            if (settings.fonts) {
+                const f = settings.fonts;
+                if (f.shopName) { document.getElementById('fontSizeShopName').value = f.shopName.size; document.getElementById('fontBoldShopName').checked = !!f.shopName.bold; }
+                if (f.shopInfo) { document.getElementById('fontSizeShopInfo').value = f.shopInfo.size; document.getElementById('fontBoldShopInfo').checked = !!f.shopInfo.bold; }
+                if (f.dateTime) { document.getElementById('fontSizeDateTime').value = f.dateTime.size; document.getElementById('fontBoldDateTime').checked = !!f.dateTime.bold; }
+                if (f.orderNum) { document.getElementById('fontSizeOrderNum').value = f.orderNum.size; document.getElementById('fontBoldOrderNum').checked = !!f.orderNum.bold; }
+                if (f.items) { document.getElementById('fontSizeItems').value = f.items.size; document.getElementById('fontBoldItems').checked = !!f.items.bold; }
+                if (f.total) { document.getElementById('fontSizeTotal').value = f.total.size; document.getElementById('fontBoldTotal').checked = !!f.total.bold; }
+                if (f.client) { document.getElementById('fontSizeClient').value = f.client.size; document.getElementById('fontBoldClient').checked = !!f.client.bold; }
+                if (f.footer) { document.getElementById('fontSizeFooter').value = f.footer.size; document.getElementById('fontBoldFooter').checked = !!f.footer.bold; }
+            }
+            
+            if (settings.logo) {
+                logoBase64 = settings.logo;
+                document.getElementById('logoPreview').src = logoBase64;
+                document.getElementById('logoPreview').style.display = 'block';
+                document.getElementById('logoPlaceholder').style.display = 'none';
+            }
+        }
+        
+        function applyRunnerSettings(settings) {
+            // Apply runner font settings
+            if (settings.orderNum) {
+                document.getElementById('runnerFontSizeOrderNum').value = parseInt(settings.orderNum.size) || 42;
+                document.getElementById('runnerFontBoldOrderNum').checked = settings.orderNum.bold === 'bold' || settings.orderNum.bold === '900';
+            }
+            if (settings.type) {
+                document.getElementById('runnerFontSizeType').value = parseInt(settings.type.size) || 20;
+                document.getElementById('runnerFontBoldType').checked = settings.type.bold === 'bold' || settings.type.bold === '900';
+            }
+            if (settings.time) {
+                document.getElementById('runnerFontSizeTime').value = parseInt(settings.time.size) || 16;
+                document.getElementById('runnerFontBoldTime').checked = settings.time.bold === 'bold' || settings.time.bold === '900';
+            }
+            if (settings.items) {
+                document.getElementById('runnerFontSizeItems').value = parseInt(settings.items.size) || 18;
+                document.getElementById('runnerFontBoldItems').checked = settings.items.bold === 'bold' || settings.items.bold === '900';
+            }
+            if (settings.qty) {
+                document.getElementById('runnerFontSizeQty').value = parseInt(settings.qty.size) || 14;
+                document.getElementById('runnerFontBoldQty').checked = settings.qty.bold === 'bold' || settings.qty.bold === '900';
+            }
+            if (settings.comment) {
+                document.getElementById('runnerFontSizeComment').value = parseInt(settings.comment.size) || 16;
+                document.getElementById('runnerFontBoldComment').checked = settings.comment.bold === 'bold' || settings.comment.bold === '900';
+            }
+            if (settings.preorder) {
+                document.getElementById('runnerFontSizePreorder').value = parseInt(settings.preorder.size) || 16;
+                document.getElementById('runnerFontBoldPreorder').checked = settings.preorder.bold === 'bold' || settings.preorder.bold === '900';
+            } else {
+                // Default for preorder
+                document.getElementById('runnerFontSizePreorder').value = 16;
+                document.getElementById('runnerFontBoldPreorder').checked = true;
+            }
+            if (settings.topMargin) {
+                document.getElementById('runnerTopMargin').value = parseInt(settings.topMargin) || 25;
+            }
+        }
+        
+        // Update preview on input change
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', updatePreview);
+        });
+        
+        // Update preview on font settings change
+        document.querySelectorAll('.font-size-input, .font-bold-label input').forEach(input => {
+            input.addEventListener('change', updatePreview);
+            input.addEventListener('input', updatePreview);
+        });
+        
+        loadSettings();
+    </script>
+</body>
+</html>

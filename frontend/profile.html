@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Личный кабинет - SOHO Cafe</title>
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/customer-auth.js"></script>
+    <style>
+        .profile-page {
+            padding: 80px 16px 100px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--text-primary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        
+        .profile-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #ff6b6b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 16px;
+        }
+        
+        .profile-name {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .profile-phone {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        
+        .points-card {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: white;
+        }
+        
+        .points-label {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+        }
+        
+        .points-value {
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .points-hint {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+        
+        .menu-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-item:active {
+            background: rgba(255,255,255,0.05);
+        }
+        
+        .menu-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: rgba(233, 69, 96, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        
+        .menu-text {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .menu-arrow {
+            color: var(--text-secondary);
+            font-size: 20px;
+        }
+        
+        .orders-list {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        
+        .order-item-card {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        
+        .order-item-card:last-child {
+            border-bottom: none;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .order-number {
+            font-weight: 600;
+        }
+        
+        .order-status {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .order-status.delivered {
+            background: rgba(76, 175, 80, 0.2);
+            color: #4caf50;
+        }
+        
+        .order-status.pending {
+            background: rgba(255, 152, 0, 0.2);
+            color: #ff9800;
+        }
+        
+        .order-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .order-total {
+            font-weight: 600;
+            color: var(--accent-color);
+        }
+        
+        .login-prompt {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .login-prompt .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        
+        .login-btn {
+            padding: 14px 32px;
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-page">
+        <div class="profile-header">
+            <button class="back-btn" onclick="history.back()">←</button>
+            <h1 class="profile-title">Личный кабинет</h1>
+        </div>
+        
+        <!-- Profile Card -->
+        <div class="profile-card">
+            <div class="profile-avatar">👤</div>
+            <div class="profile-name" id="profileName">Гость</div>
+            <div class="profile-phone" id="profilePhone">Войдите, чтобы видеть историю заказов</div>
+            <div id="authButtons" style="margin-top: 16px; display: flex; gap: 12px; justify-content: center;">
+                <a href="/login.html" style="padding: 10px 24px; background: var(--accent-color); color: white; border-radius: 8px; text-decoration: none; font-weight: 500;">Войти</a>
+                <a href="/login.html#register" style="padding: 10px 24px; background: transparent; border: 1px solid var(--accent-color); color: var(--accent-color); border-radius: 8px; text-decoration: none; font-weight: 500;">Регистрация</a>
+            </div>
+        </div>
+        
+        <!-- Points -->
+        <div class="points-card">
+            <div class="points-label">Бонусные баллы</div>
+            <div class="points-value" id="pointsValue">0</div>
+            <div class="points-hint">1 балл = 1 BYN на следующий заказ</div>
+        </div>
+        
+        <!-- Menu -->
+        <div class="menu-section">
+            <a href="/orders.html" class="menu-item">
+                <div class="menu-icon">📦</div>
+                <div class="menu-text">Мои заказы</div>
+                <div class="menu-arrow">›</div>
+            </a>
+            <a href="/addresses.html" class="menu-item">
+                <div class="menu-icon">📍</div>
+                <div class="menu-text">Адреса доставки</div>
+                <div class="menu-arrow">›</div>
+            </a>
+            <a href="/favorites.html" class="menu-item">
+                <div class="menu-icon">❤️</div>
+                <div class="menu-text">Избранное</div>
+                <div class="menu-arrow">›</div>
+            </a>
+        </div>
+        
+        <!-- Settings -->
+        <div class="menu-section">
+            <a href="/settings.html" class="menu-item">
+                <div class="menu-icon">⚙️</div>
+                <div class="menu-text">Настройки</div>
+                <div class="menu-arrow">›</div>
+            </a>
+            <a href="/support.html" class="menu-item">
+                <div class="menu-icon">💬</div>
+                <div class="menu-text">Поддержка</div>
+                <div class="menu-arrow">›</div>
+            </a>
+        </div>
+        
+        <!-- Recent Orders Preview -->
+        <h2 style="font-size: 18px; margin: 24px 0 12px;">Последние заказы</h2>
+        <div class="orders-list" id="recentOrders">
+            <div class="order-item-card" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                Войдите, чтобы видеть историю заказов
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load user data from localStorage (for demo)
+        const user = JSON.parse(localStorage.getItem('soho_user') || '{}');
+        
+        if (user.name) {
+            document.getElementById('profileName').textContent = user.name;
+            document.getElementById('profilePhone').textContent = user.phone || '';
+        }
+        
+        // Load points
+        const points = localStorage.getItem('soho_points') || '0';
+        document.getElementById('pointsValue').textContent = points;
+        
+        // Load recent orders from localStorage (demo)
+        function loadRecentOrders() {
+            const orders = JSON.parse(localStorage.getItem('soho_orders') || '[]');
+            const container = document.getElementById('recentOrders');
+            
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="order-item-card" style="text-align: center; color: var(--text-secondary); padding: 32px;">
+                        У вас пока нет заказов
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = orders.slice(0, 3).map(order => `
+                <div class="order-item-card">
+                    <div class="order-header">
+                        <span class="order-number">Заказ №${order.id}</span>
+                        <span class="order-status ${order.status}">${getStatusText(order.status)}</span>
+                    </div>
+                    <div class="order-info">${order.date} · ${order.items} товаров</div>
+                    <div class="order-total">${order.total} BYN</div>
+                </div>
+            `).join('');
+        }
+        
+        function getStatusText(status) {
+            const statuses = {
+                'pending': 'В обработке',
+                'confirmed': 'Подтверждён',
+                'delivered': 'Доставлен',
+                'cancelled': 'Отменён'
+            };
+            return statuses[status] || status;
+        }
+        
+        loadRecentOrders();
+    </script>
+</body>
+</html>

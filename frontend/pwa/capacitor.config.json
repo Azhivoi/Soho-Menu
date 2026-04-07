@@ -1,0 +1,8 @@
+{
+  "appId": "by.soho.menu",
+  "appName": "Soho Menu",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

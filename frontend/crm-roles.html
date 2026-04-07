@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Должности - SOHO Admin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #fff;
+            min-height: 100vh;
+            padding: 24px;
+        }
+        
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .page-header p {
+            color: #888;
+            margin-top: 4px;
+        }
+        
+        .content-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+        }
+        
+        /* Roles Sidebar */
+        .roles-sidebar {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .sidebar-header {
+            padding: 16px 20px;
+            background: #252538;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sidebar-header h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #a0a0b0;
+        }
+        
+        .btn-add {
+            width: 28px;
+            height: 28px;
+            background: #e94560;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-add:hover {
+            background: #ff5773;
+        }
+        
+        .roles-list {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+        
+        .role-item {
+            padding: 14px 20px;
+            border-bottom: 1px solid #2a2a40;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .role-item:hover {
+            background: rgba(233, 69, 96, 0.05);
+        }
+        .role-item.active {
+            background: rgba(233, 69, 96, 0.1);
+            border-left: 3px solid #e94560;
+        }
+        
+        .role-icon {
+            width: 40px;
+            height: 40px;
+            background: #252538;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+        .role-item.active .role-icon {
+            background: #e94560;
+        }
+        
+        .role-info {
+            flex: 1;
+        }
+        .role-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .role-count {
+            font-size: 12px;
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        .role-menu {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .role-item:hover .role-menu {
+            opacity: 1;
+        }
+        .role-menu-btn {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 4px 8px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .card-header {
+            padding: 16px 20px;
+            background: #252538;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .card-body {
+            padding: 20px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 12px;
+            color: #a0a0b0;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px 16px;
+            background: #16162a;
+            border: 1px solid #2a2a40;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #e94560;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        
+        /* Icon & Color Pickers */
+        .icon-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .icon-option {
+            width: 40px;
+            height: 40px;
+            background: #16162a;
+            border: 2px solid #2a2a40;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .icon-option:hover, .icon-option.selected {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        
+        .color-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .color-option {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .color-option:hover, .color-option.selected {
+            border-color: #fff;
+            transform: scale(1.1);
+        }
+        
+        /* Permissions Grid */
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+        }
+        
+        .permission-category {
+            background: #16162a;
+            border-radius: 10px;
+            padding: 16px;
+        }
+        .permission-category h3 {
+            font-size: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .permission-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #2a2a40;
+        }
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+        
+        .permission-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #e94560;
+            cursor: pointer;
+        }
+        .permission-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        /* Employees List */
+        .employees-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .employee-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            background: #16162a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .employee-item:hover {
+            background: #252538;
+        }
+        
+        .employee-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .employee-info {
+            flex: 1;
+        }
+        .employee-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .employee-phone {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .btn-icon {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .btn-icon:hover {
+            background: #2a2a40;
+            color: #fff;
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #e94560;
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #ff5773;
+        }
+        .btn-secondary {
+            background: #252538;
+            color: #fff;
+            border: 1px solid #2a2a40;
+        }
+        .btn-secondary:hover {
+            background: #2a2a40;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: #1a1a2e;
+            border: 1px solid #2a2a40;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #2a2a40;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h3 {
+            font-size: 18px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            max-height: 60vh;
+        }
+        
+        .modal-footer {
+            padding: 16px 20px;
+            border-top: 1px solid #2a2a40;
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h1>👔 Должности и права доступа</h1>
+        <p>Управление ролями сотрудников и настройка прав доступа</p>
+    </div>
+    
+    <div class="content-grid">
+        <!-- Roles List -->
+        <div class="roles-sidebar">
+            <div class="sidebar-header">
+                <h2>Должности</h2>
+                <button class="btn-add" onclick="showAddRoleModal()">+</button>
+            </div>
+            <div class="roles-list" id="rolesList">
+                <div style="padding: 20px; text-align: center; color: #888;">Загрузка...</div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content" id="roleDetails">
+            <div class="empty-state">
+                <div class="empty-state-icon">👈</div>
+                <h3>Выберите должность</h3>
+                <p>Или создайте новую должность для настройки прав доступа</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Role Modal -->
+    <div class="modal-overlay" id="roleModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">Новая должность</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">Название должности</label>
+                    <input type="text" id="roleName" class="form-input" placeholder="Например: Старший кассир">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Описание</label>
+                    <input type="text" id="roleDescription" class="form-input" placeholder="Краткое описание роли">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Иконка</label>
+                        <div class="icon-picker" id="iconPicker">
+                            <div class="icon-option selected" data-icon="👤">👤</div>
+                            <div class="icon-option" data-icon="👨‍💼">👨‍💼</div>
+                            <div class="icon-option" data-icon="👩‍💻">👩‍💻</div>
+                            <div class="icon-option" data-icon="👨‍🍳">👨‍🍳</div>
+                            <div class="icon-option" data-icon="📦">📦</div>
+                            <div class="icon-option" data-icon="💰">💰</div>
+                            <div class="icon-option" data-icon="🔧">🔧</div>
+                            <div class="icon-option" data-icon="📊">📊</div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Цвет</label>
+                        <div class="color-picker" id="colorPicker">
+                            <div class="color-option selected" style="background: #e94560;" data-color="#e94560"></div>
+                            <div class="color-option" style="background: #2196f3;" data-color="#2196f3"></div>
+                            <div class="color-option" style="background: #4caf50;" data-color="#4caf50"></div>
+                            <div class="color-option" style="background: #ff9800;" data-color="#ff9800"></div>
+                            <div class="color-option" style="background: #9c27b0;" data-color="#9c27b0"></div>
+                            <div class="color-option" style="background: #00bcd4;" data-color="#00bcd4"></div>
+                            <div class="color-option" style="background: #ff5722;" data-color="#ff5722"></div>
+                            <div class="color-option" style="background: #607d8b;" data-color="#607d8b"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveRole()">Сохранить</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let roles = [];
+        let employees = [];
+        let currentRoleId = null;
+        let editingRoleId = null;
+        
+        const defaultPermissions = {
+            orders: { view: true, create: false, edit: false, delete: false, cancel: false },
+            kitchen: { view: false, print: false, manage: false },
+            menu: { view: true, edit: false, prices: false },
+            reports: { view: false, export: false },
+            settings: { view: false, edit: false },
+            employees: { view: false, edit: false },
+            finance: { view: false, refund: false, closeShift: false }
+        };
+        
+        const permissionLabels = {
+            orders: { view: 'Просмотр заказов', create: 'Создание заказов', edit: 'Редактирование', delete: 'Удаление', cancel: 'Отмена заказов' },
+            kitchen: { view: 'Просмотр кухни', print: 'Печать бегунков', manage: 'Управление кухней' },
+            menu: { view: 'Просмотр меню', edit: 'Редактирование', prices: 'Изменение цен' },
+            reports: { view: 'Просмотр отчетов', export: 'Экспорт' },
+            settings: { view: 'Просмотр настроек', edit: 'Редактирование' },
+            employees: { view: 'Просмотр сотрудников', edit: 'Управление сотрудниками' },
+            finance: { view: 'Просмотр финансов', refund: 'Возвраты', closeShift: 'Закрытие смены' }
+        };
+        
+        // Init
+        async function init() {
+            await loadRoles();
+            await loadEmployees();
+            
+            // Setup icon picker
+            document.querySelectorAll('#iconPicker .icon-option').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('#iconPicker .icon-option').forEach(e => e.classList.remove('selected'));
+                    el.classList.add('selected');
+                });
+            });
+            
+            // Setup color picker
+            document.querySelectorAll('#colorPicker .color-option').forEach(el => {
+                el.addEventListener('click', () => {
+                    document.querySelectorAll('#colorPicker .color-option').forEach(e => e.classList.remove('selected'));
+                    el.classList.add('selected');
+                });
+            });
+        }
+        
+        async function loadRoles() {
+            try {
+                const response = await fetch('/api/employees/roles');
+                if (response.ok) {
+                    roles = await response.json();
+                    renderRolesList();
+                    if (roles.length > 0 && !currentRoleId) {
+                        selectRole(roles[0].id);
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading roles:', err);
+            }
+        }
+        
+        async function loadEmployees() {
+            try {
+                const response = await fetch('/api/employees/employees');
+                if (response.ok) {
+                    employees = await response.json();
+                    if (currentRoleId) {
+                        renderRoleDetails(currentRoleId);
+                    }
+                }
+            } catch (err) {
+                console.error('Error loading employees:', err);
+            }
+        }
+        
+        function renderRolesList() {
+            const list = document.getElementById('rolesList');
+            if (roles.length === 0) {
+                list.innerHTML = '<div style="padding: 20px; text-align: center; color: #888;">Нет должностей</div>';
+                return;
+            }
+            
+            list.innerHTML = roles.map(role => `
+                <div class="role-item ${role.id === currentRoleId ? 'active' : ''}" onclick="selectRole(${role.id})">
+                    <div class="role-icon" style="background: ${role.id === currentRoleId ? role.color : ''}">
+                        ${role.icon || '👤'}
+                    </div>
+                    <div class="role-info">
+                        <div class="role-name">${role.name}</div>
+                        <div class="role-count">${role.employee_count || 0} сотрудников</div>
+                    </div>
+                    <div class="role-menu">
+                        <button class="role-menu-btn" onclick="event.stopPropagation(); editRole(${role.id})">⋮</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function selectRole(roleId) {
+            currentRoleId = roleId;
+            renderRolesList();
+            renderRoleDetails(roleId);
+        }
+        
+        function renderRoleDetails(roleId) {
+            const role = roles.find(r => r.id === roleId);
+            if (!role) return;
+            
+            const roleEmployees = employees.filter(e => e.role_id === roleId);
+            const perms = role.permissions || defaultPermissions;
+            
+            const details = document.getElementById('roleDetails');
+            details.innerHTML = `
+                <div class="card">
+                    <div class="card-header">
+                        <h2>${role.icon} ${role.name}</h2>
+                        <button class="btn btn-primary" onclick="editRole(${role.id})">✏️ Редактировать</button>
+                    </div>
+                    <div class="card-body">
+                        <p style="color: #888; margin-bottom: 20px;">${role.description || 'Нет описания'}</p>
+                        
+                        <h3 style="margin-bottom: 16px;">🔐 Права доступа</h3>
+                        <div class="permissions-grid">
+                            ${Object.keys(permissionLabels).map(cat => `
+                                <div class="permission-category">
+                                    <h3>${getCategoryIcon(cat)} ${getCategoryName(cat)}</h3>
+                                    ${Object.keys(permissionLabels[cat]).map(key => `
+                                        <div class="permission-item">
+                                            <input type="checkbox" id="perm_${cat}_${key}" 
+                                                ${perms[cat] && perms[cat][key] ? 'checked' : ''}
+                                                onchange="togglePermission('${cat}', '${key}')">
+                                            <label for="perm_${cat}_${key}">${permissionLabels[cat][key]}</label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="savePermissions()">💾 Сохранить права</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h2>👤 Сотрудники с должностью "${role.name}"</h2>
+                        <button class="btn btn-primary" onclick="addEmployeeToRole(${role.id})">+ Добавить сотрудника</button>
+                    </div>
+                    <div class="card-body">
+                        ${roleEmployees.length === 0 ? 
+                            '<p style="color: #888; text-align: center;">Нет сотрудников с этой должностью</p>' :
+                            `<div class="employees-list">
+                                ${roleEmployees.map(emp => `
+                                    <div class="employee-item" onclick="openEmployeeCard(${emp.id})">
+                                        <div class="employee-avatar">${emp.first_name[0]}${emp.last_name ? emp.last_name[0] : ''}</div>
+                                        <div class="employee-info">
+                                            <div class="employee-name">${emp.name}</div>
+                                            <div class="employee-phone">${emp.phone || 'Нет телефона'}</div>
+                                        </div>
+                                        <button class="btn-icon" onclick="event.stopPropagation(); removeEmployeeFromRole(${emp.id})" title="Убрать из должности">✕</button>
+                                    </div>
+                                `).join('')}
+                            </div>`
+                        }
+                    </div>
+                </div>
+            `;
+        }
+        
+        function getCategoryIcon(cat) {
+            const icons = {
+                orders: '🛒', kitchen: '👨‍🍳', menu: '📋', 
+                reports: '📊', settings: '⚙️', employees: '👥', finance: '💰'
+            };
+            return icons[cat] || '📄';
+        }
+        
+        function getCategoryName(cat) {
+            const names = {
+                orders: 'Заказы', kitchen: 'Кухня', menu: 'Меню',
+                reports: 'Отчеты', settings: 'Настройки', employees: 'Сотрудники', finance: 'Финансы'
+            };
+            return names[cat] || cat;
+        }
+        
+        function togglePermission(category, permission) {
+            const role = roles.find(r => r.id === currentRoleId);
+            if (role) {
+                if (!role.permissions) role.permissions = JSON.parse(JSON.stringify(defaultPermissions));
+                if (!role.permissions[category]) role.permissions[category] = {};
+                role.permissions[category][permission] = !role.permissions[category][permission];
+            }
+        }
+        
+        async function savePermissions() {
+            const role = roles.find(r => r.id === currentRoleId);
+            if (!role) return;
+            
+            try {
+                const response = await fetch(`/api/employees/roles/${currentRoleId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        name: role.name,
+                        description: role.description,
+                        icon: role.icon,
+                        color: role.color,
+                        permissions: role.permissions
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('✅ Права доступа сохранены');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        function showAddRoleModal() {
+            editingRoleId = null;
+            document.getElementById('modalTitle').textContent = 'Новая должность';
+            document.getElementById('roleName').value = '';
+            document.getElementById('roleDescription').value = '';
+            document.querySelector('#iconPicker .icon-option').click();
+            document.querySelector('#colorPicker .color-option').click();
+            document.getElementById('roleModal').classList.add('active');
+        }
+        
+        function editRole(roleId) {
+            editingRoleId = roleId;
+            const role = roles.find(r => r.id === roleId);
+            if (!role) return;
+            
+            document.getElementById('modalTitle').textContent = 'Редактировать должность';
+            document.getElementById('roleName').value = role.name;
+            document.getElementById('roleDescription').value = role.description || '';
+            
+            // Select icon
+            document.querySelectorAll('#iconPicker .icon-option').forEach(el => {
+                el.classList.toggle('selected', el.dataset.icon === role.icon);
+            });
+            
+            // Select color
+            document.querySelectorAll('#colorPicker .color-option').forEach(el => {
+                el.classList.toggle('selected', el.dataset.color === role.color);
+            });
+            
+            document.getElementById('roleModal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('roleModal').classList.remove('active');
+        }
+        
+        async function saveRole() {
+            const name = document.getElementById('roleName').value;
+            if (!name) {
+                alert('Введите название должности');
+                return;
+            }
+            
+            const icon = document.querySelector('#iconPicker .icon-option.selected')?.dataset.icon || '👤';
+            const color = document.querySelector('#colorPicker .color-option.selected')?.dataset.color || '#e94560';
+            
+            const data = {
+                name,
+                description: document.getElementById('roleDescription').value,
+                icon,
+                color,
+                permissions: editingRoleId ? 
+                    roles.find(r => r.id === editingRoleId)?.permissions : 
+                    JSON.parse(JSON.stringify(defaultPermissions))
+            };
+            
+            try {
+                const url = editingRoleId ? `/api/employees/roles/${editingRoleId}` : '/api/employees/roles';
+                const method = editingRoleId ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method,
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    closeModal();
+                    await loadRoles();
+                    alert(editingRoleId ? '✅ Должность обновлена' : '✅ Должность создана');
+                } else {
+                    alert('❌ Ошибка сохранения');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        function addEmployeeToRole(roleId) {
+            // Open employee creation with pre-selected role
+            window.parent.postMessage({action: 'openEmployeeCard', roleId: roleId}, '*');
+        }
+        
+        function openEmployeeCard(employeeId) {
+            // Open employee card in parent frame
+            window.parent.postMessage({action: 'openEmployeeCard', employeeId: employeeId}, '*');
+        }
+        
+        async function removeEmployeeFromRole(employeeId) {
+            if (!confirm('Убрать сотрудника из этой должности?')) return;
+            
+            try {
+                const response = await fetch(`/api/employees/${employeeId}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({role_id: null})
+                });
+                
+                if (response.ok) {
+                    await loadEmployees();
+                    renderRoleDetails(currentRoleId);
+                } else {
+                    alert('❌ Ошибка');
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                alert('❌ Ошибка соединения');
+            }
+        }
+        
+        // Init
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <script src="/js/auth.js"></script>
+    <script>document.addEventListener("DOMContentLoaded", function() { const user = getCurrentUser(); if (!user) { window.location.href = "/login.html?redirect=" + encodeURIComponent(window.location.pathname); return; } });</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Шаблон чека | SOHO Admin</title>
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-card: #252538;
+            --bg-hover: #2d2d45;
+            --accent-red: #e94560;
+            --accent-green: #00d9a5;
+            --accent-blue: #4a9eff;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b8;
+            --border-color: #33334d;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        h1 { font-size: 24px; }
+        h1 span { color: var(--accent-red); }
+        .dept-name { color: var(--accent-blue); }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+        
+        @media (max-width: 1100px) {
+            .main-grid { grid-template-columns: 1fr; }
+        }
+        
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        
+        .card h3 {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group input[type="url"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .toolbar-btn {
+            padding: 8px 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 13px;
+        }
+        
+        .toolbar-btn:hover {
+            background: var(--bg-hover);
+            border-color: var(--accent-red);
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--accent-red);
+        }
+        
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--accent-red);
+            background: var(--bg-secondary);
+        }
+        
+        .file-upload input { display: none; }
+        
+        .logo-preview {
+            max-width: 200px;
+            max-height: 100px;
+            margin-top: 15px;
+            border-radius: 8px;
+            background: white;
+            padding: 10px;
+        }
+        
+        .receipt-paper {
+            background: white;
+            color: #000;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            font-family: 'Courier New', monospace;
+            line-height: 1.4;
+        }
+        
+        .receipt-paper.narrow { max-width: 280px; margin: 0 auto; }
+        .receipt-paper.medium { max-width: 320px; margin: 0 auto; }
+        .receipt-paper.wide { max-width: 360px; margin: 0 auto; }
+        
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-logo {
+            max-width: 120px;
+            max-height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .receipt-title {
+            font-weight: bold;
+            font-size: 1.3em;
+            margin-bottom: 5px;
+        }
+        
+        .receipt-subtitle {
+            font-size: 0.85em;
+            color: #666;
+        }
+        
+        .receipt-items {
+            margin: 15px 0;
+        }
+        
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            font-size: 1em;
+        }
+        
+        .receipt-footer {
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        .cut-line {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+            color: #999;
+            font-size: 0.8em;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: var(--accent-red);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+        
+        .btn-success {
+            background: var(--accent-green);
+            color: #000;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+        
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .command-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg-secondary);
+            border-radius: 6px;
+            font-size: 13px;
+        }
+        
+        .status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status.success { background: var(--accent-green); color: #000; }
+        .status.error { background: var(--accent-red); color: white; }
+        .status.info { background: var(--accent-blue); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <a href="crm-departments.html" class="back-link">← К цехам</a>
+            <h1><span>SOHO</span> Шаблон чека — <span class="dept-name" id="deptName">...</span></h1>
+        </div>
+        
+        <div class="main-grid">
+            <div class="form-section">
+                <div class="card">
+                    <h3>🖼️ Логотип</h3>
+                    <label class="checkbox-group" style="margin-bottom: 15px;">
+                        <input type="checkbox" id="showLogo" checked>
+                        <span>Показывать логотип в шапке чека</span>
+                    </label>
+                    
+                    <div id="logoSection">
+                        <label class="file-upload">
+                            <input type="file" id="logoFile" accept="image/*">
+                            <div style="font-size: 32px; margin-bottom: 10px;">📷</div>
+                            <div>Нажмите или перетащите логотип</div>
+                            <small style="color: var(--text-secondary);">PNG, JPG. Рекомендуется 300x150px</small>
+                        </label>
+                        
+                        <div class="form-group" style="margin-top: 15px;">
+                            <label>Или URL логотипа</label>
+                            <input type="url" id="logoUrl" placeholder="https://example.com/logo.png">
+                        </div>
+                        
+                        <div id="logoPreviewContainer" style="display: none;">
+                            <label>Превью:</label>
+                            <img id="logoPreview" class="logo-preview" src="">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📄 Шапка чека</h3>
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="insertVar('headerText', '{ORDER_NUM}')">№ заказа</button>
+                        <button class="toolbar-btn" onclick="insertVar('headerText', '{DEPT_NAME}')">Цех</button>
+                        <button class="toolbar-btn" onclick="insertVar('headerText', '{DATE}')">Дата</button>
+                        <button class="toolbar-btn" onclick="insertVar('headerText', '{TIME}')">Время</button>
+                        <button class="toolbar-btn" onclick="insertVar('headerText', '\\n')">Перенос</button>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="headerText" placeholder="*** ПИЦЦА ***&#10;Заказ: {ORDER_NUM}&#10;{DATE} {TIME}"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>🔤 Настройки шрифта</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Размер шрифта</label>
+                            <select id="fontSize">
+                                <option value="8">8pt (мелкий)</option>
+                                <option value="10">10pt</option>
+                                <option value="12" selected>12pt (стандарт)</option>
+                                <option value="14">14pt</option>
+                                <option value="16">16pt (крупный)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ширина бумаги</label>
+                            <select id="paperWidth">
+                                <option value="58">58 мм (узкая)</option>
+                                <option value="80" selected>80 мм (стандарт)</option>
+                                <option value="112">112 мм (широкая)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Заголовок</label>
+                            <select id="headerStyle">
+                                <option value="normal">Обычный</option>
+                                <option value="bold" selected>Жирный</option>
+                                <option value="double">Двойная высота</option>
+                                <option value="bold_double">Жирный + двойная высота</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Товары</label>
+                            <select id="itemsStyle">
+                                <option value="normal" selected>Обычный</option>
+                                <option value="bold">Жирный</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>📃 Подвал чека</h3>
+                    <div class="toolbar">
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '{ITEMS_COUNT}')">Кол-во позиций</button>
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '{TOTAL_ITEMS}')">Сумма количеств</button>
+                        <button class="toolbar-btn" onclick="insertVar('footerText', '\\n')">Перенос</button>
+                    </div>
+                    <div class="form-group">
+                        <textarea id="footerText" placeholder="Всего позиций: {ITEMS_COUNT}&#10;---&#10;Приятного аппетита!"></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3>⚙️ Настройки печати</h3>
+                    <div class="commands-grid">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="cutPaper" checked>
+                            <span>Отрезать чек</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="beep" checked>
+                            <span>Звуковой сигнал</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="openDrawer">
+                            <span>Открыть денежный ящик</span>
+                        </label>
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="printBarcode">
+                            <span>Штрихкод заказа</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="saveTemplate()">💾 Сохранить шаблон</button>
+                    <button class="btn btn-secondary" onclick="testPrint()">🖨️ Тестовая печать</button>
+                </div>
+                
+                <div id="status" style="margin-top: 15px;"></div>
+            </div>
+            
+            <div class="preview-section">
+                <div class="card">
+                    <h3>👁️ Предпросмотр</h3>
+                    <div class="receipt-paper medium" id="receiptPreview">
+                        <div class="receipt-header">
+                            <img class="receipt-logo" id="previewLogo" style="display: none;">
+                            <div class="receipt-title" id="previewHeader">*** ПИЦЦА ***</div>
+                            <div class="receipt-subtitle" id="previewSubtitle">Заказ: K-001<br>05.03.2026 14:30</div>
+                        </div>
+                        <div class="receipt-items">
+                            <div class="receipt-item">
+                                <span>1x Пепперони</span>
+                                <span>30см</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>2x Маргарита</span>
+                                <span>25см</span>
+                            </div>
+                        </div>
+                        <div class="receipt-footer" id="previewFooter">
+                            Всего позиций: 3<br>---<br>Приятного аппетита!
+                        </div>
+                        <div class="cut-line" id="previewCut">✂️ --- отрезка ---</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const deptId = urlParams.get('dept');
+        let currentDept = null;
+        
+        async function loadDeptInfo() {
+            try {
+                const response = await fetch('/api/production/departments?active_only=false');
+                const depts = await response.json();
+                currentDept = depts.find(d => d.id == deptId);
+                if (currentDept) {
+                    document.getElementById('deptName').textContent = currentDept.name;
+                }
+            } catch (err) {
+                console.error('Error loading dept:', err);
+            }
+        }
+        
+        async function loadTemplate() {
+            try {
+                const response = await fetch(`/api/production/departments/${deptId}/template`);
+                const data = await response.json();
+                
+                document.getElementById('showLogo').checked = data.show_logo !== false;
+                document.getElementById('logoUrl').value = data.logo_url || '';
+                document.getElementById('headerText').value = data.header_text || '';
+                document.getElementById('footerText').value = data.footer_text || '';
+                document.getElementById('fontSize').value = data.font_size || '12';
+                document.getElementById('paperWidth').value = data.paper_width || '80';
+                document.getElementById('headerStyle').value = data.header_style || 'bold';
+                document.getElementById('itemsStyle').value = data.items_style || 'normal';
+                document.getElementById('cutPaper').checked = data.cut_paper !== false;
+                document.getElementById('beep').checked = data.beep !== false;
+                document.getElementById('openDrawer').checked = data.open_drawer || false;
+                document.getElementById('printBarcode').checked = data.print_barcode || false;
+                
+                if (data.logo_url) {
+                    document.getElementById('logoPreview').src = data.logo_url;
+                    document.getElementById('logoPreviewContainer').style.display = 'block';
+                }
+                
+                updatePreview();
+            } catch (err) {
+                // Defaults
+                document.getElementById('headerText').value = `*** {DEPT_NAME} ***\nЗаказ: {ORDER_NUM}\n{DATE} {TIME}`;
+                document.getElementById('footerText').value = `Всего позиций: {ITEMS_COUNT}\n---\nПриятного аппетита!`;
+                updatePreview();
+            }
+        }
+        
+        function updatePreview() {
+            const headerText = document.getElementById('headerText').value;
+            const footerText = document.getElementById('footerText').value;
+            const showLogo = document.getElementById('showLogo').checked;
+            const paperWidth = document.getElementById('paperWidth').value;
+            const fontSize = document.getElementById('fontSize').value;
+            const cutPaper = document.getElementById('cutPaper').checked;
+            const logoUrl = document.getElementById('logoUrl').value;
+            
+            const paper = document.getElementById('receiptPreview');
+            paper.className = 'receipt-paper ' + (paperWidth == '58' ? 'narrow' : paperWidth == '80' ? 'medium' : 'wide');
+            paper.style.fontSize = fontSize + 'pt';
+            
+            let processedHeader = headerText
+                .replace(/\\n/g, '\n')
+                .replace(/{ORDER_NUM}/g, 'K-001')
+                .replace(/{DEPT_NAME}/g, currentDept?.name || 'ЦЕХ')
+                .replace(/{DATE}/g, new Date().toLocaleDateString('ru-RU'))
+                .replace(/{TIME}/g, new Date().toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}));
+            
+            const headerLines = processedHeader.split('\n');
+            document.getElementById('previewHeader').textContent = headerLines[0];
+            document.getElementById('previewSubtitle').innerHTML = headerLines.slice(1).join('<br>');
+            
+            const previewLogo = document.getElementById('previewLogo');
+            if (showLogo && logoUrl) {
+                previewLogo.src = logoUrl;
+                previewLogo.style.display = 'block';
+            } else {
+                previewLogo.style.display = 'none';
+            }
+            
+            let processedFooter = footerText
+                .replace(/\\n/g, '\n')
+                .replace(/{ITEMS_COUNT}/g, '2')
+                .replace(/{TOTAL_ITEMS}/g, '3');
+            document.getElementById('previewFooter').innerHTML = processedFooter.replace(/\n/g, '<br>');
+            
+            document.getElementById('previewCut').style.display = cutPaper ? 'block' : 'none';
+        }
+        
+        function insertVar(fieldId, variable) {
+            const textarea = document.getElementById(fieldId);
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            textarea.value = text.substring(0, start) + variable + text.substring(end);
+            textarea.focus();
+            textarea.setSelectionRange(start + variable.length, start + variable.length);
+            updatePreview();
+        }
+        
+        document.getElementById('logoFile').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('logoUrl').value = e.target.result;
+                    document.getElementById('logoPreview').src = e.target.result;
+                    document.getElementById('logoPreviewContainer').style.display = 'block';
+                    updatePreview();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        document.getElementById('logoUrl').addEventListener('input', updatePreview);
+        document.getElementById('showLogo').addEventListener('change', updatePreview);
+        document.getElementById('headerText').addEventListener('input', updatePreview);
+        document.getElementById('footerText').addEventListener('input', updatePreview);
+        document.getElementById('fontSize').addEventListener('change', updatePreview);
+        document.getElementById('paperWidth').addEventListener('change', updatePreview);
+        document.getElementById('cutPaper').addEventListener('change', updatePreview);
+        
+        async function saveTemplate() {
+            const data = {
+                show_logo: document.getElementById('showLogo').checked,
+                logo_url: document.getElementById('logoUrl').value,
+                header_text: document.getElementById('headerText').value,
+                footer_text: document.getElementById('footerText').value,
+                font_size: parseInt(document.getElementById('fontSize').value),
+                paper_width: parseInt(document.getElementById('paperWidth').value),
+                header_style: document.getElementById('headerStyle').value,
+                items_style: document.getElementById('itemsStyle').value,
+                cut_paper: document.getElementById('cutPaper').checked,
+                beep: document.getElementById('beep').checked,
+                open_drawer: document.getElementById('openDrawer').checked,
+                print_barcode: document.getElementById('printBarcode').checked
+            };
+            
+            try {
+                const response = await fetch(`/api/production/departments/${deptId}/template`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    showStatus('✅ Шаблон сохранён', 'success');
+                } else {
+                    throw new Error('Save failed');
+                }
+            } catch (err) {
+                showStatus('❌ Ошибка сохранения', 'error');
+            }
+        }
+        
+        function showStatus(msg, type) {
+            const status = document.getElementById('status');
+            status.innerHTML = `<span class="status ${type}">${msg}</span>`;
+            setTimeout(() => status.innerHTML = '', 3000);
+        }
+        
+        async function testPrint() {
+            showStatus('🔄 Отправка на печать...', 'info');
+            // Placeholder for actual test print
+            setTimeout(() => showStatus('✅ Тестовый чек отправлен', 'success'), 1000);
+        }
+        
+        loadDeptInfo();
+        loadTemplate();
+    </script>
+<script src="js/iframe-helper.js"></script>
+</body>
+</html>

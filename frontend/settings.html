@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Настройки - SOHO Cafe</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .settings-page {
+            padding: 80px 16px 195px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 700;
+        }
+        .go-home-btn {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .go-profile-btn {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            padding: 10px 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+            z-index: 101;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+        }
+        .footer-links-bar {
+            position: fixed;
+            bottom: 70px;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            z-index: 90;
+            pointer-events: none;
+            font-size: 12px;
+        }
+        .footer-links-bar a {
+            pointer-events: auto;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .settings-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        .toggle {
+            width: 50px;
+            height: 28px;
+            background: var(--border-color);
+            border-radius: 14px;
+            position: relative;
+            cursor: pointer;
+        }
+        .toggle.active {
+            background: var(--accent-color);
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: 0.3s;
+        }
+        .toggle.active::after {
+            left: 24px;
+        }
+        .logout-btn {
+            width: 100%;
+            padding: 16px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        .auth-prompt {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .auth-prompt .icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+        }
+        .auth-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            background: var(--accent-color);
+            color: white;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 500;
+            margin-top: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="settings-page">
+        <div class="page-header">
+            <h1 class="page-title">Настройки</h1>
+        </div>
+        <div id="settingsContent"></div>
+    </div>
+
+    <button class="go-home-btn" onclick="window.location.href='/'">🏠 В главное меню</button>
+    <a href="/profile.html" class="go-profile-btn">👤 В профиль</a>
+
+    <div class="footer-links-bar">
+        <a href="/about.html">О нас</a>
+        <a href="/delivery.html">Доставка</a>
+        <a href="/promotions.html">Акции</a>
+        <a href="/offer.html">Оферта</a>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('soho_user') || '{}');
+        const container = document.getElementById('settingsContent');
+        
+        if (!user.name) {
+            container.innerHTML = `
+                <div class="auth-prompt">
+                    <div class="icon">🔒</div>
+                    <h2>Войдите в аккаунт</h2>
+                    <p style="color: var(--text-secondary); margin: 16px 0;">Чтобы изменять настройки, необходимо авторизоваться</p>
+                    <a href="/login.html" class="auth-btn">Войти или зарегистрироваться</a>
+                </div>
+            `;
+        } else {
+            container.innerHTML = `
+                <div class="settings-section">
+                    <div class="section-title">Уведомления</div>
+                    <div class="setting-item">
+                        <span>Push-уведомления</span>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                    <div class="setting-item">
+                        <span>SMS-уведомления</span>
+                        <div class="toggle" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+                <div class="settings-section">
+                    <div class="section-title">О приложении</div>
+                    <div class="setting-item">
+                        <span>Версия</span>
+                        <span>1.0.0</span>
+                    </div>
+                    <div class="setting-item">
+                        <span>Тёмная тема</span>
+                        <div class="toggle active" onclick="this.classList.toggle('active')"></div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Выйти из аккаунта</button>
+            `;
+        }
+        
+        function logout() {
+            if (confirm('Выйти из аккаунта?')) {
+                localStorage.removeItem('soho_user');
+                window.location.href = '/profile.html';
+            }
+        }
+    </script>
+</body>
+</html>
